@@ -44,3 +44,30 @@ scene.onBeforeRenderObservable.add(()=>{
 });
 
 
+class WebXRInitializationOptions {
+    canvas: HTMLCanvasElement
+}
+class WebXR {
+    xrNavigator:any = null
+    xrDevice:any = null
+
+    constructor(){
+    }
+
+    init(options: WebXRInitializationOptions){
+        this.xrNavigator = navigator;
+        if(this.xrNavigator.xr){
+            this.xrNavigator.xr.requestDevice().then((device)=>{
+                this.xrDevice = device;
+                //options.canvas.getContext("webgl", {compatable})
+                console.log(this.xrDevice)
+                
+            });
+        }else{
+            console.log("xr not found")
+        }
+    }
+}
+
+var webXR = new WebXR();
+webXR.init({canvas: engine.getRenderingCanvas()});
