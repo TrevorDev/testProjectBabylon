@@ -11,6 +11,7 @@
   "dependencies": {
     "babylonjs": "^3.2.0-beta.1",
     "ts-loader": "^4.1.0",
-    "typescript": "^2.7.2"
+    "typescript": "^2.7.2",
+    "webxr-polyfill": "^1.0.2"
   }
 }
