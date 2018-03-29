@@ -25,16 +25,16 @@ class WebXR {
 
     onFrame = (t, frame)=>{
         //console.log("frame")
-        // let pose = frame.getDevicePose(this.xrFrameOfRef);
+         let pose = frame.getDevicePose(this.xrFrameOfRef);
         // //if(!hit){
-        //     if(pose){
-        //         BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.poseModelMatrix, 0, 1, this.poseMatrix)
-        //         console.log(this.poseMatrix.getTranslation().y)
-        //     }
+            if(pose){
+                BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.poseModelMatrix, 0, 1, this.poseMatrix)
+                console.log(this.poseMatrix.getTranslation().y)
+            }
             
         //     // hit = 1;
         // //}
-        // frame.session.requestAnimationFrame(this.onFrame);
+        frame.session.requestAnimationFrame(this.onFrame);
     }
 
     init(){
@@ -70,7 +70,7 @@ class WebXR {
                     }
                     this.xrSession = session;
                     session.baseLayer = new XRWebGLLayer(session, this.gl);
-                    return this.xrSession.requestFrameOfReference('stage')
+                    return this.xrSession.requestFrameOfReference('eyeLevel')
                 }).then((frameOfRef) => {
                     console.log("found frameOfRef")
                     this.xrFrameOfRef = frameOfRef;
