@@ -24,15 +24,17 @@ class WebXR {
     }
 
     onFrame = (t, frame)=>{
-        console.log("frame")
-        let pose = frame.getDevicePose(this.xrFrameOfRef);
-        //if(!hit){
-            // BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.poseModelMatrix, 0, 1, this.poseMatrix)
+        //console.log("frame")
+        // let pose = frame.getDevicePose(this.xrFrameOfRef);
+        // //if(!hit){
+        //     if(pose){
+        //         BABYLON.Matrix.FromFloat32ArrayToRefScaled(pose.poseModelMatrix, 0, 1, this.poseMatrix)
+        //         console.log(this.poseMatrix.getTranslation().y)
+        //     }
             
-            // console.log(this.poseMatrix.getTranslation().y)
-            // hit = 1;
-        //}
-        frame.session.requestAnimationFrame(this.onFrame);
+        //     // hit = 1;
+        // //}
+        // frame.session.requestAnimationFrame(this.onFrame);
     }
 
     init(){
@@ -41,41 +43,38 @@ class WebXR {
             if(this.xrNavigator.xr){
                 this.xrNavigator.xr.requestDevice().then((device)=>{
                     this.xrDevice = device;
-                    //options.canvas.getContext("webgl", {compatable})
+                    
                     console.log("found xr device")
                     console.log(this.xrDevice)
 
                     
                     this.canvas = document.createElement("canvas");
-                    this.gl = this.canvas.getContext("xrpresent");
-                //     this.canvas.addEventListener("webglcontextlost", (event) => {
-                //         console.log("hit")
-                //     });
-                //     this.canvas.addEventListener("webglcontextrestored", (event) => {
-                //         console.log("hit")
-                //     });
-                //     console.log(this.gl)
-                //     return this.gl.setCompatibleXRDevice(this.xrDevice)            
-                // }).then(()=>{
-                //     console.log("set")
-                    return this.xrDevice.requestSession({outputContext: this.gl })
+                    var presentCtx = this.canvas.getContext("xrpresent");
+                    
+                    return this.xrDevice.requestSession({outputContext: presentCtx })
                 }).then((session) => {
-                    
+                    document.body.appendChild(this.canvas);
                     console.log("found session")
-
                     session.addEventListener('end', ()=>{console.log("end")});
-
-
-
-
-                    
+                    if(!this.gl){
+                        let webglCanvas = document.createElement('canvas');
+                        let context = null;
+                        context = webglCanvas.getContext("webgl", { compatibleXRDevice: session.device });
+                      
+                        if (!context) {
+                          console.error('This browser does not support xr' + '.');
+                          return null;
+                        }
+                        this.gl = context
+                        console.log("gl created")
+                    }
                     this.xrSession = session;
+                    session.baseLayer = new XRWebGLLayer(session, this.gl);
                     return this.xrSession.requestFrameOfReference('stage')
                 }).then((frameOfRef) => {
                     console.log("found frameOfRef")
                     this.xrFrameOfRef = frameOfRef;
-                    var resp = this.xrSession.requestAnimationFrame(this.onFrame);
-                    console.log(resp)
+                    this.xrSession.requestAnimationFrame(this.onFrame);
                     res()
                 });    
             }else{
@@ -108,15 +107,15 @@ webXR.init().then(()=>{
     // document.body.appendChild(canvas);
 
     // // Initialize Babylon scene and engine
-    // var engine = new BABYLON.Engine(canvas.getContext("xrpresent"), true);
+    // var engine = new BABYLON.Engine(webXR.gl, true);
     // var scene = new BABYLON.Scene(engine);
     // engine.runRenderLoop(()=>{
     //     scene.render();
     // });
 
-    // // Create objects in the scene
+    // // // Create objects in the scene
     // var camera = new BABYLON.FreeCamera("camera", new BABYLON.Vector3(0, 0, 0), scene);
-    // camera.attachControl(canvas,true)
+    // //camera.attachControl(canvas,true)
     // var light = new BABYLON.PointLight("light", new BABYLON.Vector3(10,10,0), scene);
     // var box = BABYLON.Mesh.CreateBox("box", 1.0, scene);
     // box.position.z = 5;

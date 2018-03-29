@@ -12,3 +12,9 @@ npm install concurrently -g
 
 npm install
 webpack -w
+
+things i found confusing:
+"xrpresent" context and a webgl context?
+Not easy to figure out how to convert an original canvas and drawing session to a webXR one
+switching between non xr rendering and xr rendering
+session needs to be added to _render in engine so that it's requestAnimationFrame is used
