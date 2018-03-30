@@ -18,3 +18,4 @@ things i found confusing:
 Not easy to figure out how to convert an original canvas and drawing session to a webXR one
 switching between non xr rendering and xr rendering
 session needs to be added to _render in engine so that it's requestAnimationFrame is used
+why does mirroring sample have multiple canvases? cant the one be reused?
