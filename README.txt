@@ -19,7 +19,13 @@ Not easy to figure out how to convert an original canvas and drawing session to 
 switching between non xr rendering and xr rendering
 session needs to be added to _render in engine so that it's requestAnimationFrame is used
 how do i handle device connected/disconnected events
+why does mirroring sample have multiple canvases? cant the one be reused?
 
+plan:
+canvas0 - main canvas babylon already creates (regular canvas when in no mode, magic window when in non-exclusive mode, mirror when in exclusive mode)
+  glContext is converted to xr by setting the xr device (session.baseLayer.framebuffer is drawn to the device using this context for exclusive mode)
+canvas1 - used as dummy canvas to activate xr device in non-exclusive mode, not added to the webpage or drawn to
+  glContext just used to initialize non-exclusive session
 
 
 //setup
