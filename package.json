@@ -9,9 +9,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "babylonjs": "^3.2.0-beta.1",
-    "ts-loader": "^4.1.0",
-    "typescript": "^2.7.2",
-    "webxr-polyfill": "^1.0.2"
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.4",
+    "babel-polyfill": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babylonjs": "^3.2.0-rc.1",
+    "babylonjs-loaders": "^3.2.0-rc.1",
+    "ts-loader": "^4.2.0",
+    "typescript": "^2.8.1",
+    "webpack": "^4.6.0"
+  },
+  "devDependencies": {
+    "babel-preset-es2017": "^6.24.1"
   }
 }

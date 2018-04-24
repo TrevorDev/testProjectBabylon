@@ -1,17 +1,29 @@
 const path = require('path');
+
+var babelOptions = {
+    "presets": ["es2017"]
+
+  };
+
 module.exports = {
     entry: {
         index: './index.ts'
     },
     module: {
-        rules: [
+        rules: [{
+          test: /\.ts(x?)$/,
+          exclude: /node_modules/,
+          use: [
+            // {
+            //   loader: 'babel-loader',
+            //   options: babelOptions
+            // },
             {
-                test: /\.tsx?$/,
-                use: 'ts-loader',
-                exclude: /node_modules/
+              loader: 'ts-loader'
             }
-        ]
-    },
+          ]
+        }]
+      },
     resolve: {
         extensions: [ '.tsx', '.ts', '.js' ]
     },
