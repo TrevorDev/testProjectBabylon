@@ -31,4 +31,10 @@ export class Stage {
             this.scene.render();
         });
     }
+
+    static addToScene(scene:BABYLON.Scene, meshes:Array<BABYLON.Mesh>){
+        meshes.forEach((m)=>{
+            scene.addMesh(m)
+        })
+    }
 }

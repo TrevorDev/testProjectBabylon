@@ -14,6 +14,7 @@
     "babel-polyfill": "^6.26.0",
     "babel-preset-env": "^1.6.1",
     "babylonjs": "^3.2.0-rc.1",
+    "babylonjs-gui": "^3.2.0-rc.2",
     "babylonjs-loaders": "^3.2.0-rc.1",
     "ts-loader": "^4.2.0",
     "typescript": "^2.8.1",
