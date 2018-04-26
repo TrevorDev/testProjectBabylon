@@ -22,13 +22,20 @@ export class Stage {
         this.canvas = document.createElement('canvas');
         this.canvas.style.width="100%"
         this.canvas.style.height="100%"
+
+        //this.canvas = document.getElementById("renderCanvas")
         document.body.appendChild(this.canvas);
 
         // Initialize Babylon scene and engine
-        this.engine = new BABYLON.Engine(this.canvas, true);
+        this.engine = new BABYLON.Engine(this.canvas, true, { stencil: true, disableWebGL2Support: false, preserveDrawingBuffer: true });
+        this.engine.enableOfflineSupport = false
         this.scene = new BABYLON.Scene(this.engine);
         this.engine.runRenderLoop(()=>{
             this.scene.render();
+        });
+        
+        window.addEventListener("resize", ()=> {
+            this.engine.resize();
         });
     }
 

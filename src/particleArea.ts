@@ -7,9 +7,9 @@ export class ParticleArea extends DemoArea {
     }
     async init(){
         var fountain = BABYLON.Mesh.CreateBox("foutain", 0.1, this.scene);
+        fountain.position.y = 1
         fountain.visibility = 0.1;
-        var particleSystem = new BABYLON.GPUParticleSystem("particles", { capacity:10000 }, this.scene);
-        particleSystem.activeParticleCount = 1000;
+        var particleSystem = new BABYLON.ParticleSystem("particles", 100, this.scene);
         particleSystem.emitRate = 1000;
         particleSystem.particleEmitterType = new BABYLON.SphereParticleEmitter(1);
         particleSystem.particleTexture = new BABYLON.Texture("http://localhost:5000/public/flare.png", this.scene);
