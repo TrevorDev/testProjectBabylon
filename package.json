@@ -4,8 +4,8 @@
   "description": "How I start a local babylon project",
   "main": "index.js",
   "dependencies": {
-    "typescript": "^2.9.2",
-    "babylonjs": "^3.2.0"
+    "babylonjs": "^3.2.0",
+    "typescript": "^2.9.2"
   },
   "devDependencies": {},
   "scripts": {
