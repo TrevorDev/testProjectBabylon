@@ -1,17 +1,25 @@
 {
-  "name": "babylon-project",
+  "name": "testProjectBabylon",
   "version": "1.0.0",
-  "description": "",
+  "description": "How I start a local babylon project",
   "main": "index.js",
+  "dependencies": {
+    "typescript": "^2.9.2",
+    "babylonjs": "^3.2.0"
+  },
+  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TrevorDev/testProjectBabylon.git"
+  },
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "dependencies": {
-    "babylonjs": "^3.2.0-beta.1",
-    "ts-loader": "^4.1.0",
-    "typescript": "^2.7.2",
-    "webxr-polyfill": "^1.0.2"
-  }
+  "bugs": {
+    "url": "https://github.com/TrevorDev/testProjectBabylon/issues"
+  },
+  "homepage": "https://github.com/TrevorDev/testProjectBabylon#readme"
 }
