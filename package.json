@@ -4,7 +4,11 @@
   "description": "How I start a local babylon project",
   "main": "index.js",
   "dependencies": {
-    "babylonjs": "^3.2.0",
+    "@types/html2canvas": "0.0.33",
+    "@types/jquery": "^3.3.4",
+    "babylonjs": "^3.3.0-alpha.11",
+    "html2canvas": "^1.0.0-alpha.12",
+    "jquery": "^3.3.1",
     "typescript": "^2.9.2"
   },
   "devDependencies": {},
