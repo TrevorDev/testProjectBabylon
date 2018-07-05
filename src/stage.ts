@@ -1,5 +1,8 @@
-import * as BABYLON from 'babylonjs';
-
+import * as BABYLON from 'babylonjs'
+import * as GUI from 'babylonjs-gui'
+import 'babylonjs-loaders'
+var x:any = BABYLON;
+x.GUI = GUI;
 export class Stage {
     canvas:HTMLCanvasElement
     engine:BABYLON.Engine
@@ -19,29 +22,29 @@ export class Stage {
         document.body.style.padding ="0"
 
         // Create canvas html element on webpage
-        this.canvas = document.createElement('canvas');
+        this.canvas = document.createElement('canvas')
         this.canvas.style.width="100%"
         this.canvas.style.height="100%"
 
         //this.canvas = document.getElementById("renderCanvas")
-        document.body.appendChild(this.canvas);
+        document.body.appendChild(this.canvas)
 
         // Initialize Babylon scene and engine
-        this.engine = new BABYLON.Engine(this.canvas, true, { stencil: true, disableWebGL2Support: false, preserveDrawingBuffer: true });
+        this.engine = new BABYLON.Engine(this.canvas, true, { stencil: true, disableWebGL2Support: false, preserveDrawingBuffer: true })
         this.engine.enableOfflineSupport = false
-        this.scene = new BABYLON.Scene(this.engine);
+        this.scene = new BABYLON.Scene(this.engine)
         this.engine.runRenderLoop(()=>{
-            this.scene.render();
-        });
-        
+            this.scene.render()
+        })
+
         window.addEventListener("resize", ()=> {
-            this.engine.resize();
-        });
+            this.engine.resize()
+        })
     }
 
-    static addToScene(scene:BABYLON.Scene, meshes:Array<BABYLON.Mesh>){
-        meshes.forEach((m)=>{
-            scene.addMesh(m)
-        })
+    public async importMesh(url):Promise<BABYLON.Mesh>{
+        var container = await BABYLON.SceneLoader.LoadAssetContainerAsync(url, "", this.scene)
+        var root = container.createRootMesh()
+        return root
     }
 }
