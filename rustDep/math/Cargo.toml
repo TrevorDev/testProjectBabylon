@@ -1,0 +1,6 @@
+[package]
+name = "math"
+version = "0.1.0"
+authors = ["trevo <trevorjbaron@gmail.com>"]
+
+[dependencies]

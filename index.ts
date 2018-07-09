@@ -1,5 +1,6 @@
 import { Stage } from './src/stage'
-
+import rustModule from './rustDep/math/target/wasm32-unknown-unknown/release/math.wasm';/* tslint:disable */
+console.log(rustModule.add(1,2))
 var main = async ()=>{
     // Initialize full screen rendering
     var stage = new Stage()
