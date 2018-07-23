@@ -16,7 +16,7 @@ shell.registerApp({
         var scene = windowAnchor.getScene();
 
         // Load gltf model and add to scene
-        var container = await BABYLON.SceneLoader.LoadAssetContainerAsync("https://raw.githubusercontent.com/TrevorDev/gltfModels/master/facebook.glb", "", scene)
+        var container = await BABYLON.SceneLoader.LoadAssetContainerAsync("https://raw.githubusercontent.com/TrevorDev/gltfModels/master/facebook.glb", "", scene)  
         var loadedModel = container.createRootMesh()
         makeNotPickable(loadedModel) // This needs to be done on large models to save on perf when doing ray collisions from controllers
         loadedModel.position.y = 2

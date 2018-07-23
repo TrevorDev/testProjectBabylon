@@ -14,27 +14,28 @@ shell.registerApp({
     launch: async (windowAnchor:BABYLON.Mesh, vrHelper: VRExperienceHelper)=>{
         // Get scene
         var scene = windowAnchor.getScene();
+        
+        var videoplayerplane = BABYLON.MeshBuilder.CreatePlane("Plane1", {height: 1.0, width: 2.0}, scene);
 
-        // Create GUI button
-        var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 0.2, height: 0.2}, scene)
-        plane.position.y= 1
-        plane.parent = windowAnchor // set windowAnchor as parent
-        var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane)
-        guiTexture
-        var guiPanel = new Stage.GUI.StackPanel()  
-        guiPanel.top = "0px"
-        guiTexture.addControl(guiPanel)
-        var button = Stage.GUI.Button.CreateSimpleButton("", "Click 🤣")
-        button.fontSize = 300
-        button.color = "white"
-        button.background = "#4AB3F4"
-        button.cornerRadius = 200
-        button.thickness = 20
-        button.onPointerClickObservable.add(()=>{
-            console.log("hit")
-        })
-        guiPanel.addControl(button)
+        videoplayerplane.position.y = 2;
+        videoplayerplane.position.x = -2;
 
+        var playbutton = BABYLON.Mesh.CreatePlane("Plane1", .2, scene, true);
+
+        playbutton.position.y = 1.3;
+        playbutton.position.x = -2.9;
+
+
+        var stopbutton = BABYLON.Mesh.CreatePlane("Plane1", .2, scene, true);
+
+        stopbutton.position.y = 1.3;
+        stopbutton.position.x = -2.65;
+
+
+        // ecran.material.diffuseTexture = new BABYLON.VideoTexture("video",
+        //     ["apps/testApp/videoplayer/mov_bbb.mp4"], scene, true);
+
+        
     }, 
     dispose: async ()=>{
 
