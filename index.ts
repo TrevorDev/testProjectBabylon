@@ -7,21 +7,61 @@ class App {
 }
 class Shell {
     private apps:Array<App> = []
+    private x: number = 1
     constructor(public scene:BABYLON.Scene, public vrHelper:BABYLON.VRExperienceHelper){}
+    positionSphere = (sphere: any) => {
+        sphere.position.x = this.x;
+        this.x += 1;
+    }
     registerApp = (app:App)=>{
         var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
+        this.positionSphere(sphere)
         var anchor = new BABYLON.Mesh("", this.scene);
-        sphere.position.x = 1
+        anchor.scaling.scaleInPlace(0)
+     
         sphere.rotation.y=Math.PI/4
         this.apps.push(app)
-        app.launch(anchor, this.vrHelper)
+        // app.launch(anchor, this.vrHelper)
 
         var b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
         sphere.addBehavior(b)
         this.scene.onBeforeRenderObservable.add(()=>{
+           // console.log(sphere.position.x)
             anchor.position.copyFrom(sphere.position)
             anchor.rotation.copyFrom(anchor.rotation)
         })
+
+        var state = 0;
+        this.scene.onPointerObservable.add((e)=>{
+            if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
+                if(e.pickInfo.pickedMesh == sphere) {
+                    console.log(e)
+                    this.apps.push(app)
+                    app.launch(anchor, this.vrHelper)
+                    if (state == 0)
+                    {
+                        for (var i = 0; i < 100; i++)
+                        {
+                            // TODO - use onBeforeRenderObservable instead of setTimeout
+                            // to remove chopiness and avoid overloading the event queue
+                            setTimeout( () => { anchor.scaling.addInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
+                        }
+                        state = 1
+                    }
+                    else
+                    {
+                        for (var i = 0; i < 100; i++)
+                        {
+                            // TODO - use onBeforeRenderObservable instead of setTimeout
+                            // to remove chopiness and avoid overloading the event queue
+                            setTimeout( () => { anchor.scaling.subtractInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
+                        }
+                        state = 0
+                    }
+                }
+            }
+        })
+
     }
 }
 
@@ -48,7 +88,7 @@ var vrHelper = scene.createDefaultVRExperience({floorMeshes: [env.ground]})
 vrHelper.raySelectionPredicate = (mesh:BABYLON.AbstractMesh):boolean=>{
     return mesh.isVisible && mesh.isPickable;
 }
-
+        
 var win:any = window
 win.shell = new Shell(scene, vrHelper);
     
