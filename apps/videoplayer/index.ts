@@ -15,27 +15,53 @@ shell.registerApp({
         // Get scene
         var scene = windowAnchor.getScene();
         
-        var videoplayerplane = BABYLON.MeshBuilder.CreatePlane("Plane1", {height: 1.0, width: 2.0}, scene);
+        var videoPlayerPane = BABYLON.MeshBuilder.CreatePlane("Plane1", {height: 1.0, width: 2.0}, scene);
 
-        videoplayerplane.position.y = 2;
-        videoplayerplane.position.x = -2;
+        videoPlayerPane.position.y = 2;
+        videoPlayerPane.position.x = -2;
 
-        var playbutton = BABYLON.Mesh.CreatePlane("Plane1", .2, scene, true);
+        videoPlayerPane.parent = windowAnchor
 
-        playbutton.position.y = 1.3;
-        playbutton.position.x = -2.9;
+        var buttonPane = BABYLON.MeshBuilder.CreatePlane("buttonPlane", {width: 0.2, height: 0.2}, scene)
+        
+        buttonPane.position.y= -0.7
+        buttonPane.position.x = -0.9
+        buttonPane.parent = videoPlayerPane
+        var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(buttonPane)
+        
+        var guiPanel = new Stage.GUI.StackPanel()  
+        guiPanel.top = "0px"
+        guiTexture.addControl(guiPanel)
 
+        var playbutton = Stage.GUI.Button.CreateSimpleButton("play", "▶")
 
-        var stopbutton = BABYLON.Mesh.CreatePlane("Plane1", .2, scene, true);
+        playbutton.fontSize = 300
+        playbutton.color = "white"
+        playbutton.background = "#4AB3F4"
+        playbutton.cornerRadius = 200
+        playbutton.thickness = 20
 
-        stopbutton.position.y = 1.3;
-        stopbutton.position.x = -2.65;
+        guiPanel.addControl(playbutton)
 
+        // var pauseButton = Stage.GUI.Button.CreateSimpleButton("pause", "⏸️")
+        
+        // pauseButton.fontSize = 300
+        // pauseButton.color = "white"
+        // pauseButton.background = "#4AB3F4"
+        // pauseButton.cornerRadius = 200
+        // pauseButton.thickness = 20
+
+        // guiPanel.addControl(pauseButton)
+
+        //pauseButton.position.y = -0.7;
+        //pauseButton.position.x = -0.6;
 
         var videoTexture = new BABYLON.VideoTexture("video", ["public/mov_bbb.mp4"], scene, true);
         var videoMaterial = new BABYLON.StandardMaterial("", scene);
-        videoMaterial.diffuseTexture= videoTexture
-        videoplayerplane.material=videoMaterial
+        videoMaterial.diffuseTexture = videoTexture
+        videoPlayerPane.material = videoMaterial
+
+        videoTexture.video.pause()
 
     }, 
     dispose: async ()=>{
