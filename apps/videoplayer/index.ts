@@ -32,10 +32,11 @@ shell.registerApp({
         stopbutton.position.x = -2.65;
 
 
-        // ecran.material.diffuseTexture = new BABYLON.VideoTexture("video",
-        //     ["apps/testApp/videoplayer/mov_bbb.mp4"], scene, true);
+        var videoTexture = new BABYLON.VideoTexture("video", ["public/mov_bbb.mp4"], scene, true);
+        var videoMaterial = new BABYLON.StandardMaterial("", scene);
+        videoMaterial.diffuseTexture= videoTexture
+        videoplayerplane.material=videoMaterial
 
-        
     }, 
     dispose: async ()=>{
 
