@@ -43,7 +43,7 @@ class Shell {
 
         var state = 0;
         this.scene.onPointerObservable.add((e)=>{
-            if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
+            if (e.type == BABYLON.PointerEventTypes.POINTERTAP) {
                 if(e.pickInfo.pickedMesh == sphere) {
                     console.log(e)
                     this.apps.push(app)
