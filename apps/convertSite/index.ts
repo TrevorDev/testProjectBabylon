@@ -10,7 +10,7 @@ var makeNotPickable = (mesh:BABYLON.AbstractMesh)=>{
 }
 
 shell.registerApp({
-    name: "testApp", 
+    name: "convertSite", 
     iconUrl: "public/appicons/wikipedia.png",
     launch: async (windowAnchor:BABYLON.Mesh, vrHelper: VRExperienceHelper)=>{
         // Get scene

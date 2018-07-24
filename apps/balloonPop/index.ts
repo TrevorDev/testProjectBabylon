@@ -10,7 +10,7 @@ var makeNotPickable = (mesh:BABYLON.AbstractMesh)=>{
 }
 
 shell.registerApp({
-    name: "testApp", 
+    name: "balloonPop", 
     iconUrl: "public/appicons/balloonPop.png",
     launch: async (windowAnchor:BABYLON.Mesh, vrHelper: VRExperienceHelper)=>{
         // Get scene
