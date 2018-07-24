@@ -1,7 +1,7 @@
 import { Stage } from './src/stage'
 
 class App {
-    constructor(public name:string, public launch:Function, public dispose:Function){
+    constructor(public name:string, public iconUrl:string, public launch:Function, public dispose:Function){
 
     }
 }
@@ -15,6 +15,16 @@ class Shell {
     }
     registerApp = (app:App)=>{
         var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
+
+        var mat = new BABYLON.StandardMaterial("icon", this.scene);
+        var iconTexture = new BABYLON.Texture(app.iconUrl, this.scene);
+        iconTexture.uScale = -1;
+        iconTexture.vScale = -1;
+        mat.diffuseTexture = iconTexture;
+        mat.diffuseTexture.hasAlpha = true;
+        mat.backFaceCulling = false;
+        sphere.material = mat;
+
         this.positionSphere(sphere)
         var anchor = new BABYLON.Mesh("", this.scene);
         anchor.scaling.scaleInPlace(0)
@@ -75,7 +85,7 @@ env.setMainColor(BABYLON.Color3.FromHexString("#7f8c8d"))
 env.skybox.scaling.scaleInPlace(10)
 
 // Create basic world
-var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 2, -1), scene)
+var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(1, 1, -4), scene)
 
 //camera.setTarget(BABYLON.Vector3.Zero())
 camera.attachControl(canvas, true)
