@@ -57,21 +57,20 @@ shell.registerApp({
            // sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1 }, scene);
             sphere.position = new BABYLON.Vector3(Math.random() * 20 - 10, y, Math.random() * 10 - 5);
             windowAnchor.addChild(sphere)
-            sphere.actionManager = new BABYLON.ActionManager(scene);
-    
-            sphere.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, (evt) => { 
-                evt.source.dispose();
-                fountain.position = sphere.position;
-                //particleSystem.targetStopDuration = 1;
-                particleSystem.start();
-            }));
-    
-            sphere.actionManager.registerAction(new BABYLON.InterpolateValueAction(BABYLON.ActionManager.OnPointerOutTrigger, sphere, "scaling", new BABYLON.Vector3(1, 1, 1), 150));
-            sphere.actionManager.registerAction(new BABYLON.InterpolateValueAction(BABYLON.ActionManager.OnPointerOverTrigger, sphere, "scaling", new BABYLON.Vector3(1.1, 1.1, 1.1), 150));
-    
+
             y += 2;
             spheres.push(sphere)
         }
+
+        scene.onPointerObservable.add((e)=>{
+            if(e.type == BABYLON.PointerEventTypes.POINTERDOWN && spheres.indexOf(e.pickInfo.pickedMesh)!=-1){
+                fountain.position.copyFrom(e.pickInfo.pickedMesh.position);
+                //particleSystem.targetStopDuration = 1;
+                particleSystem.start();
+                e.pickInfo.pickedMesh.dispose();
+            }
+        })
+
         scene.onBeforeRenderObservable.add(()=>{
             spheres.forEach((s)=>{
                 s.position.y-=0.01
