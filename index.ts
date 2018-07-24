@@ -37,7 +37,7 @@ class Shell {
                 if(e.pickInfo.pickedMesh == sphere) {
                     console.log(e)
                     this.apps.push(app)
-                    app.launch(anchor, this.vrHelper)
+                    app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
                     if (state == 0)
                     {
                         for (var i = 0; i < 100; i++)
