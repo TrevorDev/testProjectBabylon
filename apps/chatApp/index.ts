@@ -60,16 +60,88 @@ shell.registerApp({
                 myMaterial.emissiveTexture = texture;
 
                 myPlane.visibility = 0;
+
+                myPlane.actionManager = new BABYLON.ActionManager(scene);
+                myPlane.actionManager.registerAction(
+                    new BABYLON.InterpolateValueAction(
+                        {
+                            trigger: BABYLON.ActionManager.OnPointerOverTrigger,
+                            parameter: myPlane
+                        },
+                        myPlane,
+                        "scaling",
+                        new BABYLON.Vector3(1.2, 1.2, 1.2),
+                        50
+                    )
+                );
+                myPlane.actionManager.registerAction(
+                    new BABYLON.InterpolateValueAction(
+                        {
+                            trigger: BABYLON.ActionManager.OnPointerOutTrigger,
+                            parameter: myPlane
+                        },
+                        myPlane,
+                        "scaling",
+                        new BABYLON.Vector3(1, 1, 1),
+                        50
+                    )
+                );
+
+                myPlane.actionManager.registerAction(
+                    new BABYLON.ExecuteCodeAction(
+                        {
+                            trigger: BABYLON.ActionManager.OnPointerOverTrigger,
+                            parameter: myPlane
+                        },
+                        function () { console.log('r button was pressed'); }
+                    )
+                );
+
+                createDialogBox(myPlane);
+
+                var option1 = BABYLON.MeshBuilder.CreatePlane("listAction1."+i, {width: 0.25, height: 0.25}, scene);
+                //myPlane.dispose();
+                option1.position.z = 0
+                option1.position.x = 0.6
+                option1.position.y = 0;
+                option1.parent = myPlane;
+                option1.visibility = 0;
+
+                var option2 = BABYLON.MeshBuilder.CreatePlane("listAction1."+i, {width: 0.25, height: 0.25}, scene);
+                //myPlane.dispose();
+                option2.position.z = 0
+                option2.position.x = 0.9
+                option2.position.y = 0;
+                option2.parent = myPlane;
+                option2.visibility = 0;
+
+                var option3 = BABYLON.MeshBuilder.CreatePlane("listAction1."+i, {width: 0.25, height: 0.25}, scene);
+                //myPlane.dispose();
+                option3.position.z = 0
+                option3.position.x = 1.2
+                option3.position.y = 0;
+                option3.parent = myPlane;
+                option3.visibility = 0;
+
             }
         }
 
-        let createDialogBox = function() {
-            var dialogBox = BABYLON.MeshBuilder.CreatePlane("dialogBox", {width: 2, height: 1.5}, scene);
+        let createDialogBox = function(parentPerson) {
+             console.log(parentPerson.id);
+            let dialogBox = BABYLON.MeshBuilder.CreatePlane("dialogBox" + parentPerson.id, {width: 2, height: 1.5}, scene);
             dialogBox.parent = loadedModel;
             dialogBox.position.x = 2;
+            dialogBox.position.y = parentPerson.position.y;
             dialogBox.visibility = 0;
+            dialogBox.parent = windowAnchor;
+            let drag = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
+            // drag.moveAttached = false;
+            // drag.onDragObservable.add(function(evt){
+            //     dialogBox.position.addInPlace(evt.delta);
+            // });
+            dialogBox.addBehavior(drag);
 
-            var closePlane = BABYLON.MeshBuilder.CreatePlane("closePlane", {width: 0.2, height: 0.2}, scene)
+            var closePlane = BABYLON.MeshBuilder.CreatePlane("closePlane" + parentPerson.id, {width: 0.2, height: 0.2}, scene)
             closePlane.position.x= 0.9;
             closePlane.position.y= 0.9;
             closePlane.position.z= -0.01;
@@ -86,8 +158,8 @@ shell.registerApp({
             close.cornerRadius = 200
             close.thickness = 20
             close.onPointerClickObservable.add(()=>{
-                scene.getMeshByName("dialogBox").visibility = 0;
-                scene.getMeshByName("closePlane").visibility = 0;
+                scene.getMeshByName("dialogBox" + parentPerson.id).visibility = 0;
+                scene.getMeshByName("closePlane" + parentPerson.id).visibility = 0;
             })
             guiPanel.addControl(close);
             closePlane.visibility = 0;
@@ -98,10 +170,11 @@ shell.registerApp({
         listMesh.parent = loadedModel;
         
         createContactList();
-        createDialogBox();
+        // createDialogBox();
 
         let b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
         loadedModel.addBehavior(b)
+
         loadedModel.position.z = 0
         loadedModel.position.y = 1.5
         loadedModel.position.x = 2
@@ -115,42 +188,9 @@ shell.registerApp({
         windowAnchor.addChild(loadedModel);
         //var chatActions = new ActionManager(scene);
 
-        // Create GUI button
-        var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 0.2, height: 0.2}, scene)
-        plane.position.y= 1
-        plane.parent = windowAnchor // set windowAnchor as parent
-        var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane)
-        guiTexture
-        var guiPanel = new Stage.GUI.StackPanel()  
-        guiPanel.top = "0px"
-        guiTexture.addControl(guiPanel)
-        var button = Stage.GUI.Button.CreateSimpleButton("", "Click 🤣")
-        button.fontSize = 300
-        button.color = "white"
-        button.background = "#4AB3F4"
-        button.cornerRadius = 200
-        button.thickness = 20
-        
-        button.onPointerClickObservable.add(()=>{
-
-            // add animation
-            //loadedModel.animations = [];
-            //loadedModel.animations.push(animationBox1);
-            //loadedModel.animations.push(animationBox2);
-            //.animations.push(animationBox3);
-            // start animation
-            //var newAnimation = scene.beginAnimation(loadedModel, 0, 15, true);
-
-            
-            popAnimation.play(true);
-            //var pickResult = scene.pick(scene.pointerX, scene.pointerY);
-
-        })
-        guiPanel.addControl(button)
-        
-
         scene.onPointerObservable.add((evt)=> {
-            // console.log(evt.pickInfo);
+
+            // console.log(evt.pickInfo.pickedMesh.name);
             if(evt.type==BABYLON.PointerEventTypes.POINTERMOVE && evt.pickInfo.pickedMesh && evt.pickInfo.pickedMesh.id == 'name3'){
                 console.log("hover");
             }
@@ -162,8 +202,8 @@ shell.registerApp({
                 ||evt.pickInfo.pickedMesh.id === "name2" 
                 ||evt.pickInfo.pickedMesh.id === "name3" )) {
                 console.log("click");
-                scene.getMeshByName("dialogBox").visibility = 1;
-                scene.getMeshByName("closePlane").visibility = 1;
+                scene.getMeshByName("dialogBox" + evt.pickInfo.pickedMesh.id).visibility = 1;
+                scene.getMeshByName("closePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
                 // var advancedTexture3 = Stage.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                 // var rectangle = new Stage.GUI.Rectangle("rect");
                 //     rectangle.top = "-100px";
@@ -202,20 +242,34 @@ shell.registerApp({
             if ( evt.type==BABYLON.PointerEventTypes.POINTERUP && evt.pickInfo.pickedMesh && evt.pickInfo.pickedMesh.id === "node_id32") {
                 popAnimation.stop();
                 let visibility;
-                listMesh.getChildMeshes().forEach(element => {
+                listMesh.getChildMeshes(true).forEach(element => {
                     element.visibility = element.visibility === 1 ? 0:1;
                     visibility = element.visibility;
 
                 });
                 if (visibility === 0){
-                    scene.getMeshByName("dialogBox").visibility = 0;
-                    scene.getMeshByName("closePlane").visibility = 0;
+                    scene.getMeshByName("dialogBoxname0").visibility = 0;
+                    scene.getMeshByName("dialogBoxname1").visibility = 0;
+                    scene.getMeshByName("dialogBoxname2").visibility = 0;
+                    scene.getMeshByName("dialogBoxname3").visibility = 0;
+                    scene.getMeshByName("closePlanename0").visibility = 0;
+                    scene.getMeshByName("closePlanename1").visibility = 0;
+                    scene.getMeshByName("closePlanename2").visibility = 0;
+                    scene.getMeshByName("closePlanename3").visibility = 0;
                     }
 
             }
         });
-
-
+        scene.actionManager = new BABYLON.ActionManager(scene);
+        scene.actionManager.registerAction(
+            new BABYLON.ExecuteCodeAction(
+                {
+                    trigger: BABYLON.ActionManager.OnKeyUpTrigger,
+                    parameter: 'q'
+                },
+                function () { popAnimation.play(true); }
+            )
+        );
 
     }, 
     dispose: async ()=>{
