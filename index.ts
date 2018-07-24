@@ -106,7 +106,7 @@ var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(1, 1, -4), sc
 camera.attachControl(canvas, true)
 camera.minZ = 0;
 var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene)
-light.intensity = 0.7
+//light.intensity = 0.7
 
 // Setup vr
 var vrHelper = scene.createDefaultVRExperience({floorMeshes: [env.ground]})
