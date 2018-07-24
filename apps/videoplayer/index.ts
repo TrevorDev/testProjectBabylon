@@ -18,16 +18,38 @@ shell.registerApp({
         var scene = windowAnchor.getScene();
         
         // Video player
-        var videoPlayerPane = BABYLON.MeshBuilder.CreatePlane("Plane1", {height: 1.0, width: 2.0}, scene);
-        videoPlayerPane.position.y = 2;
-        videoPlayerPane.position.x = -2;
-        videoPlayerPane.parent = windowAnchor
+
+        // material for video plane
+        var mat = new BABYLON.StandardMaterial("mat1", scene);
+        mat.alpha = 1.0;
+        mat.diffuseColor = new BABYLON.Color3(0.5, 0.5, 1.0);
+        mat.backFaceCulling = false;
+        mat.wireframe = true;
+        
+        var pathArray = [];
+    
+        for (var i = 0; i < 5; i++) {
+            pathArray[i] = [];
+    
+            for (var j = 0; j < 10; j++) {
+                pathArray[i][j] = new BABYLON.Vector3(i, j, Math.sin(Math.PI*(j/9)));
+            }    
+        }
+
+        var ribbon = BABYLON.MeshBuilder.CreateRibbon("ribbon", { pathArray }, scene);
+
+        ribbon.rotation.z = Math.PI/2;
+
+        ribbon.position.x = 4;
+        ribbon.position.y = 2;
+        ribbon.parent = windowAnchor
 
         // Play button panel
         var playButtonPane = BABYLON.MeshBuilder.CreatePlane("buttonPlane", {width: 0.2, height: 0.2}, scene)
         playButtonPane.position.y= -0.7
         playButtonPane.position.x = -0.9
-        playButtonPane.parent = videoPlayerPane
+        playButtonPane.rotation.z = -Math.PI/2;
+        playButtonPane.parent = ribbon
         var playGuiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(playButtonPane)
 
         // Play button
@@ -42,7 +64,8 @@ shell.registerApp({
         var pauseButtonPane = BABYLON.MeshBuilder.CreatePlane("pauseButtonPlane", {width: 0.2, height: 0.2}, scene)
         pauseButtonPane.position.y= -0.7
         pauseButtonPane.position.x = -0.6
-        pauseButtonPane.parent = videoPlayerPane
+        pauseButtonPane.rotation.z = -Math.PI/2;
+        pauseButtonPane.parent = ribbon
         var pauseGuiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(pauseButtonPane)
 
         // Pause button
@@ -57,7 +80,8 @@ shell.registerApp({
         var progressBarPane = BABYLON.MeshBuilder.CreatePlane("progressBarPlane", {width: 1.4, height: 0.2}, scene)
         progressBarPane.position.y = -0.7
         progressBarPane.position.x = .3
-        progressBarPane.parent = videoPlayerPane
+        progressBarPane.rotation.z = -Math.PI/2;
+        progressBarPane.parent = ribbon
 
         var progressBarTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(progressBarPane)
         var progressBar = new Stage.GUI.Slider()
@@ -72,7 +96,7 @@ shell.registerApp({
         var videoMaterial = new BABYLON.StandardMaterial("", scene);
         videoMaterial.emissiveColor = new BABYLON.Color3(1,1,1)
         videoMaterial.diffuseTexture = videoTexture
-        videoPlayerPane.material = videoMaterial
+        ribbon.material = videoMaterial
 
         videoTexture.video.pause()
 
