@@ -29,7 +29,7 @@ class Shell {
     
             this.positionSphere(sphere)
             var anchor = new BABYLON.Mesh("", this.scene);
-            //anchor.scaling.scaleInPlace(0)
+            anchor.scaling.scaleInPlace(0)
          
             sphere.rotation.y=Math.PI/4
             this.apps.push(app)
@@ -49,13 +49,43 @@ class Shell {
                 anchor.rotation.y = angle
             })
     
+            // related to controls the opening and closing animation
+            enum VisibleState { Visible = 0, Hidden, Transition }
+            var state = VisibleState.Hidden
+            var FPS = 60
+            var APP_OPEN_SPEED = 3.0/FPS
+            var scaleDelta = 0
+            var scaleDeltaIter = 0
+
             this.scene.onBeforeRenderObservable.add(()=>{
                // console.log(sphere.position.x)
                 anchor.position.copyFrom(sphere.position)
                 anchor.rotation.copyFrom(anchor.rotation)
+
+                if (state == VisibleState.Transition)
+                {
+                    if (scaleDeltaIter == 1/APP_OPEN_SPEED)
+                    {               
+                        if (scaleDelta == APP_OPEN_SPEED)
+                        {
+                            state = VisibleState.Visible
+                            scaleDelta = 0.0
+                        }
+                        else if (scaleDelta == -APP_OPEN_SPEED)
+                        {
+                            state = VisibleState.Hidden
+                            scaleDelta = 0.0
+                        }
+                        scaleDeltaIter = 0
+                    }
+                    else
+                    {
+                        anchor.scaling.addInPlace(new BABYLON.Vector3(scaleDelta, scaleDelta, scaleDelta));
+                        scaleDeltaIter++
+                    }
+                }
             })
     
-            var state = 0;
             let launched = false;
             this.scene.onPointerObservable.add((e)=>{
                 if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
@@ -65,27 +95,17 @@ class Shell {
                             app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
                         }
                         launched = true;
-                        
-                        // if (state == 0)
-                        // {
-                        //     for (var i = 0; i < 100; i++)
-                        //     {
-                        //         // TODO - use onBeforeRenderObservable instead of setTimeout
-                        //         // to remove chopiness and avoid overloading the event queue
-                        //         setTimeout( () => { anchor.scaling.addInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
-                        //     }
-                        //     state = 1
-                        // }
-                        // else
-                        // {
-                        //     for (var i = 0; i < 100; i++)
-                        //     {
-                        //         // TODO - use onBeforeRenderObservable instead of setTimeout
-                        //         // to remove chopiness and avoid overloading the event queue
-                        //         setTimeout( () => { anchor.scaling.subtractInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
-                        //     }
-                        //     state = 0
-                        // }
+
+                        if (state == VisibleState.Hidden)
+                        {
+                            state = VisibleState.Transition
+                            scaleDelta = APP_OPEN_SPEED
+                        }
+                        else if (state == VisibleState.Visible)
+                        {
+                            state = VisibleState.Transition
+                            scaleDelta = -APP_OPEN_SPEED
+                        }
                     }
                 }
             })
