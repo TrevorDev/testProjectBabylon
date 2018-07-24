@@ -25,7 +25,7 @@ class Shell {
         // This settimeout is needed to handle a weird bug where the spheres are not rendered
         setTimeout(() => {
             var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
-
+            sphere.position.y += 0.2
             var mat = new BABYLON.StandardMaterial("icon", this.scene);
             var iconTexture = new BABYLON.Texture(app.iconUrl, this.scene);
             iconTexture.uScale = -1;
@@ -89,12 +89,13 @@ class Shell {
                     else
                     {
                         anchor.scaling.addInPlace(new BABYLON.Vector3(scaleDelta, scaleDelta, scaleDelta));
-                        scaleDeltaIter++
+                        scaleDeltaIter++;
                     }
                 }
             })
     
             let launched = false;
+            var pDownTime:Date;
             this.scene.onPointerObservable.add((e)=>{
                 if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
                     if(e.pickInfo.pickedMesh == sphere) {
@@ -104,6 +105,10 @@ class Shell {
                         }
                         launched = true;
 
+                        pDownTime = new Date();
+                    }
+                }else if(e.type == BABYLON.PointerEventTypes.POINTERUP){
+                    if(pDownTime && (new Date().getTime()-pDownTime.getTime())<200){
                         if (state == VisibleState.Hidden)
                         {
                             state = VisibleState.Transition
