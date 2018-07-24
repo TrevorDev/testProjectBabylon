@@ -31,6 +31,7 @@ class Shell {
      
         sphere.rotation.y=Math.PI/4
         this.apps.push(app)
+
         // app.launch(anchor, this.vrHelper)
 
         var b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
