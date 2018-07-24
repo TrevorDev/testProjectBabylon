@@ -24,7 +24,7 @@ animationBox3.setKeys(keys);
 
 shell.registerApp({
     name: "chatApp", 
-    iconUrl: "public/appicons/test_app_logo.png",
+    iconUrl: "public/appicons/chatApp.png",
     launch: async (windowAnchor:BABYLON.Mesh, vrHelper: VRExperienceHelper)=>{
         // Get scene
         let scene = windowAnchor.getScene();
