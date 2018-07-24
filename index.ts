@@ -31,16 +31,28 @@ class Shell {
      
         sphere.rotation.y=Math.PI/4
         this.apps.push(app)
+
         // app.launch(anchor, this.vrHelper)
 
         var b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
+        b.onDragObservable.add(()=>{
+            // Rotate apps that are dragged to face you
+            var camPos = this.scene.activeCamera.position
+            if((<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition){
+                camPos = (<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition;
+            }
+            var angle = Math.sin((camPos.x-sphere.position.x)/(camPos.z-sphere.position.z))
+            anchor.rotation.y = angle
+        })
         sphere.addBehavior(b)
 
-        var scale = 0
+        // related to controls the opening and closing animation
         enum VisibleState { Visible = 0, Hidden, Transition }
         var state = VisibleState.Hidden
+        var APP_OPEN_SPEED = 1.0/60.0
         var scaleDelta = 0
         var scaleDeltaIter = 0
+
         this.scene.onBeforeRenderObservable.add(()=>{
             // console.log(sphere.position.x)
             anchor.position.copyFrom(sphere.position)
@@ -48,14 +60,14 @@ class Shell {
 
             if (state == VisibleState.Transition)
             {
-                if (scaleDeltaIter == 50)
+                if (scaleDeltaIter == 60)
                 {               
-                    if (scaleDelta == 0.02)
+                    if (scaleDelta == APP_OPEN_SPEED)
                     {
                         state = VisibleState.Visible
                         scaleDelta = 0.0
                     }
-                    else if (scaleDelta == -0.02)
+                    else if (scaleDelta == -APP_OPEN_SPEED)
                     {
                         state = VisibleState.Hidden
                         scaleDelta = 0.0
@@ -76,19 +88,19 @@ class Shell {
                 if(e.pickInfo.pickedMesh == sphere) {
                     if(!launched){
                         this.apps.push(app)
-                        app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
+                        app.launch(anchor, this.vrHelper) 
                     }
                     launched = true;
                     
                     if (state == VisibleState.Hidden)
                     {
                         state = VisibleState.Transition
-                        scaleDelta = 0.02
+                        scaleDelta = APP_OPEN_SPEED
                     }
                     else if (state == VisibleState.Visible)
                     {
                         state = VisibleState.Transition
-                        scaleDelta = -0.02
+                        scaleDelta = -APP_OPEN_SPEED
                     }
                 }
             }
@@ -113,7 +125,7 @@ var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(1, 1, -4), sc
 camera.attachControl(canvas, true)
 camera.minZ = 0;
 var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene)
-light.intensity = 0.7
+//light.intensity = 0.7
 
 // Setup vr
 var vrHelper = scene.createDefaultVRExperience({floorMeshes: [env.ground]})
