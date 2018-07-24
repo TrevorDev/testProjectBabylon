@@ -17,7 +17,7 @@ shell.registerApp({
         var scene = windowAnchor.getScene();
         
         // Physics
-        // scene.enablePhysics(new BABYLON.Vector3(0, -9.8, 0), new BABYLON.CannonJSPlugin());
+        //scene.enablePhysics(new BABYLON.Vector3(0, -9.8, 0), new BABYLON.CannonJSPlugin());
        
         var fountain = BABYLON.Mesh.CreateBox("foutain", 0.01, scene);
         fountain.visibility = 0.1;
@@ -42,7 +42,7 @@ shell.registerApp({
             particleSystem.maxSize = 0.1;
             particleSystem.emitter = fountain;
             particleSystem.disposeOnStop = false;
-            //particleSystem.targetStopDuration = 1;
+            particleSystem.targetStopDuration = 3;
             return particleSystem;;
         }  
 
@@ -51,10 +51,13 @@ shell.registerApp({
         // Spheres
         var y = 0;
         var spheres = []
+        var materialAmiga = new BABYLON.StandardMaterial("amiga", scene);
+        materialAmiga.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+        materialAmiga.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         for (var index = 0; index < 10; index++) {
             let sphere = BABYLON.Mesh.CreateSphere("sphere", 16, 1, scene);
-            
-           // sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1 }, scene);
+            sphere.material = materialAmiga
+            sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1 }, scene);
             sphere.position = new BABYLON.Vector3(Math.random() * 20 - 10, y, Math.random() * 10 - 5);
             windowAnchor.addChild(sphere)
 
@@ -65,7 +68,7 @@ shell.registerApp({
         scene.onPointerObservable.add((e)=>{
             if(e.type == BABYLON.PointerEventTypes.POINTERDOWN && spheres.indexOf(e.pickInfo.pickedMesh)!=-1){
                 fountain.position.copyFrom(e.pickInfo.pickedMesh.position);
-                //particleSystem.targetStopDuration = 1;
+                particleSystem.targetStopDuration = 3;
                 particleSystem.start();
                 e.pickInfo.pickedMesh.dispose();
             }
