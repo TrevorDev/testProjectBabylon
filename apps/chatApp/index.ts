@@ -1,5 +1,5 @@
 import { VRExperienceHelper, ActionManager } from "babylonjs";
-import {Stage} from "../../src/stage"
+import { Stage } from "../../src/stage"
 
 var shell:any = (<any>window).shell
 
@@ -33,6 +33,8 @@ shell.registerApp({
         
         let loadedModel = container.createRootMesh();
         let popAnimation = new BABYLON.AnimationGroup("popGroup", scene);
+
+        let contactNames = ["Daniel", "Kacey", "Rachel", "Annie"];
         /**
          * Creates a contact list
          */
@@ -63,11 +65,18 @@ shell.registerApp({
             }
         }
 
+        let chatWindowTextLog = {};
+
+        let fetchDialogText = function(id){
+
+        }
+
         let createDialogBox = function() {
             var dialogBox = BABYLON.MeshBuilder.CreatePlane("dialogBox", {width: 2, height: 1.5}, scene);
             dialogBox.parent = loadedModel;
             dialogBox.position.x = 2;
-            dialogBox.visibility = 0;
+            dialogBox.visibility = 0; 
+            var dialogTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(dialogBox);
 
             var closePlane = BABYLON.MeshBuilder.CreatePlane("closePlane", {width: 0.2, height: 0.2}, scene)
             closePlane.position.x= 0.9;
@@ -75,6 +84,10 @@ shell.registerApp({
             closePlane.position.z= -0.01;
             closePlane.parent = dialogBox 
             var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(closePlane)
+
+            let textLogKey = dialogBox.name;
+            console.log(textLogKey);
+            chatWindowTextLog[textLogKey] = {left: [], right: []};
 
             var guiPanel = new Stage.GUI.StackPanel()  
             guiPanel.top = "0px"
@@ -101,16 +114,16 @@ shell.registerApp({
         createDialogBox();
 
         let b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
-        loadedModel.addBehavior(b)
-        loadedModel.position.z = 0
-        loadedModel.position.y = 1.5
-        loadedModel.position.x = 2
+        loadedModel.addBehavior(b);
+        loadedModel.position.z = 0;
+        loadedModel.position.y = 1.5;
+        loadedModel.position.x = 2;
   
         popAnimation.addTargetedAnimation(animationBox1, loadedModel);
         popAnimation.addTargetedAnimation(animationBox2, loadedModel);
         popAnimation.addTargetedAnimation(animationBox3, loadedModel);
         scene.addAnimationGroup(popAnimation);
-        scene.addMesh(loadedModel, true)
+        scene.addMesh(loadedModel, true);
         // Any mesh created MUST have the windowAnchor as it's parent
         windowAnchor.addChild(loadedModel);
         //var chatActions = new ActionManager(scene);
@@ -146,9 +159,9 @@ shell.registerApp({
             //var pickResult = scene.pick(scene.pointerX, scene.pointerY);
 
         })
-        guiPanel.addControl(button)
-        
 
+        guiPanel.addControl(button);
+        
         scene.onPointerObservable.add((evt)=> {
             // console.log(evt.pickInfo);
             if(evt.type==BABYLON.PointerEventTypes.POINTERMOVE && evt.pickInfo.pickedMesh && evt.pickInfo.pickedMesh.id == 'name3'){
@@ -205,12 +218,11 @@ shell.registerApp({
                 listMesh.getChildMeshes().forEach(element => {
                     element.visibility = element.visibility === 1 ? 0:1;
                     visibility = element.visibility;
-
                 });
                 if (visibility === 0){
                     scene.getMeshByName("dialogBox").visibility = 0;
                     scene.getMeshByName("closePlane").visibility = 0;
-                    }
+                }
 
             }
         });
