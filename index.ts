@@ -27,7 +27,7 @@ class Shell {
 
         this.positionSphere(sphere)
         var anchor = new BABYLON.Mesh("", this.scene);
-        anchor.scaling.scaleInPlace(0)
+        //anchor.scaling.scaleInPlace(0)
      
         sphere.rotation.y=Math.PI/4
         this.apps.push(app)
@@ -42,32 +42,36 @@ class Shell {
         })
 
         var state = 0;
+        let launched = false;
         this.scene.onPointerObservable.add((e)=>{
             if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
                 if(e.pickInfo.pickedMesh == sphere) {
-                    console.log(e)
-                    this.apps.push(app)
-                    app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
-                    if (state == 0)
-                    {
-                        for (var i = 0; i < 100; i++)
-                        {
-                            // TODO - use onBeforeRenderObservable instead of setTimeout
-                            // to remove chopiness and avoid overloading the event queue
-                            setTimeout( () => { anchor.scaling.addInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
-                        }
-                        state = 1
+                    if(!launched){
+                        this.apps.push(app)
+                        app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
                     }
-                    else
-                    {
-                        for (var i = 0; i < 100; i++)
-                        {
-                            // TODO - use onBeforeRenderObservable instead of setTimeout
-                            // to remove chopiness and avoid overloading the event queue
-                            setTimeout( () => { anchor.scaling.subtractInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
-                        }
-                        state = 0
-                    }
+                    launched = true;
+                    
+                    // if (state == 0)
+                    // {
+                    //     for (var i = 0; i < 100; i++)
+                    //     {
+                    //         // TODO - use onBeforeRenderObservable instead of setTimeout
+                    //         // to remove chopiness and avoid overloading the event queue
+                    //         setTimeout( () => { anchor.scaling.addInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
+                    //     }
+                    //     state = 1
+                    // }
+                    // else
+                    // {
+                    //     for (var i = 0; i < 100; i++)
+                    //     {
+                    //         // TODO - use onBeforeRenderObservable instead of setTimeout
+                    //         // to remove chopiness and avoid overloading the event queue
+                    //         setTimeout( () => { anchor.scaling.subtractInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
+                    //     }
+                    //     state = 0
+                    // }
                 }
             }
         })
