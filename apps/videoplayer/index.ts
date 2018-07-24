@@ -70,6 +70,7 @@ shell.registerApp({
         // Video texture
         var videoTexture = new BABYLON.VideoTexture("video", ["public/mov_bbb.mp4"], scene, true);
         var videoMaterial = new BABYLON.StandardMaterial("", scene);
+        videoMaterial.emissiveColor = new BABYLON.Color3(1,1,1)
         videoMaterial.diffuseTexture = videoTexture
         videoPlayerPane.material = videoMaterial
 
