@@ -11,7 +11,7 @@ var makeNotPickable = (mesh:BABYLON.AbstractMesh)=>{
 
 shell.registerApp({
     name: "videoplayer", 
-    iconUrl: "public/appicons/test_app_logo.png",
+    iconUrl: "public/appicons/videoPlayer.png",
     launch: async (windowAnchor:BABYLON.Mesh, vrHelper: VRExperienceHelper)=>{
 
         // Get scene
