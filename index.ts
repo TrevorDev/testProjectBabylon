@@ -49,7 +49,8 @@ class Shell {
         // related to controls the opening and closing animation
         enum VisibleState { Visible = 0, Hidden, Transition }
         var state = VisibleState.Hidden
-        var APP_OPEN_SPEED = 1.0/60.0
+        var FPS = 60
+        var APP_OPEN_SPEED = 3.0/FPS
         var scaleDelta = 0
         var scaleDeltaIter = 0
 
@@ -60,7 +61,7 @@ class Shell {
 
             if (state == VisibleState.Transition)
             {
-                if (scaleDeltaIter == 60)
+                if (scaleDeltaIter == 1/APP_OPEN_SPEED)
                 {               
                     if (scaleDelta == APP_OPEN_SPEED)
                     {
