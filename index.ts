@@ -15,74 +15,89 @@ var makeNotPickable = (mesh:BABYLON.AbstractMesh)=>{
 
 class Shell {
     private apps:Array<App> = []
-    private x: number = 1
+    private x: number = 0
     constructor(public scene:BABYLON.Scene, public vrHelper:BABYLON.VRExperienceHelper){}
     positionSphere = (sphere: any) => {
         sphere.position.x = this.x;
         this.x += 1;
     }
     registerApp = (app:App)=>{
-        var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
+        // This settimeout is needed to handle a weird bug where the spheres are not rendered
+        setTimeout(() => {
+            var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
 
-        var mat = new BABYLON.StandardMaterial("icon", this.scene);
-        var iconTexture = new BABYLON.Texture(app.iconUrl, this.scene);
-        iconTexture.uScale = -1;
-        iconTexture.vScale = -1;
-        mat.diffuseTexture = iconTexture;
-        mat.diffuseTexture.hasAlpha = true;
-        mat.backFaceCulling = false;
-        sphere.material = mat;
-
-        this.positionSphere(sphere)
-        var anchor = new BABYLON.Mesh("", this.scene);
-        //anchor.scaling.scaleInPlace(0)
-     
-        sphere.rotation.y=Math.PI/4
-        this.apps.push(app)
-        // app.launch(anchor, this.vrHelper)
-
-        var b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
-        sphere.addBehavior(b)
-        this.scene.onBeforeRenderObservable.add(()=>{
-           // console.log(sphere.position.x)
-            anchor.position.copyFrom(sphere.position)
-            anchor.rotation.copyFrom(anchor.rotation)
-        })
-
-        var state = 0;
-        let launched = false;
-        this.scene.onPointerObservable.add((e)=>{
-            if (e.type == BABYLON.PointerEventTypes.POINTERDOUBLETAP) {
-                if(e.pickInfo.pickedMesh == sphere) {
-                    if(!launched){
-                        this.apps.push(app)
-                        app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
-                    }
-                    launched = true;
-                    
-                    // if (state == 0)
-                    // {
-                    //     for (var i = 0; i < 100; i++)
-                    //     {
-                    //         // TODO - use onBeforeRenderObservable instead of setTimeout
-                    //         // to remove chopiness and avoid overloading the event queue
-                    //         setTimeout( () => { anchor.scaling.addInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
-                    //     }
-                    //     state = 1
-                    // }
-                    // else
-                    // {
-                    //     for (var i = 0; i < 100; i++)
-                    //     {
-                    //         // TODO - use onBeforeRenderObservable instead of setTimeout
-                    //         // to remove chopiness and avoid overloading the event queue
-                    //         setTimeout( () => { anchor.scaling.subtractInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
-                    //     }
-                    //     state = 0
-                    // }
+            var mat = new BABYLON.StandardMaterial("icon", this.scene);
+            var iconTexture = new BABYLON.Texture(app.iconUrl, this.scene);
+            iconTexture.uScale = -1;
+            iconTexture.vScale = -1;
+            mat.diffuseTexture = iconTexture;
+            mat.diffuseTexture.hasAlpha = true;
+            mat.backFaceCulling = false;
+            sphere.material = mat;
+    
+            this.positionSphere(sphere)
+            var anchor = new BABYLON.Mesh("", this.scene);
+            //anchor.scaling.scaleInPlace(0)
+         
+            sphere.rotation.y=Math.PI/4
+            this.apps.push(app)
+    
+            // app.launch(anchor, this.vrHelper)
+    
+            var b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
+            sphere.addBehavior(b)
+            
+            b.onDragObservable.add(()=>{
+                // Rotate apps that are dragged to face you
+                var camPos = this.scene.activeCamera.position
+                if((<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition){
+                    camPos = (<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition;
                 }
-            }
-        })
+                var angle = Math.sin((camPos.x-sphere.position.x)/(camPos.z-sphere.position.z))
+                anchor.rotation.y = angle
+            })
+    
+            this.scene.onBeforeRenderObservable.add(()=>{
+               // console.log(sphere.position.x)
+                anchor.position.copyFrom(sphere.position)
+                anchor.rotation.copyFrom(anchor.rotation)
+            })
+    
+            var state = 0;
+            let launched = false;
+            this.scene.onPointerObservable.add((e)=>{
+                if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
+                    if(e.pickInfo.pickedMesh == sphere) {
+                        if(!launched){
+                            this.apps.push(app)
+                            app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
+                        }
+                        launched = true;
+                        
+                        // if (state == 0)
+                        // {
+                        //     for (var i = 0; i < 100; i++)
+                        //     {
+                        //         // TODO - use onBeforeRenderObservable instead of setTimeout
+                        //         // to remove chopiness and avoid overloading the event queue
+                        //         setTimeout( () => { anchor.scaling.addInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
+                        //     }
+                        //     state = 1
+                        // }
+                        // else
+                        // {
+                        //     for (var i = 0; i < 100; i++)
+                        //     {
+                        //         // TODO - use onBeforeRenderObservable instead of setTimeout
+                        //         // to remove chopiness and avoid overloading the event queue
+                        //         setTimeout( () => { anchor.scaling.subtractInPlace(new BABYLON.Vector3(0.01, 0.01, 0.01)); }, 1);
+                        //     }
+                        //     state = 0
+                        // }
+                    }
+                }
+            })
+        }, 1000)
 
     }
 }
@@ -104,7 +119,7 @@ var main = async () => {
     camera.attachControl(canvas, true)
     camera.minZ = 0;
     var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene)
-    light.intensity = 0.7
+    //light.intensity = 0.7
 
     // Setup vr
     var vrHelper = scene.createDefaultVRExperience({floorMeshes: [env.ground]})
