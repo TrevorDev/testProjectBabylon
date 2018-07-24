@@ -15,53 +15,61 @@ shell.registerApp({
         // Get scene
         var scene = windowAnchor.getScene();
         
+        // Video player
         var videoPlayerPane = BABYLON.MeshBuilder.CreatePlane("Plane1", {height: 1.0, width: 2.0}, scene);
 
         videoPlayerPane.position.y = 2;
         videoPlayerPane.position.x = -2;
-
         videoPlayerPane.parent = windowAnchor
 
-        var buttonPane = BABYLON.MeshBuilder.CreatePlane("buttonPlane", {width: 0.2, height: 0.2}, scene)
+        // Play button panel
+        var playButtonPane = BABYLON.MeshBuilder.CreatePlane("buttonPlane", {width: 0.2, height: 0.2}, scene)
         
-        buttonPane.position.y= -0.7
-        buttonPane.position.x = -0.9
-        buttonPane.parent = videoPlayerPane
-        var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(buttonPane)
-        
-        var guiPanel = new Stage.GUI.StackPanel()  
-        guiPanel.top = "0px"
-        guiTexture.addControl(guiPanel)
+        playButtonPane.position.y= -0.7
+        playButtonPane.position.x = -0.9
+        playButtonPane.parent = videoPlayerPane
+        var playGuiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(playButtonPane)
 
-        var playbutton = Stage.GUI.Button.CreateSimpleButton("play", "▶")
-
-        playbutton.fontSize = 300
+        // Play button
+        var playbutton = Stage.GUI.Button.CreateSimpleButton("play", "▶️")
+        playbutton.fontSize = 900
         playbutton.color = "white"
         playbutton.background = "#4AB3F4"
-        playbutton.cornerRadius = 200
         playbutton.thickness = 20
 
-        guiPanel.addControl(playbutton)
+        playGuiTexture.addControl(playbutton)
 
-        // var pauseButton = Stage.GUI.Button.CreateSimpleButton("pause", "⏸️")
+        // Pause button panel
+        var pauseButtonPane = BABYLON.MeshBuilder.CreatePlane("buttonPlane", {width: 0.2, height: 0.2}, scene)
+        pauseButtonPane.position.y= -0.7
+        pauseButtonPane.position.x = -0.6
+        pauseButtonPane.parent = videoPlayerPane
+        var pauseGuiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(pauseButtonPane)
+
+        // Pause button
+        var pauseButton = Stage.GUI.Button.CreateSimpleButton("pause", "⏸️")
         
-        // pauseButton.fontSize = 300
-        // pauseButton.color = "white"
-        // pauseButton.background = "#4AB3F4"
-        // pauseButton.cornerRadius = 200
-        // pauseButton.thickness = 20
+        pauseButton.fontSize = 900
+        pauseButton.color = "white"
+        pauseButton.background = "#4AB3F4"
+        pauseButton.thickness = 20
 
-        // guiPanel.addControl(pauseButton)
+        pauseGuiTexture.addControl(pauseButton)
 
-        //pauseButton.position.y = -0.7;
-        //pauseButton.position.x = -0.6;
-
+        // Video texture
         var videoTexture = new BABYLON.VideoTexture("video", ["public/mov_bbb.mp4"], scene, true);
         var videoMaterial = new BABYLON.StandardMaterial("", scene);
         videoMaterial.diffuseTexture = videoTexture
         videoPlayerPane.material = videoMaterial
 
         videoTexture.video.pause()
+
+        playbutton.onPointerClickObservable.add(()=>{
+            videoTexture.video.play()
+        })
+        pauseButton.onPointerClickObservable.add(()=>{
+            videoTexture.video.pause()
+        })
 
     }, 
     dispose: async ()=>{
