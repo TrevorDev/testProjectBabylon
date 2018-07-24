@@ -11,6 +11,7 @@ var makeNotPickable = (mesh:BABYLON.AbstractMesh)=>{
 
 shell.registerApp({
     name: "testApp", 
+    iconUrl: "public/appicons/test_app_logo.png",
     launch: async (windowAnchor:BABYLON.Mesh, vrHelper: VRExperienceHelper)=>{
         // Get scene
         var scene = windowAnchor.getScene();
@@ -43,6 +44,7 @@ shell.registerApp({
             console.log("hit2")
         })
         guiPanel.addControl(button)
+
 
     }, 
     dispose: async ()=>{
