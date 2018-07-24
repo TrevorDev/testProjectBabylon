@@ -35,6 +35,17 @@ class Shell {
 
         var b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
         sphere.addBehavior(b)
+        
+        b.onDragObservable.add(()=>{
+            // Rotate apps that are dragged to face you
+            var camPos = this.scene.activeCamera.position
+            if((<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition){
+                camPos = (<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition;
+            }
+            var angle = Math.sin((camPos.x-sphere.position.x)/(camPos.z-sphere.position.z))
+            anchor.rotation.y = angle
+        })
+
         this.scene.onBeforeRenderObservable.add(()=>{
            // console.log(sphere.position.x)
             anchor.position.copyFrom(sphere.position)
