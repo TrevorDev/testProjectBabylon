@@ -189,7 +189,7 @@ var main = async () => {
     scene.addMesh(loadedPhone, true)
 
     // menu launcher plane
-    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.25, height:2}, scene);
+    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.5, height:1.5}, scene);
 
     plane.position.z = -0.2;
 
