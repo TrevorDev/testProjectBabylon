@@ -151,7 +151,8 @@ var main = async () => {
     vrHelper.raySelectionPredicate = (mesh:BABYLON.AbstractMesh):boolean=>{
         return mesh.isVisible && mesh.isPickable;
     }
-        
+
+    
     var win:any = window
     win.shell = new Shell(scene, vrHelper);
 
@@ -223,5 +224,49 @@ var main = async () => {
     parentMenuMesh.addChild(loadedPhone)
 
     // vrController.addChild(parentMenuMesh))
+
+    var rightBox = BABYLON.Mesh.CreateBox("sphere1", 0.1, scene);
+    rightBox.scaling.copyFromFloats(2, 1, 2);
+    var leftBox = BABYLON.Mesh.CreateBox("sphere1", 0.1, scene);
+    leftBox.scaling.copyFromFloats(2, 1, 2);
+
+    rightBox.material = new BABYLON.StandardMaterial('right', scene);
+    leftBox.material = new BABYLON.StandardMaterial('right', scene);
+
+    parentMenuMesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+    parentMenuMesh.rotation.x = 0;
+    parentMenuMesh.rotation.y = Math.PI / 4;
+    parentMenuMesh.rotation.z = Math.PI;
+
+    var phoneIsUp = false;
+    function togglePhone(controller) {
+        if (phoneIsUp === false) {
+            controller.mesh.setEnabled(false);
+            parentMenuMesh.isPickable = true;
+            plane.isPickable = true;
+            controller.attachToMesh(parentMenuMesh);
+            controller.mesh.setEnabled(true);
+        }
+        else {
+            controller.mesh.setEnabled(false);
+            controller.attachToMesh(controller.defaultModel);
+            controller.mesh.setEnabled(true);
+            controller.mesh.isPickable = false;
+        }
+
+        phoneIsUp = !phoneIsUp;
+    }
+
+    vrHelper.onControllerMeshLoaded.add(function(controller) {
+        let mesh = controller.hand === 'right' ? rightBox : leftBox;
+
+        // secondary button is the select button
+        controller.onSecondaryButtonStateChangedObservable.add(function (stateObject) {
+            if (stateObject.value === 1) {
+                togglePhone(controller);
+            }
+        });
+    });
+        
 }
 main()
