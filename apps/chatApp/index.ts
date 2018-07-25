@@ -154,6 +154,8 @@ shell.registerApp({
             }
         }
 
+        let chatWindowTextLog = {};
+
         let createDialogBox = function(parentPerson) {
              console.log(parentPerson.id);
             let dialogBox = BABYLON.MeshBuilder.CreatePlane("dialogBox" + parentPerson.id, {width: 2, height: 1.5}, scene);
@@ -162,11 +164,7 @@ shell.registerApp({
             dialogBox.position.y = parentPerson.position.y;
             dialogBox.visibility = 0;
             dialogBox.parent = windowAnchor;
-            let drag = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
-            // drag.moveAttached = false;
-            // drag.onDragObservable.add(function(evt){
-            //     dialogBox.position.addInPlace(evt.delta);
-            // });
+            let drag = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)});
             dialogBox.addBehavior(drag);
 
             var closePlane = BABYLON.MeshBuilder.CreatePlane("closePlane" + parentPerson.id, {width: 0.2, height: 0.2}, scene)
@@ -218,6 +216,37 @@ shell.registerApp({
         windowAnchor.addChild(loadedModel);
         //var chatActions = new ActionManager(scene);
 
+        let checkTextIsNotEmpty = function(textObj){
+            //TODO: Fix this
+            return true;
+        }
+
+        let wrapTextHelper = {x: 0, y: 0, lineHeight: 0 }
+
+        let wrapText = function(context, text, x, y, maxWidth, lineHeight) {
+            var words = text.split(' ');
+            var line = '';
+    
+            for(var n = 0; n < words.length; n++) {
+              var testLine = line + words[n] + ' ';
+              var metrics = context.measureText(testLine);
+              var testWidth = metrics.width;
+              if (testWidth > maxWidth && n > 0) {
+                context.fillText(line, x, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+              }
+              else {
+                line = testLine;
+              }
+            }
+            //wrapTextHelper.lineHeight = lineHeight;
+            //wrapTextHelper.x = x;
+            wrapTextHelper.y = y;
+            context.fillText(line, x, y);
+          }
+          
+
         scene.onPointerObservable.add((evt)=> {
 
             // console.log(evt.pickInfo.pickedMesh.name);
@@ -235,6 +264,88 @@ shell.registerApp({
                 scene.getAnimationGroupByName("popGroup"+evt.pickInfo.pickedMesh.id).stop();
                 scene.getMeshByName("dialogBox" + evt.pickInfo.pickedMesh.id).visibility = 1;
                 scene.getMeshByName("closePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
+                
+                //Load data
+                let textData = chatWindowTextLog[evt.pickInfo.pickedMesh.id];
+                if(checkTextIsNotEmpty(textData)){
+                    //TODO: move code into this big if
+                }
+
+                textData = [
+                            {left: "Hello there! I saw you using this fancy new magic", right: undefined},
+                            {left: "Hey, are you there?", right: undefined},
+                            {left: undefined, right: "Sorry about that - hackathon == FUNNNN TIMES"},
+                            {left: "FINALLY - you're slow today ;)", right: undefined}]
+
+                let dialogTextureUpdateName = "dialogBox" + evt.pickInfo.pickedMesh.id;
+
+                let dialogBoxDynamicTexture = new BABYLON.DynamicTexture("texture." + dialogTextureUpdateName, 720, scene, true);
+                dialogBoxDynamicTexture.hasAlpha = true;
+                  
+                let dialogBoxDynamicMaterial = new BABYLON.StandardMaterial("mat." + dialogTextureUpdateName, scene);
+                dialogBoxDynamicMaterial.diffuseTexture = dialogBoxDynamicTexture;
+                
+                dialogBoxDynamicMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+                dialogBoxDynamicMaterial.backFaceCulling = false;
+                dialogBoxDynamicMaterial.alpha = .5;
+
+                let dialogBoxMesh = scene.getMeshByName("dialogBox" + evt.pickInfo.pickedMesh.id);
+                dialogBoxMesh.material = dialogBoxDynamicMaterial;
+
+
+                let context = dialogBoxDynamicTexture.getContext();
+
+                //context.globalAlpha = 1;
+                
+                let dialogBoxFont = "40px arial";
+                let dialogTextColor = "#555555";
+                let { width, height } = dialogBoxDynamicTexture.getSize();
+                let bordersPercentage = .05;
+                let widthBorder = width*bordersPercentage;
+                let heightBorder = height*bordersPercentage;
+
+                context.fillStyle = dialogTextColor;
+
+                //context.fillText();
+                let size = dialogBoxDynamicTexture.getSize();
+
+                //context.fillRect(widthBorder, heightBorder, (width-widthBorder), (height-heightBorder));
+
+                //let bufferEdges = 15;
+                let colorChoice = {left: "green", right: "blue"};
+
+                wrapTextHelper.lineHeight = 50;
+                wrapTextHelper.y = heightBorder;
+                
+                for(let i = 0; i < textData.length; i++ ){
+                    context.font = dialogBoxFont;
+                    let curr = textData[i];
+                    let text = "";
+                    let widthToUse;
+                    if(curr.left){
+                        context.textAlign = 'left';
+                        dialogTextColor = colorChoice.left;
+                        text = curr.left;
+                        wrapTextHelper.x = widthBorder;
+                        widthToUse = width/2 + widthBorder;
+                    }else if (curr.right){
+                        context.textAlign = 'left';
+                        dialogTextColor = colorChoice.right;
+                        text = curr.right;
+                        wrapTextHelper.x = width/2 - widthBorder;
+                        widthToUse = width/2  - widthBorder;
+                    }
+                    console.log(widthBorder);
+                    context.fillStyle = dialogTextColor;
+                    wrapText(context, text, wrapTextHelper.x, wrapTextHelper.y, widthToUse, wrapTextHelper.lineHeight);
+                    wrapTextHelper.y += wrapTextHelper.lineHeight;
+                    //wrapTextHelper.lineHeight = 50;
+                    //dialogBoxDynamicTexture.drawText(text, x, y, dialogBoxFont, color, canvas color, invertY, update);
+                }
+                
+                dialogBoxDynamicTexture.update();
+                
+                
                 // var advancedTexture3 = Stage.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                 // var rectangle = new Stage.GUI.Rectangle("rect");
                 //     rectangle.top = "-100px";
