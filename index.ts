@@ -133,8 +133,8 @@ var main = async () => {
     var scene = stage.scene
     var canvas = stage.engine.getRenderingCanvas()
 
-    var env = scene.createDefaultEnvironment({})
-    env.setMainColor(BABYLON.Color3.FromHexString("#7f8c8d"))
+    var env = scene.createDefaultEnvironment({createGround: false})
+    env.setMainColor(BABYLON.Color3.FromHexString("#1b6eb4"))
     env.skybox.scaling.scaleInPlace(10)
 
     // Create basic world
@@ -171,56 +171,76 @@ var main = async () => {
     makeNotPickable(loadedPhone)
     
     // add phone to mesh
-    scene.addMesh(loadedPhone, true)
+    //scene.addMesh(loadedPhone, true)
 
     // menu launcher plane
-    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.25, height:2}, scene);
+    // var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.25, height:2}, scene);
 
-    plane.position.z = -0.2;
+    // plane.position.z = -0.2;
 
-    var advancedTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
-    var buttons = []
+    // var advancedTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
+    // var buttons = []
     
-    for (var i = 0; i < 6; i++) {
-        var button = Stage.GUI.Button.CreateSimpleButton("button" + i, "App " + i);
-        button.width = 1;
-        button.height = 1;
-        button.color = "white";
-        button.fontSize = 50;
-        button.background = "green";
-        button.paddingLeft = "3%";
-        button.paddingRight = "3%";
-        button.paddingBottom = "3%";
+    // for (var i = 0; i < 6; i++) {
+    //     var button = Stage.GUI.Button.CreateSimpleButton("button" + i, "App " + i);
+    //     button.width = 1;
+    //     button.height = 1;
+    //     button.color = "white";
+    //     button.fontSize = 50;
+    //     button.background = "green";
+    //     button.paddingLeft = "3%";
+    //     button.paddingRight = "3%";
+    //     button.paddingBottom = "3%";
         
-        button.onPointerUpObservable.add(function() {
-            alert("you launched app");
-        });
+    //     button.onPointerUpObservable.add(function() {
+    //         alert("you launched app");
+    //     });
 
-        buttons.push(button)
-    }
+    //     buttons.push(button)
+    // }
 
-    // grid for icons
-    var grid = new Stage.GUI.Grid(); 
-    grid.addColumnDefinition(0.5);
-    grid.addColumnDefinition(0.5);
-    grid.addRowDefinition(0.3);
-    grid.addRowDefinition(0.3);
-    grid.addRowDefinition(0.3);
+    // // grid for icons
+    // var grid = new Stage.GUI.Grid(); 
+    // grid.addColumnDefinition(0.5);
+    // grid.addColumnDefinition(0.5);
+    // grid.addRowDefinition(0.3);
+    // grid.addRowDefinition(0.3);
+    // grid.addRowDefinition(0.3);
 
-    grid.addControl(buttons[0], 0, 0);   
-    grid.addControl(buttons[1], 0, 1);
-    grid.addControl(buttons[2], 1, 0);
-    grid.addControl(buttons[3], 1, 1);
-    grid.addControl(buttons[4], 2, 0);
-    grid.addControl(buttons[5], 2, 1);
+    // grid.addControl(buttons[0], 0, 0);   
+    // grid.addControl(buttons[1], 0, 1);
+    // grid.addControl(buttons[2], 1, 0);
+    // grid.addControl(buttons[3], 1, 1);
+    // grid.addControl(buttons[4], 2, 0);
+    // grid.addControl(buttons[5], 2, 1);
     
-    advancedTexture.addControl(grid);
+    // advancedTexture.addControl(grid);
 
-    // parent menu mesh that holds both the phone and ui
-    var parentMenuMesh = new BABYLON.Mesh('parentMesh1', scene)
+    // // parent menu mesh that holds both the phone and ui
+    // var parentMenuMesh = new BABYLON.Mesh('parentMesh1', scene)
     
-    parentMenuMesh.addChild(plane)
-    parentMenuMesh.addChild(loadedPhone)
+    // parentMenuMesh.addChild(plane)
+    // parentMenuMesh.addChild(loadedPhone)
+    console.log("load")
+    //https://poly.google.com/search/beachside
+    var container = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/beach/model.gltf", "", scene)  
+    container.addAllToScene();
+    container.meshes[0].position.set(1, 0.7, 0)
+    container.meshes[0].scaling.scaleInPlace(3)
+    container.meshes[0].rotation.y = -Math.PI/2
+    var box = BABYLON.MeshBuilder.CreateBox("box", {size: 1}, scene)
+    var mat = new BABYLON.StandardMaterial("beach mat",scene)
+    mat.diffuseColor = BABYLON.Color3.FromHexString("#1dc0ff")
+    box.material=mat;
+    box.scaling.z = 1000
+    box.scaling.x = 1000
+    box.position.y = -3
+
+    // console.log("loaded")
+    // var loadedModel = container.createRootMesh()
+    // loadedModel.scaling.scaleInPlace(0.001)
+    // scene.addMesh(loadedModel)
+    //makeNotPickable(loadedModel)
 
     // vrController.addChild(parentMenuMesh))
 }
