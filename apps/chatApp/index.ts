@@ -34,7 +34,7 @@ function summonAwesome(scene: BABYLON.Scene, windowAnchor: BABYLON.Mesh) {
         particleSystem.parent = windowAnchor;
         particleSystem.emitRate = 100;
         particleSystem.particleEmitterType = new BABYLON.SphereParticleEmitter(1);
-        particleSystem.particleTexture = new BABYLON.Texture("https://raw.githubusercontent.com/rachyliu/assets/master/awesome.png", scene);
+        particleSystem.particleTexture = new BABYLON.Texture("public/awesome.png", scene);
         particleSystem.maxLifeTime = 1;
         particleSystem.minSize = 1;
         particleSystem.maxSize = 10;
@@ -47,7 +47,7 @@ function summonAwesome(scene: BABYLON.Scene, windowAnchor: BABYLON.Mesh) {
     };
     var particleSystem = createNewSystem();
     var awesomeMaterial = new BABYLON.StandardMaterial("amiga", scene);
-    awesomeMaterial.diffuseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/rachyliu/assets/master/awesome2.png", scene);
+    awesomeMaterial.diffuseTexture = new BABYLON.Texture("public/awesome2.png", scene);
     awesomeMaterial.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
     let sphere = BABYLON.Mesh.CreateSphere("sphere", 16, 10, scene);
     sphere.rotation.y = -Math.PI / 2;
@@ -79,7 +79,7 @@ shell.registerApp({
         // Get scene
         let scene = windowAnchor.getScene();
         // Load gltf model and add to scene   
-        let container = await BABYLON.SceneLoader.LoadAssetContainerAsync("https://raw.githubusercontent.com/rachyliu/assets/master/ChatApp.glb", "", scene)
+        let container = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/ChatApp.glb", "", scene)
         
         let loadedModel = container.createRootMesh();
         let creatPopAnimation = function (targetMesh){
@@ -141,10 +141,10 @@ shell.registerApp({
          * Creates a contact list
          */
         let createContactList = function (){
-            var Contacts = ["https://raw.githubusercontent.com/rachyliu/assets/master/contactPeople2.png", 
-            "https://raw.githubusercontent.com/rachyliu/assets/master/contactPeople1.png", 
-            "https://raw.githubusercontent.com/rachyliu/assets/master/contactPeople4.png", 
-            "https://raw.githubusercontent.com/rachyliu/assets/master/contactPeople3.png"];
+            var Contacts = ["public/contactPeople2.png", 
+            "public/contactPeople1.png", 
+            "public/contactPeople4.png", 
+            "public/contactPeople3.png"];
 
             for (var i in Contacts){
                 let myPlane = BABYLON.MeshBuilder.CreatePlane("name"+i, {width: 0.8, height: 0.25}, scene);
@@ -185,7 +185,7 @@ shell.registerApp({
                 let guiPanel1 = new Stage.GUI.StackPanel()  
                 guiPanel1.top = "0px"
                 guiTexture1.addControl(guiPanel1)
-                let chat = Stage.GUI.Button.CreateImageOnlyButton("chat", "https://raw.githubusercontent.com/rachyliu/assets/master/chatIcon.png");
+                let chat = Stage.GUI.Button.CreateImageOnlyButton("chat", "public/chatIcon.png");
                 chat.fontSize = 300
                 chat.color = "white"
                 chat.cornerRadius = 500
@@ -209,12 +209,12 @@ shell.registerApp({
                 let guiPanel = new Stage.GUI.StackPanel()  
                 guiPanel.top = "0px"
                 guiTexture.addControl(guiPanel)
-                let video = Stage.GUI.Button.CreateImageOnlyButton("video", "https://raw.githubusercontent.com/rachyliu/assets/master/videoIcon.png");
+                let video = Stage.GUI.Button.CreateImageOnlyButton("video", "public/videoIcon.png");
                 video.fontSize = 300
                 video.color = "white"
                 video.cornerRadius = 500
                 video.onPointerClickObservable.add((evt)=>{
-                    console.log(evt);
+                    stopVideos();
                     scene.getMeshByName("videoBox"+myPlane.name).visibility = 1;
                     let material = scene.getMeshByName("videoBox"+myPlane.name).material as StandardMaterial;
                     let videoTexture = material.diffuseTexture as VideoTexture;
@@ -226,6 +226,19 @@ shell.registerApp({
                 })
                 guiPanel.addControl(video);
                 hoverEffect(option2);
+            }
+        }
+
+        let stopVideos = function () {
+            let contactList = ["name0","name1","name2","name3"];
+
+            for (let i in contactList){
+                if (scene.getMeshByName("videoBox"+contactList[i]).visibility === 1){
+                    let material = scene.getMeshByName("videoBox"+contactList[i]).material as StandardMaterial;
+                    let videoTexture = material.diffuseTexture as VideoTexture;
+                    videoTexture.video.pause();
+                    scene.getMeshByName("videoBox"+contactList[i]).visibility = 0;
+                }
             }
         }
 
@@ -281,7 +294,7 @@ shell.registerApp({
             var guiPanel2 = new Stage.GUI.StackPanel()  
             guiPanel2.top = "0px"
             guiTexture.addControl(guiPanel2)
-            var record = Stage.GUI.Button.CreateImageOnlyButton("record", "https://raw.githubusercontent.com/rachyliu/assets/master/microphone.gif");          
+            var record = Stage.GUI.Button.CreateImageOnlyButton("record", "public/microphone.gif");          
             record.fontSize = 300
             record.color = "white"
             
@@ -349,14 +362,14 @@ shell.registerApp({
         loadedModel.addBehavior(b)
 
         loadedModel.position.z = 0
-        loadedModel.position.y = 1.5
-        loadedModel.position.x = 2
+        loadedModel.position.y = 0.5
+        loadedModel.position.x = 0
   
         creatPopAnimation(loadedModel);
 
         scene.addMesh(loadedModel, true)
         // Any mesh created MUST have the windowAnchor as it's parent
-        windowAnchor.addChild(loadedModel);
+        loadedModel.parent = windowAnchor;
         //var chatActions = new ActionManager(scene);
 
         scene.onPointerObservable.add((evt)=> {
@@ -381,31 +394,6 @@ shell.registerApp({
                 scene.getMeshByName("closePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
                 scene.getMeshByName("voicePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
                 scene.getMeshByName("inputPlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
-
-                
-                // var advancedTexture3 = Stage.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-                // var rectangle = new Stage.GUI.Rectangle("rect");
-                //     rectangle.top = "-100px";
-                //     rectangle.background = "white";
-                //     rectangle.color = "yellow";
-                //     rectangle.width = "200px";
-                //     rectangle.height = "40px";
-                //     advancedTexture3.addControl(rectangle);
-
-                //     var name = new Stage.GUI.TextBlock("name");
-                //     name.fontFamily = "Helvetica";
-                //     name.textWrapping = true;
-                //     name.text = "name: Hello!";
-                //     name.color = "black";
-                //     name.fontSize = 20;
-                //     rectangle.addControl(name);   
-                //     rectangle.linkWithMesh(loadedModel);   
-                //     rectangle.linkOffsetY = -25;
-                //     rectangle.linkOffsetX = 400;
-
-                
-
-                
             }
             if ( evt.type==BABYLON.PointerEventTypes.POINTERUP && evt.pickInfo.pickedMesh && evt.pickInfo.pickedMesh.id === "node_id32") {
                 scene.getAnimationGroupByName("popGroupassetContainerRootMesh").stop();
