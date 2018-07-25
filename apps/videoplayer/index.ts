@@ -117,7 +117,7 @@ shell.registerApp({
         var pickerPanel = new Stage.GUI.StackPanel()
 
         // Video texture
-        var mixerVideo = new BABYLON.VideoTexture("bunny", ["public/MixerClipVid_30seconds.mp4"], scene, true);
+        var mixerVideo = new BABYLON.VideoTexture("mixer", ["public/MixerClipVid_30seconds.mp4"], scene, true);
         var waterfallVideo = new BABYLON.VideoTexture("waterfall", ["public/waterfall.mp4"], scene, true);
         
         var videoMaterial = new BABYLON.StandardMaterial("", scene);
@@ -132,7 +132,7 @@ shell.registerApp({
         playbutton.onPointerClickObservable.add(()=>{
             var currentVid = videoMaterial.diffuseTexture.name
 
-            if(currentVid=="bunny"){
+            if(currentVid=="mixer"){
                 mixerVideo.video.play()
                 progressBar.value = mixerVideo.video.currentTime
             }
@@ -145,7 +145,7 @@ shell.registerApp({
         pauseButton.onPointerClickObservable.add(()=>{
             var currentVid = videoMaterial.diffuseTexture.name
 
-            if(currentVid=="bunny"){
+            if(currentVid=="mixer"){
                 mixerVideo.video.pause()
             }
             else if(currentVid=="waterfall"){
@@ -164,7 +164,7 @@ shell.registerApp({
         progressBar.onPointerClickObservable.add(function() {
             var currentVid = videoMaterial.diffuseTexture.name
 
-            if(currentVid=="bunny"){
+            if(currentVid=="mixer"){
                 mixerVideo.video.pause()
                 mixerVideo.video.currentTime = progressBar.value
             }
@@ -184,16 +184,16 @@ shell.registerApp({
             waterfallButton.background = "#4AB3F4"
             pickerPanel.addControl(waterfallButton)
 
-            var bunnyButton = Stage.GUI.Button.CreateSimpleButton("", "Bunny")
-            bunnyButton.fontSize = 150
-            bunnyButton.color = "white"
-            bunnyButton.height = "50%"
-            bunnyButton.background = "#4AB3F4"
-            pickerPanel.addControl(bunnyButton)
+            var mixerButton = Stage.GUI.Button.CreateSimpleButton("", "Mixer")
+            mixerButton.fontSize = 150
+            mixerButton.color = "white"
+            mixerButton.height = "50%"
+            mixerButton.background = "#4AB3F4"
+            pickerPanel.addControl(mixerButton)
 
             waterfallButton.onPointerClickObservable.add(()=>{                
                 pickerPanel.removeControl(waterfallButton)
-                pickerPanel.removeControl(bunnyButton)
+                pickerPanel.removeControl(mixerButton)
                 pickerPanelTexture.removeControl(pickerPanel)
                 mixerVideo.video.pause()
                 progressBar.maximum = waterfallVideo.video.duration
@@ -201,9 +201,9 @@ shell.registerApp({
                 videoMaterial.diffuseTexture = waterfallVideo
             })
 
-            bunnyButton.onPointerClickObservable.add(()=>{
+            mixerButton.onPointerClickObservable.add(()=>{
                 pickerPanel.removeControl(waterfallButton)
-                pickerPanel.removeControl(bunnyButton)
+                pickerPanel.removeControl(mixerButton)
                 pickerPanelTexture.removeControl(pickerPanel)
                 waterfallVideo.video.pause()
                 progressBar.maximum = mixerVideo.video.duration
