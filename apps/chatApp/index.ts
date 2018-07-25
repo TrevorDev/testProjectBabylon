@@ -294,7 +294,7 @@ shell.registerApp({
             voicePlane.visibility = 0;
 
 
-             let inputPlane = BABYLON.MeshBuilder.CreatePlane("inputPlane" + parentPerson.id, {width: 1.7, height: 0.2}, scene)
+             let inputPlane = BABYLON.MeshBuilder.CreatePlane("inputPlane" + parentPerson.id, {width: 1.7, height: 1.7}, scene)
             inputPlane.position.x= -0.1;
             inputPlane.position.y= -0.9;
             inputPlane.position.z = -0.01;
@@ -302,9 +302,10 @@ shell.registerApp({
 
             let inputTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(inputPlane);
             let input = new Stage.GUI.InputText();
+                input.height = "130px";             
                 input.text = "default";
                 input.color = "blue";
-                input.fontSize = "400px;";
+                input.fontSize = "120";
                 input.background = "white";
                 input.autoStretchWidth = false;
                 inputTexture.addControl(input);  
