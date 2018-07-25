@@ -55,7 +55,8 @@ function summonAwesome(scene: BABYLON.Scene, windowAnchor: BABYLON.Mesh) {
     sphere.rotation.y = -Math.PI / 2;
     sphere.material = awesomeMaterial;
     sphere.position = new BABYLON.Vector3(0, 1, 100);
-    windowAnchor.addChild(sphere);
+    //windowAnchor.addChild(sphere);
+    sphere.parent = windowAnchor;
     var vel = new BABYLON.Vector3(0, 20, -20);
     scene.onBeforeRenderObservable.add(() => {
         if (sphere.position.y > 0) {
