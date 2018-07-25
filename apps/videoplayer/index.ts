@@ -46,10 +46,10 @@ shell.registerApp({
 
         // Play button panel
         var playButtonPane = BABYLON.MeshBuilder.CreatePlane("buttonPlane", {width: 0.2, height: 0.2}, scene)
-        playButtonPane.position.y= -0.7
-        playButtonPane.position.x = -0.9
-        playButtonPane.rotation.z = -Math.PI/2;
         playButtonPane.parent = ribbon
+        playButtonPane.position.y= 5
+        playButtonPane.position.x = -0.9
+        playButtonPane.rotation.z = -Math.PI/2;        
         var playGuiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(playButtonPane)
 
         // Play button
@@ -62,8 +62,8 @@ shell.registerApp({
 
         // Pause button panel
         var pauseButtonPane = BABYLON.MeshBuilder.CreatePlane("pauseButtonPlane", {width: 0.2, height: 0.2}, scene)
-        pauseButtonPane.position.y= -0.7
-        pauseButtonPane.position.x = -0.6
+        pauseButtonPane.position.y= 4.8
+        pauseButtonPane.position.x = -0.9
         pauseButtonPane.rotation.z = -Math.PI/2;
         pauseButtonPane.parent = ribbon
         var pauseGuiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(pauseButtonPane)
@@ -78,8 +78,8 @@ shell.registerApp({
 
         // Progress bar
         var progressBarPane = BABYLON.MeshBuilder.CreatePlane("progressBarPlane", {width: 1.4, height: 0.2}, scene)
-        progressBarPane.position.y = -0.7
-        progressBarPane.position.x = .3
+        progressBarPane.position.y = 4
+        progressBarPane.position.x = -0.9
         progressBarPane.rotation.z = -Math.PI/2;
         progressBarPane.parent = ribbon
 
@@ -89,43 +89,132 @@ shell.registerApp({
         progressBar.value = 0
         progressBar.color = "white"
         progressBar.background = "#0078d7"
-        progressBar.borderColor = "black"        
+        progressBar.borderColor = "black"
+
+        // File menu button panel
+        var fileButtonPane = BABYLON.MeshBuilder.CreatePlane("fileButtonPlane", {width: 0.2, height: 0.2}, scene)
+        fileButtonPane.position.y= 3.2
+        fileButtonPane.position.x = -0.9
+        fileButtonPane.rotation.z = -Math.PI/2;
+        fileButtonPane.parent = ribbon
+        var pauseGuiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(fileButtonPane)
+
+        // File menu button
+        var fileButton = Stage.GUI.Button.CreateSimpleButton("file", "🎦")        
+        fileButton.fontSize = 900
+        fileButton.color = "white"
+        fileButton.background = "#4AB3F4"
+        fileButton.thickness = 20
+        pauseGuiTexture.addControl(fileButton)
+
+        var pickerPlane = BABYLON.MeshBuilder.CreatePlane("pickerPlane", {width: 1, height: 0.5}, scene)
+        var pickerPanelTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(pickerPlane)
+
+        pickerPlane.parent = fileButtonPane
+        pickerPlane.position.x = -0.15
+        pickerPlane.position.y = -0.35
+
+        var pickerPanel = new Stage.GUI.StackPanel()
 
         // Video texture
-        var videoTexture = new BABYLON.VideoTexture("video", ["public/mov_bbb.mp4"], scene, true);
+        var bunnyVideo = new BABYLON.VideoTexture("bunny", ["public/mov_bbb.mp4"], scene, true);
+        var waterfallVideo = new BABYLON.VideoTexture("waterfall", ["public/waterfall.mp4"], scene, true);
+        
         var videoMaterial = new BABYLON.StandardMaterial("", scene);
         videoMaterial.emissiveColor = new BABYLON.Color3(1,1,1)
-        videoMaterial.diffuseTexture = videoTexture
+        videoMaterial.diffuseTexture = bunnyVideo
         ribbon.material = videoMaterial
 
-        videoTexture.video.pause()
+        bunnyVideo.video.pause()
+        waterfallVideo.video.pause()
 
         // Events
         playbutton.onPointerClickObservable.add(()=>{
-            videoTexture.video.play()
-            progressBar.value = videoTexture.video.currentTime
+            var currentVid = videoMaterial.diffuseTexture.name
+
+            if(currentVid=="bunny"){
+                bunnyVideo.video.play()
+                progressBar.value = bunnyVideo.video.currentTime
+            }
+            else if(currentVid=="waterfall"){
+                waterfallVideo.video.play()
+                progressBar.value = waterfallVideo.video.currentTime
+            }            
         })
 
         pauseButton.onPointerClickObservable.add(()=>{
-            videoTexture.video.pause()
+            var currentVid = videoMaterial.diffuseTexture.name
+
+            if(currentVid=="bunny"){
+                bunnyVideo.video.pause()
+            }
+            else if(currentVid=="waterfall"){
+                waterfallVideo.video.pause()
+            }  
         })
 
-        videoTexture.video.ontimeupdate = function(){
-            progressBar.value = videoTexture.video.currentTime
+        bunnyVideo.video.ontimeupdate = function(){
+            progressBar.value = bunnyVideo.video.currentTime
+        }
+
+        waterfallVideo.video.ontimeupdate = function(){
+            progressBar.value = waterfallVideo.video.currentTime
         }
 
         progressBar.onPointerClickObservable.add(function() {
-            if(videoTexture.video.paused){
-                videoTexture.video.currentTime = progressBar.value
+            var currentVid = videoMaterial.diffuseTexture.name
+
+            if(currentVid=="bunny"){
+                bunnyVideo.video.pause()
+                bunnyVideo.video.currentTime = progressBar.value
             }
-            else{
-                videoTexture.video.pause()
-                videoTexture.video.currentTime = progressBar.value
-            }
+            else if(currentVid=="waterfall"){
+                waterfallVideo.video.pause()
+                waterfallVideo.video.currentTime = progressBar.value
+            } 
         })
 
-        videoTexture.video.onloadedmetadata = function(){
-            progressBar.maximum = videoTexture.video.duration
+        fileButton.onPointerClickObservable.add(()=>{
+            pickerPanelTexture.addControl(pickerPanel)
+
+            var waterfallButton = Stage.GUI.Button.CreateSimpleButton("", "Waterfall")
+            waterfallButton.fontSize = 150
+            waterfallButton.color = "white"
+            waterfallButton.height = "50%"
+            waterfallButton.background = "#4AB3F4"
+            pickerPanel.addControl(waterfallButton)
+
+            var bunnyButton = Stage.GUI.Button.CreateSimpleButton("", "Bunny")
+            bunnyButton.fontSize = 150
+            bunnyButton.color = "white"
+            bunnyButton.height = "50%"
+            bunnyButton.background = "#4AB3F4"
+            pickerPanel.addControl(bunnyButton)
+
+            waterfallButton.onPointerClickObservable.add(()=>{                
+                pickerPanel.removeControl(waterfallButton)
+                pickerPanel.removeControl(bunnyButton)
+                pickerPanelTexture.removeControl(pickerPanel)
+                bunnyVideo.video.pause()
+                progressBar.maximum = waterfallVideo.video.duration
+                progressBar.value = waterfallVideo.video.currentTime
+                videoMaterial.diffuseTexture = waterfallVideo
+            })
+
+            bunnyButton.onPointerClickObservable.add(()=>{
+                pickerPanel.removeControl(waterfallButton)
+                pickerPanel.removeControl(bunnyButton)
+                pickerPanelTexture.removeControl(pickerPanel)
+                waterfallVideo.video.pause()
+                progressBar.maximum = bunnyVideo.video.duration
+                progressBar.value = bunnyVideo.video.currentTime
+                videoMaterial.diffuseTexture = bunnyVideo
+            })
+
+        })
+
+        bunnyVideo.video.onloadedmetadata = function(){
+            progressBar.maximum = bunnyVideo.video.duration
             progressBarTexture.addControl(progressBar)
         }
     }, 
