@@ -1,4 +1,4 @@
-import { VRExperienceHelper, ActionManager } from "babylonjs";
+import { VRExperienceHelper, ActionManager, StandardMaterial, Color3 } from "babylonjs";
 import {Stage} from "../../src/stage"
 
 var shell:any = (<any>window).shell
@@ -166,6 +166,14 @@ shell.registerApp({
             dialogBox.parent = windowAnchor;
             let drag = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)});
             dialogBox.addBehavior(drag);
+            let shadowBox = BABYLON.MeshBuilder.CreatePlane('shadowBox.'+parentPerson.id, {width: 2, height: 1.5}, scene);
+            shadowBox.position.z = -.1;
+            shadowBox.visibility = 0;
+            let shadowMaterial = new StandardMaterial('shadowBox.Mat.'+ parentPerson.id, scene);
+            shadowMaterial.diffuseColor = Color3.White();
+            shadowMaterial.alpha = .5; 
+            shadowBox.material = shadowMaterial;
+            shadowBox.parent = dialogBox;
 
             var closePlane = BABYLON.MeshBuilder.CreatePlane("closePlane" + parentPerson.id, {width: 0.2, height: 0.2}, scene)
             closePlane.position.x= 0.9;
@@ -188,8 +196,9 @@ shell.registerApp({
             close.cornerRadius = 200
             close.thickness = 20
             close.onPointerClickObservable.add(()=>{
-                scene.getMeshByName("dialogBox" + parentPerson.id).visibility = 0;
                 scene.getMeshByName("closePlane" + parentPerson.id).visibility = 0;
+                scene.getMeshByName("dialogBox" + parentPerson.id).visibility = 0;
+                scene.getMeshByName("shadowBox."+ parentPerson.id).visibility = 0;
             })
             guiPanel.addControl(close);
             closePlane.visibility = 0;
@@ -263,6 +272,7 @@ shell.registerApp({
                 console.log("click");
                 scene.getAnimationGroupByName("popGroup"+evt.pickInfo.pickedMesh.id).stop();
                 scene.getMeshByName("dialogBox" + evt.pickInfo.pickedMesh.id).visibility = 1;
+                scene.getMeshByName("shadowBox." + evt.pickInfo.pickedMesh.id).visibility = 1;
                 scene.getMeshByName("closePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
                 
                 //Load data
@@ -285,9 +295,9 @@ shell.registerApp({
                 let dialogBoxDynamicMaterial = new BABYLON.StandardMaterial("mat." + dialogTextureUpdateName, scene);
                 dialogBoxDynamicMaterial.diffuseTexture = dialogBoxDynamicTexture;
                 
-                dialogBoxDynamicMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+                //dialogBoxDynamicMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
                 dialogBoxDynamicMaterial.backFaceCulling = false;
-                dialogBoxDynamicMaterial.alpha = .5;
+                //dialogBoxDynamicMaterial.alpha = .5;
 
                 let dialogBoxMesh = scene.getMeshByName("dialogBox" + evt.pickInfo.pickedMesh.id);
                 dialogBoxMesh.material = dialogBoxDynamicMaterial;
@@ -298,25 +308,30 @@ shell.registerApp({
                 //context.globalAlpha = 1;
                 
                 let dialogBoxFont = "40px arial";
-                let dialogTextColor = "#555555";
+                let dialogTextColor = "#696969";//"#555555";
                 let { width, height } = dialogBoxDynamicTexture.getSize();
                 let bordersPercentage = .05;
                 let widthBorder = width*bordersPercentage;
                 let heightBorder = height*bordersPercentage;
-
-                context.fillStyle = dialogTextColor;
-
+                
+                //context.save();
+                //context.globalAlpha = 0.4;
+                //context.fillStyle = "rgba(255, 255, 255, 0.5)";
+                //context.fillRect(0, 0, width, height);
+                //context.restore();
+                //context.save();
+                //context.fillStyle = dialogTextColor;
+                
                 //context.fillText();
-                let size = dialogBoxDynamicTexture.getSize();
-
+                //let size = dialogBoxDynamicTexture.getSize();
+                
                 //context.fillRect(widthBorder, heightBorder, (width-widthBorder), (height-heightBorder));
-
+                
                 //let bufferEdges = 15;
-                let colorChoice = {left: "green", right: "blue"};
-
+                let colorChoice = {left: "Fuchsia", right: "Aqua"};
+                
                 wrapTextHelper.lineHeight = 50;
                 wrapTextHelper.y = heightBorder;
-                
                 for(let i = 0; i < textData.length; i++ ){
                     context.font = dialogBoxFont;
                     let curr = textData[i];
