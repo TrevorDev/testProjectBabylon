@@ -236,7 +236,7 @@ shell.registerApp({
             }
         }
         
-    let chatWindowTextLog = {};
+        let chatWindowTextLog = {};
 
         let stopVideos = function () {
             let contactList = ["name0","name1","name2","name3"];
@@ -371,8 +371,9 @@ shell.registerApp({
         let createVideoChat = function(parentPerson, path) {
             console.log(parentPerson.id);
             let videoBox = BABYLON.MeshBuilder.CreatePlane("videoBox" + parentPerson.id, {width: 2.5, height: 1.5}, scene);
-            videoBox.position.x = -2;
-            videoBox.position.y = parentPerson.position.y + 1;
+            videoBox.position.x = 2.5;
+            videoBox.position.y = parentPerson.position.y;
+            videoBox.rotation.y = Math.PI/8;
             //videoBox.visibility = 0;
             hideMesh(videoBox);
             videoBox.parent = windowAnchor;
@@ -398,8 +399,8 @@ shell.registerApp({
         createContactList();
         // createDialogBox();
 
-        let b = new BABYLON.SixDofDragBehavior()
-        loadedModel.addBehavior(b)
+        //let b = new BABYLON.SixDofDragBehavior()
+        //loadedModel.addBehavior(b)
 
         loadedModel.position.z = 0
         loadedModel.position.y = 0.5
