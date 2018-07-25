@@ -39,6 +39,7 @@ shell.registerApp({
         var ribbon = BABYLON.MeshBuilder.CreateRibbon("ribbon", { pathArray }, scene);
 
         ribbon.rotation.z = Math.PI/2;
+        //ribbon.scaling.scaleInPlace = new BABYLON.Vector3(1, 1, 1);
 
         ribbon.position.x = 4;
         ribbon.position.y = 2;
@@ -118,7 +119,7 @@ shell.registerApp({
 
         // Video texture
         var mixerVideo = new BABYLON.VideoTexture("mixer", ["public/MixerClipVid_30secondsInverted.mp4"], scene, true);
-        var waterfallVideo = new BABYLON.VideoTexture("waterfall", ["public/waterfall.mp4"], scene, true);
+        var waterfallVideo = new BABYLON.VideoTexture("waterfall", ["public/BalloonPopInverted.mp4"], scene, true);
         
         var videoMaterial = new BABYLON.StandardMaterial("", scene);
         videoMaterial.emissiveColor = new BABYLON.Color3(1,1,1)
