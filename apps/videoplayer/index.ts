@@ -117,7 +117,7 @@ shell.registerApp({
         var pickerPanel = new Stage.GUI.StackPanel()
 
         // Video texture
-        var mixerVideo = new BABYLON.VideoTexture("mixer", ["public/MixerClipVid_30seconds.mp4"], scene, true);
+        var mixerVideo = new BABYLON.VideoTexture("mixer", ["public/MixerClipVid_30secondsInverted.mp4"], scene, true);
         var waterfallVideo = new BABYLON.VideoTexture("waterfall", ["public/waterfall.mp4"], scene, true);
         
         var videoMaterial = new BABYLON.StandardMaterial("", scene);
