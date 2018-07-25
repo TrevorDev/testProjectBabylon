@@ -311,11 +311,49 @@ var main = async () => {
     box.scaling.x = 1000
     box.position.y = -3
 
-    // console.log("loaded")
-    // var loadedModel = container.createRootMesh()
-    // loadedModel.scaling.scaleInPlace(0.001)
-    // scene.addMesh(loadedModel)
-    //makeNotPickable(loadedModel)
+
+    var cloudMaterial = new BABYLON.ShaderMaterial("cloud", scene, "./public/shaders/cloud",
+    {
+        needAlphaBlending: true,
+        attributes: ["position", "uv", "normal"],
+        uniforms: ["worldViewProjection"],
+        samplers: ["textureSampler"]
+    });
+    cloudMaterial.setTexture("textureSampler", new BABYLON.Texture("public/textures/cloud.png", scene));
+    cloudMaterial.setFloat("fogNear", -100);
+    cloudMaterial.setFloat("fogFar", 3000);
+    cloudMaterial.setColor3("fogColor", BABYLON.Color3.FromInts(69, 132, 180));
+    var time = 0
+    
+    // loading oalf
+    var materialCarrot = new BABYLON.StandardMaterial("carrot", scene);
+    materialCarrot.diffuseTexture = new BABYLON.Texture("public/textures/carrot.jpg", scene);
+    var materialSnow = new BABYLON.StandardMaterial("carrot", scene);
+    materialSnow.diffuseTexture = new BABYLON.Texture("public/textures/snow.jpg", scene);
+    var materialBranch = new BABYLON.StandardMaterial("carrot", scene);
+    materialBranch.diffuseTexture = new BABYLON.Texture("public/textures/wood.jpg", scene);
+
+    BABYLON.SceneLoader.ImportMesh(null, "public/", "olaf.obj", scene, function (meshes, particleSystems, skeletons) {
+        for(let m of meshes){
+                m.position = new BABYLON.Vector3(7, 7, 7);
+                m.rotate(new BABYLON.Vector3(0, 1, 0), 180);
+                m.scaling.scaleInPlace(0.02);
+                if(m.name == "Nose"){
+                    m.material = materialCarrot
+                }
+                else if(m.name == "L_Arms" || m.name == "R_Arms"){
+                    m.material = materialBranch
+                }
+                else{
+                m.material = cloudMaterial;
+                }
+        }
+    });
+    
+    scene.registerBeforeRender(function () {
+        time += 0.005
+        cloudMaterial.setFloat("time", time)
+    })
 
     parentMenuMesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
     parentMenuMesh.rotation.x = Math.PI / 8;
