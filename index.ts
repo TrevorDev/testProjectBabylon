@@ -218,7 +218,7 @@ var main = async () => {
     vrHelper.raySelectionPredicate = (mesh:BABYLON.AbstractMesh):boolean=>{
         return mesh.isVisible && mesh.isPickable;
     }
-    var recognizer = new SpeechRecognizer(SDK, SDK.RecognitionMode.Conversation, "en-us", SDK.SpeechResultFormat.Simple, "92069ee289b84e5594a9564ab77ed2ba");
+    var recognizer = new SpeechRecognizer(SDK, SDK.RecognitionMode.Interactive, "en-us", SDK.SpeechResultFormat.Simple, "92069ee289b84e5594a9564ab77ed2ba");
     var win:any = window
     win.shell = new Shell(scene, vrHelper, recognizer);
     
@@ -303,12 +303,12 @@ var main = async () => {
 
     planeLogo.material = materialPlane;
 
-    var text = new Stage.GUI.TextBlock()
-    text.color = 'black'
-    text.fontSize = 60
-    text.textVerticalAlignment = Stage.GUI.Control.VERTICAL_ALIGNMENT_TOP
+    var dialogText = new Stage.GUI.TextBlock()
+    dialogText.color = 'black'
+    dialogText.fontSize = 100
+    dialogText.textVerticalAlignment = Stage.GUI.Control.VERTICAL_ALIGNMENT_TOP
 
-    advancedTexture.addControl(text)
+    advancedTexture.addControl(dialogText)
 
     // parent menu mesh that holds both the phone and ui
     var parentMenuMesh = new BABYLON.Mesh('parentMesh1', scene)
@@ -383,6 +383,7 @@ var main = async () => {
     var phoneIsUp = false;
 
     parentMenuMesh.setEnabled(true); // TODO CHANGE THIS FOR VR USE
+
     function togglePhone(controller) {
         if (phoneIsUp === false) {
             controller.mesh.addChild(parentMenuMesh);
@@ -406,10 +407,17 @@ var main = async () => {
         if (listening == false) {
             win.shell.recognizer.StartOneShotRecognition(
                 function (trex) {
-                    console.log(trex);
+                    dialogText.text = trex;
                 },
                 function (text) {
+                    dialogText.text = text;
+
+                    setTimeout(function(){
+                        dialogText.text = ""
+                    }, 5000)
+
                     text = text.toLowerCase();
+                    
                     if (appMap.has(text)) {
                         win.shell.launchApp(win.shell.apps[appMap.get(text)], true);
                     }
@@ -431,6 +439,9 @@ var main = async () => {
             }
         });
     });
+    setInterval(function(){
+        toggleRecognizer()
+    },8000)
 
 }
 main()
