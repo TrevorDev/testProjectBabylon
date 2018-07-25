@@ -15,7 +15,6 @@ shell.registerApp({
     launch: async (windowAnchor:BABYLON.Mesh, vrHelper: VRExperienceHelper)=>{
         // Get scene
         var scene = windowAnchor.getScene();
-        
         // Physics
         //scene.enablePhysics(new BABYLON.Vector3(0, -9.8, 0), new BABYLON.CannonJSPlugin());
        
@@ -26,7 +25,6 @@ shell.registerApp({
         let createNewSystem = function():BABYLON.ParticleSystem {
             var particleSystem;
             if (BABYLON.GPUParticleSystem.IsSupported) {
-                console.log("GPU supported!")
                 particleSystem = new BABYLON.GPUParticleSystem("particles", { capacity:1000 }, scene);
                 particleSystem.activeParticleCount = 1000;
             } else {
@@ -44,7 +42,7 @@ shell.registerApp({
             particleSystem.disposeOnStop = false;
             particleSystem.targetStopDuration = 3;
             return particleSystem;;
-        }  
+        }
 
         var particleSystem = createNewSystem();  
 
@@ -52,18 +50,93 @@ shell.registerApp({
         var y = 0;
         var spheres = []
         var materialAmiga = new BABYLON.StandardMaterial("amiga", scene);
-        materialAmiga.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+        materialAmiga.diffuseTexture = new BABYLON.Texture("public/textures/amiga.jpg", scene);
         materialAmiga.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         for (var index = 0; index < 10; index++) {
             let sphere = BABYLON.Mesh.CreateSphere("sphere", 16, 1, scene);
             sphere.material = materialAmiga
-            sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1 }, scene);
             sphere.position = new BABYLON.Vector3(Math.random() * 20 - 10, y, Math.random() * 10 - 5);
             windowAnchor.addChild(sphere)
 
             y += 2;
             spheres.push(sphere)
         }
+
+    var cloudMaterial = new BABYLON.ShaderMaterial("cloud", scene,
+    "./public/shaders/cloud",
+    {
+        needAlphaBlending: true,
+        attributes: ["position", "uv"],
+        uniforms: ["worldViewProjection"],
+        samplers: ["textureSampler"]
+    });
+    cloudMaterial.setTexture("textureSampler", new BABYLON.Texture("public/textures/cloud.png", scene));
+    cloudMaterial.setFloat("fogNear", -100);
+    cloudMaterial.setFloat("fogFar", 3000);
+    cloudMaterial.setColor3("fogColor", BABYLON.Color3.FromInts(69, 132, 180));
+
+    var globalVertexData;
+        // loading oalf
+        var materialCarrot = new BABYLON.StandardMaterial("carrot", scene);
+        materialCarrot.diffuseTexture = new BABYLON.Texture("public/textures/carrot.jpg", scene);
+        var materialSnow = new BABYLON.StandardMaterial("carrot", scene);
+        materialSnow.diffuseTexture = new BABYLON.Texture("public/textures/snow.jpg", scene);
+        var materialBranch = new BABYLON.StandardMaterial("carrot", scene);
+        materialBranch.diffuseTexture = new BABYLON.Texture("public/textures/wood.jpg", scene);
+
+        BABYLON.SceneLoader.ImportMesh(null, "public/", "olaf.obj", scene, function (meshes, particleSystems, skeletons) {
+            for(let m of meshes){
+                 m.parent = windowAnchor
+                 m.position = new BABYLON.Vector3(5, 5, 5);
+                 m.rotate(new BABYLON.Vector3(0, 1, 0), 180);
+                 m.scaling.scaleInPlace(0.02);
+                 if(m.name == "Nose"){
+                     m.material = materialCarrot
+                 }
+                 else if(m.name == "L_Arms" || m.name == "R_Arms"){
+                    m.material = materialBranch
+                 }
+                 else{
+                    m.material = materialSnow;
+                 }
+
+             //   m.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, (evt) => { 
+             //       m.material = cloudMaterial;
+             //   }));
+            }
+        });
+        var count = 8;
+             
+
+    
+        for (var i = 0; i < count; i++) {
+            var planeVertexData = BABYLON.VertexData.CreatePlane({ size: 16 });
+    
+            delete planeVertexData.normals; // We do not need normals
+    
+            // Transform
+            var randomScaling = Math.random() * Math.random() * 0.15 + 0.05;
+            var transformMatrix = BABYLON.Matrix.Scaling(randomScaling, randomScaling, 1.0);
+            transformMatrix = transformMatrix.multiply(BABYLON.Matrix.RotationZ(Math.random() * Math.PI));
+            transformMatrix = transformMatrix.multiply(BABYLON.Matrix.Translation(Math.random() * 0.01 - 0.005, -Math.random() * Math.random() * 0.01, count - i));
+    
+            planeVertexData.transform(transformMatrix);
+    
+            // Merge
+            if (!globalVertexData) {
+                globalVertexData = planeVertexData;
+            } else {
+                globalVertexData.merge(planeVertexData);
+            }
+        }
+    
+
+       var clouds = new BABYLON.Mesh("Clouds", scene);
+
+       globalVertexData.applyToMesh(clouds)
+       clouds.material = cloudMaterial;
+       clouds.parent = windowAnchor
+
 
         scene.onPointerObservable.add((e)=>{
             if(e.type == BABYLON.PointerEventTypes.POINTERDOWN && spheres.indexOf(e.pickInfo.pickedMesh)!=-1){
