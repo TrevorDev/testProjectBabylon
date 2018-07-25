@@ -3,8 +3,73 @@ import {Stage} from "../../src/stage"
 
 var shell:any = (<any>window).shell
 
+var makeNotPickable = (mesh:BABYLON.AbstractMesh)=>{
+    mesh.isPickable = false;
+    mesh.getChildMeshes().forEach((m)=>{
+        makeNotPickable(m)
+    })
+}
 
+var makePickable = (mesh:BABYLON.AbstractMesh)=>{
+    mesh.isPickable = true;
+    mesh.getChildMeshes().forEach((m)=>{
+        makePickable(m)
+    })
+}
 
+function summonAwesome(scene: BABYLON.Scene, windowAnchor: BABYLON.Mesh) {
+    var fountain = BABYLON.Mesh.CreateBox("fountain", 0.01, scene);
+    fountain.visibility = 0.1;
+    windowAnchor.addChild(fountain);
+    let createNewSystem = function (): BABYLON.ParticleSystem {
+        var particleSystem;
+        if (BABYLON.GPUParticleSystem.IsSupported) {
+            console.log("GPU supported!");
+            particleSystem = new BABYLON.GPUParticleSystem("particles", { capacity: 1000 }, scene);
+            particleSystem.activeParticleCount = 1000;
+        }
+        else {
+            particleSystem = new BABYLON.ParticleSystem("particles", 10, scene);
+        }
+        particleSystem.parent = windowAnchor;
+        particleSystem.emitRate = 100;
+        particleSystem.particleEmitterType = new BABYLON.SphereParticleEmitter(1);
+        particleSystem.particleTexture = new BABYLON.Texture("https://raw.githubusercontent.com/rachyliu/assets/master/awesome.png", scene);
+        particleSystem.maxLifeTime = 1;
+        particleSystem.minSize = 1;
+        particleSystem.maxSize = 10;
+        particleSystem.emitter = fountain;
+        particleSystem.disposeOnStop = false;
+        particleSystem.targetStopDuration = 3;
+        particleSystem.minEmitPower = 10;
+        particleSystem.maxEmitPower = 20;
+        return particleSystem;
+    };
+    var particleSystem = createNewSystem();
+    var awesomeMaterial = new BABYLON.StandardMaterial("amiga", scene);
+    awesomeMaterial.diffuseTexture = new BABYLON.Texture("https://raw.githubusercontent.com/rachyliu/assets/master/awesome2.png", scene);
+    awesomeMaterial.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
+    let sphere = BABYLON.Mesh.CreateSphere("sphere", 16, 10, scene);
+    sphere.rotation.y = -Math.PI / 2;
+    sphere.material = awesomeMaterial;
+    sphere.position = new BABYLON.Vector3(0, 1, 100);
+    windowAnchor.addChild(sphere);
+    var vel = new BABYLON.Vector3(0, 20, -20);
+    scene.onBeforeRenderObservable.add(() => {
+        if (sphere.position.y > 0) {
+            var delta = scene.getEngine().getDeltaTime() / 1000;
+            vel.addInPlace(new BABYLON.Vector3(0, -9.8, 0).scale(delta));
+            sphere.position.addInPlace(vel.scale(delta));
+            if (sphere.position.y <= 0) {
+                sphere.position.y = 0;
+                fountain.position.copyFrom(sphere.position);
+                particleSystem.targetStopDuration = 3;
+                particleSystem.start();
+                sphere.dispose();
+            }
+        }
+    });
+}
 
 
 shell.registerApp({
@@ -158,8 +223,8 @@ shell.registerApp({
              console.log(parentPerson.id);
             let dialogBox = BABYLON.MeshBuilder.CreatePlane("dialogBox" + parentPerson.id, {width: 2, height: 1.5}, scene);
             dialogBox.parent = loadedModel;
-            dialogBox.position.x = 2;
-            dialogBox.position.y = parentPerson.position.y;
+            dialogBox.position.x = -2;
+            dialogBox.position.y = parentPerson.position.y + 2;
             dialogBox.visibility = 0;
             dialogBox.parent = windowAnchor;
             let drag = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
@@ -188,9 +253,56 @@ shell.registerApp({
             close.onPointerClickObservable.add(()=>{
                 scene.getMeshByName("dialogBox" + parentPerson.id).visibility = 0;
                 scene.getMeshByName("closePlane" + parentPerson.id).visibility = 0;
+                scene.getMeshByName("voicePlane" + parentPerson.id).visibility = 0;
+                scene.getMeshByName("inputPlane" + parentPerson.id).visibility = 0;
+
+                
             })
             guiPanel.addControl(close);
             closePlane.visibility = 0;
+
+            var voicePlane = BABYLON.MeshBuilder.CreatePlane("voicePlane" + parentPerson.id, {width: 0.2, height: 0.2}, scene)
+            voicePlane.position.x= 0.9;
+            voicePlane.position.y= - 0.9;
+            voicePlane.position.z= -0.01;
+            voicePlane.parent = dialogBox 
+            var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(voicePlane)
+
+            var guiPanel2 = new Stage.GUI.StackPanel()  
+            guiPanel2.top = "0px"
+            guiTexture.addControl(guiPanel2)
+            var record = Stage.GUI.Button.CreateImageOnlyButton("record", "https://raw.githubusercontent.com/rachyliu/assets/master/microphone.gif");          
+            record.fontSize = 300
+            record.color = "white"
+            
+            record.cornerRadius = 500
+            record.thickness = 20
+            record.onPointerClickObservable.add(()=>{
+                console.log("start recording");
+            })
+            guiPanel2.addControl(record);
+            voicePlane.visibility = 0;
+
+
+             let inputPlane = BABYLON.MeshBuilder.CreatePlane("inputPlane" + parentPerson.id, {width: 1.7, height: 0.2}, scene)
+            inputPlane.position.x= -0.1;
+            inputPlane.position.y= -0.9;
+            inputPlane.position.z = -0.01;
+            inputPlane.parent = dialogBox;
+
+            let inputTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(inputPlane);
+
+            let input = new Stage.GUI.InputText();
+                input.text = "default";
+                input.color = "blue";
+                input.fontSize = "400px;";
+                input.background = "white";
+                inputTexture.addControl(input);  
+
+            inputPlane.visibility = 0;
+            //     //input.linkWithMesh(inputPlane);   
+            //     input.linkOffsetY = 50;
+            //     input.linkOffsetX = 400
 
         }
 
@@ -229,8 +341,15 @@ shell.registerApp({
                 ||evt.pickInfo.pickedMesh.id === "name3" )) {
                 console.log("click");
                 scene.getAnimationGroupByName("popGroup"+evt.pickInfo.pickedMesh.id).stop();
+                if(evt.pickInfo.pickedMesh.id === "name0" ){
+                    summonAwesome(scene,windowAnchor);
+                }
                 scene.getMeshByName("dialogBox" + evt.pickInfo.pickedMesh.id).visibility = 1;
                 scene.getMeshByName("closePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
+                scene.getMeshByName("voicePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
+                scene.getMeshByName("inputPlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
+
+                
                 // var advancedTexture3 = Stage.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
                 // var rectangle = new Stage.GUI.Rectangle("rect");
                 //     rectangle.top = "-100px";
@@ -251,20 +370,9 @@ shell.registerApp({
                 //     rectangle.linkOffsetY = -25;
                 //     rectangle.linkOffsetX = 400;
 
-                //     var advancedTexture2 = Stage.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                
 
-                // var input = new Stage.GUI.InputText();
-                // input.width = 0.2;
-                // input.maxWidth = 0.2;
-                // input.height = "40px";
-                // input.text = "";
-                // input.color = "blue";
-                // input.background = "white";
-                // advancedTexture2.addControl(input);  
-
-                // input.linkWithMesh(loadedModel);   
-                // input.linkOffsetY = 50;
-                // input.linkOffsetX = 400
+                
             }
             if ( evt.type==BABYLON.PointerEventTypes.POINTERUP && evt.pickInfo.pickedMesh && evt.pickInfo.pickedMesh.id === "node_id32") {
                 scene.getAnimationGroupByName("popGroupassetContainerRootMesh").stop();
@@ -283,6 +391,16 @@ shell.registerApp({
                     scene.getMeshByName("closePlanename1").visibility = 0;
                     scene.getMeshByName("closePlanename2").visibility = 0;
                     scene.getMeshByName("closePlanename3").visibility = 0;
+                    scene.getMeshByName("voicePlanename0").visibility = 0;
+                    scene.getMeshByName("voicePlanename1").visibility = 0;
+                    scene.getMeshByName("voicePlanename2").visibility = 0;
+                    scene.getMeshByName("voicePlanename3").visibility = 0;
+                    scene.getMeshByName("inputPlanename0").visibility = 0;
+                    scene.getMeshByName("inputPlanename1").visibility = 0;
+                    scene.getMeshByName("inputPlanename2").visibility = 0;
+                    scene.getMeshByName("inputPlanename3").visibility = 0;
+
+                    
                     }
 
             }
