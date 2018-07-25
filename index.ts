@@ -32,8 +32,7 @@ class SpeechRecognizer {
                 phraseCallback(event.Result.DisplayText);
             }
             else if (event instanceof SDK.RecognitionEndedEvent) {
-                console.log(JSON.stringify(event));
-                this.recognizer.AudioSource.TurnOff();
+                //Do something here
             }
         })
             .On(() => {
@@ -253,19 +252,6 @@ var main = async () => {
         {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, 
         {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}
     ]
-    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch game.", 2], ["launch wikipedia.", 3]]);
-    win.shell.recognizer.StartOneShotRecognition(
-        function (trex) {
-            console.log(trex);
-        },
-        function (text)
-        {
-            text = text.toLowerCase();
-            if (appMap.has(text))
-            {
-                win.shell.launchApp(win.shell.apps[appMap.get(text)]);
-            }
-        });
 
     for (let i = 0; i < available_apps.length; i++) {
         var button = Stage.GUI.Button.CreateImageWithCenterTextButton("button" + i, available_apps[i].name, available_apps[i].iconUrl);
@@ -351,12 +337,34 @@ var main = async () => {
 
         phoneIsUp = !phoneIsUp;
     }
+
+    var listening = false;
+    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch game.", 2], ["launch wikipedia.", 3]]);
+    function toggleRecognizer() {
+        if (listening == false) {
+            listening = true;
+            win.shell.recognizer.StartOneShotRecognition(
+                function (trex) {
+                    console.log(trex);
+                },
+                function (text) {
+                    text = text.toLowerCase();
+                    if (appMap.has(text)) {
+                        win.shell.launchApp(win.shell.apps[appMap.get(text)], true);
+                    }
+                });
+        }
+        else {
+            win.shell.recognizer.RecognizerStop();
+        }
+    }
     
     vrHelper.onControllerMeshLoaded.add(function(controller) {
         // secondary button is the select button
         controller.onSecondaryButtonStateChangedObservable.add(function (stateObject) {
             if (stateObject.value === 1) {
                 togglePhone(controller);
+                toggleRecognizer();
             }
         });
     });
