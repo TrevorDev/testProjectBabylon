@@ -12,6 +12,7 @@
     "express": "^4.16.3",
     "http": "^0.0.0",
     "microsoft-speech-browser-sdk": "0.0.12",
+    "oimo": "^1.0.9",
     "path": "^0.12.7",
     "socket.io": "^2.1.1",
     "typescript": "^2.9.2"
