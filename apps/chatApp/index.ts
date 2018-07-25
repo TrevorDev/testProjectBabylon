@@ -171,6 +171,8 @@ shell.registerApp({
 
                 createDialogBox(myPlane);
 
+                //createVideoChat(myPlane);
+
                 var option1 = BABYLON.MeshBuilder.CreatePlane("listAction1." + myPlane.name, {width: 0.25, height: 0.25}, scene);
                 //myPlane.dispose();
                 option1.position.z = 0
@@ -222,7 +224,6 @@ shell.registerApp({
         let createDialogBox = function(parentPerson) {
              console.log(parentPerson.id);
             let dialogBox = BABYLON.MeshBuilder.CreatePlane("dialogBox" + parentPerson.id, {width: 2, height: 1.5}, scene);
-            dialogBox.parent = loadedModel;
             dialogBox.position.x = -2;
             dialogBox.position.y = parentPerson.position.y + 2;
             dialogBox.visibility = 0;
@@ -291,12 +292,12 @@ shell.registerApp({
             inputPlane.parent = dialogBox;
 
             let inputTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(inputPlane);
-
             let input = new Stage.GUI.InputText();
                 input.text = "default";
                 input.color = "blue";
                 input.fontSize = "400px;";
                 input.background = "white";
+                input.autoStretchWidth = false;
                 inputTexture.addControl(input);  
 
             inputPlane.visibility = 0;
@@ -306,6 +307,26 @@ shell.registerApp({
 
         }
 
+        let createVideoChat = function(parentPerson) {
+            let videoBox = BABYLON.MeshBuilder.CreatePlane("videoBox" + parentPerson.id, {width: 2, height: 1.5}, scene);
+            videoBox.position.x = -2;
+            videoBox.position.y = parentPerson.position.y + 2;
+            videoBox.visibility = 0;
+            videoBox.parent = windowAnchor;
+            let drag = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
+            // drag.moveAttached = false;
+            // drag.onDragObservable.add(function(evt){
+            //     dialogBox.position.addInPlace(evt.delta);
+            // });
+            videoBox.addBehavior(drag);
+
+            var videoTexture = new BABYLON.VideoTexture("video", ["public/mov_bbb.mp4"], scene, true);
+            var videoMaterial = new BABYLON.StandardMaterial("", scene);
+            videoMaterial.emissiveColor = new BABYLON.Color3(1,1,1)
+            videoMaterial.diffuseTexture = videoTexture
+            videoBox.material = videoMaterial
+
+        }
         let listMesh = new BABYLON.Mesh("contactList", scene);
         listMesh.parent = loadedModel;
         
@@ -416,7 +437,9 @@ shell.registerApp({
                     scene.getAnimationGroupByName("popGroupname0").play(true);
                     scene.getAnimationGroupByName("popGroupname1").play(true);
                     scene.getAnimationGroupByName("popGroupassetContainerRootMesh").play(true);
-
+                    // var music = new BABYLON.Sound("Violons", "public/servicebell.wav", scene, null, { loop: true, autoplay: true });
+                    
+                    
                 }
             )
         );
