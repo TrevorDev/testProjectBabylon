@@ -610,22 +610,27 @@ shell.registerApp({
             }
         });
         scene.actionManager = new BABYLON.ActionManager(scene);
-        scene.actionManager.registerAction(
-            new BABYLON.ExecuteCodeAction(
-                {
-                    trigger: BABYLON.ActionManager.OnKeyUpTrigger,
-                    parameter: 'q'
-                },
-                function () { 
-                    scene.getAnimationGroupByName("popGroupname0").play(true);
+        document.onkeydown = (e)=>{
+            if(e.key == "q"){
+                scene.getAnimationGroupByName("popGroupname0").play(true);
                     scene.getAnimationGroupByName("popGroupname1").play(true);
                     scene.getAnimationGroupByName("popGroupassetContainerRootMesh").play(true);
-                    // var music = new BABYLON.Sound("Violons", "public/servicebell.wav", scene, null, { loop: true, autoplay: true });
+            }
+        }
+        // scene.actionManager.registerAction(
+        //     new BABYLON.ExecuteCodeAction(
+        //         {
+        //             trigger: BABYLON.ActionManager.OnKeyUpTrigger,
+        //             parameter: 'q'
+        //         },
+        //         function () { 
+                    
+        //             // var music = new BABYLON.Sound("Violons", "public/servicebell.wav", scene, null, { loop: true, autoplay: true });
                     
                     
-                }
-            )
-        );
+        //         }
+        //     )
+        // );
 
     }, 
     dispose: async ()=>{

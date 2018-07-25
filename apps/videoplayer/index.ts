@@ -41,8 +41,10 @@ shell.registerApp({
         ribbon.rotation.z = Math.PI/2;
         //ribbon.scaling.scaleInPlace = new BABYLON.Vector3(1, 1, 1);
 
-        ribbon.position.x = 4;
-        ribbon.position.y = 2;
+        ribbon.position.x = 1.5;
+        ribbon.position.y = 1;
+        ribbon.position.z = 0.5;
+        ribbon.scaling.scaleInPlace(0.3)
         ribbon.parent = windowAnchor
 
         // Play button panel
