@@ -235,15 +235,15 @@ var main = async () => {
     makeNotPickable(loadedPhone)
     
     // add phone to mesh
-    //scene.addMesh(loadedPhone, true)
+    scene.addMesh(loadedPhone, true)
 
     // menu launcher plane
-    // var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.25, height:2}, scene);
+    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.25, height:2}, scene);
 
-    // plane.position.z = -0.2;
+    plane.position.z = -0.2;
 
-    // var advancedTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
-    // var buttons = []
+    var advancedTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
+    var buttons = []
     
     var available_apps = [{name: "testApp", iconUrl: "public/appicons/test_app_logo.png"}, {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, {name: "chatApp", iconUrl: "public/appicons/flatchat.png"}, {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}]
     for (let i = 0; i < 6; i++) {
@@ -282,14 +282,13 @@ var main = async () => {
     grid.addControl(buttons[5], 2, 1);
 
     
-    // advancedTexture.addControl(grid);
+    advancedTexture.addControl(grid);
 
-    // // parent menu mesh that holds both the phone and ui
-    // var parentMenuMesh = new BABYLON.Mesh('parentMesh1', scene)
+    // parent menu mesh that holds both the phone and ui
+    var parentMenuMesh = new BABYLON.Mesh('parentMesh1', scene)
     
-    // parentMenuMesh.addChild(plane)
-    // parentMenuMesh.addChild(loadedPhone)
-    console.log("load")
+    parentMenuMesh.addChild(plane)
+    parentMenuMesh.addChild(loadedPhone)
     //https://poly.google.com/search/beachside
     var container = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/beach/model.gltf", "", scene)  
     container.addAllToScene();
