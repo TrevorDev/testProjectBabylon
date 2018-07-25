@@ -17,12 +17,14 @@ class Shell {
     private apps:Array<App> = []
     private x: number = 0
     constructor(public scene:BABYLON.Scene, public vrHelper:BABYLON.VRExperienceHelper){}
+    registeredAppCounter = 0
     positionSphere = (sphere: any) => {
         sphere.position.x = this.x;
         this.x += 1;
     }
-    registerApp = (app:App)=>{
-        // This settimeout is needed to handle a weird bug where the spheres are not rendered
+    
+    launchApp = (app:App, maximize:boolean) => {
+        //  maximize the application at the given index
         setTimeout(() => {
             var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
             sphere.position.y += 0.2
@@ -34,13 +36,14 @@ class Shell {
             mat.diffuseTexture.hasAlpha = true;
             mat.backFaceCulling = false;
             sphere.material = mat;
+            this.registeredAppCounter += 1
     
             this.positionSphere(sphere)
             var anchor = new BABYLON.Mesh("", this.scene);
             anchor.scaling.scaleInPlace(0)
          
             sphere.rotation.y=Math.PI/4
-            this.apps.push(app)
+            // this.apps.push(app)
     
             // app.launch(anchor, this.vrHelper)
     
@@ -95,12 +98,13 @@ class Shell {
             })
     
             let launched = false;
-            var pDownTime:Date;
+            var pDownTime:Date; 
+            
             this.scene.onPointerObservable.add((e)=>{
                 if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
                     if(e.pickInfo.pickedMesh == sphere) {
                         if(!launched){
-                            this.apps.push(app)
+                            // this.apps.push(app)
                             app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
                         }
                         launched = true;
@@ -122,7 +126,18 @@ class Shell {
                     }
                 }
             })
+
+            if (maximize === true) {
+                app.launch(anchor, this.vrHelper)
+                state = VisibleState.Transition
+                launched = true;
+                scaleDelta = APP_OPEN_SPEED
+            }
         }, 1000)
+    }
+    registerApp = (app:App)=>{
+        // This settimeout is needed to handle a weird bug where the spheres are not rendered
+        this.apps.push(app)
 
     }
 }
@@ -133,8 +148,8 @@ var main = async () => {
     var scene = stage.scene
     var canvas = stage.engine.getRenderingCanvas()
 
-    var env = scene.createDefaultEnvironment({})
-    env.setMainColor(BABYLON.Color3.FromHexString("#7f8c8d"))
+    var env = scene.createDefaultEnvironment({createGround: false})
+    env.setMainColor(BABYLON.Color3.FromHexString("#1b6eb4"))
     env.skybox.scaling.scaleInPlace(10)
 
     // Create basic world
@@ -147,7 +162,7 @@ var main = async () => {
     //light.intensity = 0.7
 
     // Setup vr
-    var vrHelper = scene.createDefaultVRExperience({floorMeshes: [env.ground]})
+    var vrHelper = scene.createDefaultVRExperience({floorMeshes: []})
     vrHelper.raySelectionPredicate = (mesh:BABYLON.AbstractMesh):boolean=>{
         return mesh.isVisible && mesh.isPickable;
     }
@@ -174,26 +189,32 @@ var main = async () => {
     scene.addMesh(loadedPhone, true)
 
     // menu launcher plane
-    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.25, height:2}, scene);
+    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.5, height:1.5}, scene);
 
     plane.position.z = -0.2;
 
     var advancedTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
     var buttons = []
     
-    for (var i = 0; i < 6; i++) {
-        var button = Stage.GUI.Button.CreateSimpleButton("button" + i, "App " + i);
+    var available_apps = [
+    {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, 
+    {name: "chatApp", iconUrl: "public/appicons/flatchat.png"}, 
+    {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, 
+    {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}
+]
+    for (let i = 0; i < available_apps.length; i++) {
+        var button = Stage.GUI.Button.CreateImageWithCenterTextButton("button" + i, available_apps[i].name, available_apps[i].iconUrl);
         button.width = 1;
         button.height = 1;
-        button.color = "white";
+        button.color = "transparent";
         button.fontSize = 50;
-        button.background = "green";
         button.paddingLeft = "3%";
         button.paddingRight = "3%";
         button.paddingBottom = "3%";
         
-        button.onPointerUpObservable.add(function() {
-            alert("you launched app");
+
+        button.onPointerUpObservable.add(function(e) {
+            shell.launchApp(shell.apps[i], true)
         });
 
         buttons.push(button)
@@ -203,16 +224,14 @@ var main = async () => {
     var grid = new Stage.GUI.Grid(); 
     grid.addColumnDefinition(0.5);
     grid.addColumnDefinition(0.5);
-    grid.addRowDefinition(0.3);
-    grid.addRowDefinition(0.3);
-    grid.addRowDefinition(0.3);
+    grid.addRowDefinition(0.5);
+    grid.addRowDefinition(0.5);
 
     grid.addControl(buttons[0], 0, 0);   
     grid.addControl(buttons[1], 0, 1);
     grid.addControl(buttons[2], 1, 0);
     grid.addControl(buttons[3], 1, 1);
-    grid.addControl(buttons[4], 2, 0);
-    grid.addControl(buttons[5], 2, 1);
+
     
     advancedTexture.addControl(grid);
 
@@ -221,7 +240,60 @@ var main = async () => {
     
     parentMenuMesh.addChild(plane)
     parentMenuMesh.addChild(loadedPhone)
+    //https://poly.google.com/search/beachside
+    var container = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/beach/model.gltf", "", scene)  
+    container.addAllToScene();
+    container.meshes[0].position.set(1, 0.7, 0)
+    container.meshes[0].scaling.scaleInPlace(3)
+    container.meshes[0].rotation.y = -Math.PI/2
+    var box = BABYLON.MeshBuilder.CreateBox("box", {size: 1}, scene)
+    var mat = new BABYLON.StandardMaterial("beach mat",scene)
+    mat.diffuseColor = BABYLON.Color3.FromHexString("#1dc0ff")
+    box.material=mat;
+    box.scaling.z = 1000
+    box.scaling.x = 1000
+    box.position.y = -3
 
-    // vrController.addChild(parentMenuMesh))
+    // console.log("loaded")
+    // var loadedModel = container.createRootMesh()
+    // loadedModel.scaling.scaleInPlace(0.001)
+    // scene.addMesh(loadedModel)
+    //makeNotPickable(loadedModel)
+
+    parentMenuMesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+    parentMenuMesh.rotation.x = Math.PI / 8;
+    parentMenuMesh.rotation.y = 0;
+    parentMenuMesh.rotation.z = 0;
+
+    var phoneIsUp = false;
+
+    parentMenuMesh.setEnabled(true); // TODO CHANGE THIS FOR VR USE
+
+    function togglePhone(controller) {
+        if (phoneIsUp === false) {
+            controller.mesh.addChild(parentMenuMesh);
+            parentMenuMesh.setEnabled(true);
+    
+            parentMenuMesh.position.x = -0.1
+            parentMenuMesh.position.y = 0.1
+            parentMenuMesh.position.z = -0.1;
+        }
+        else {
+            controller.mesh.removeChild(parentMenuMesh);
+            parentMenuMesh.setEnabled(false);
+        }
+
+        phoneIsUp = !phoneIsUp;
+    }
+    
+    vrHelper.onControllerMeshLoaded.add(function(controller) {
+        // secondary button is the select button
+        controller.onSecondaryButtonStateChangedObservable.add(function (stateObject) {
+            if (stateObject.value === 1) {
+                togglePhone(controller);
+            }
+        });
+    });
+
 }
 main()
