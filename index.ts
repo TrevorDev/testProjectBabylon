@@ -153,7 +153,7 @@ var main = async () => {
     //light.intensity = 0.7
 
     // Setup vr
-    var vrHelper = scene.createDefaultVRExperience({floorMeshes: [env.ground]})
+    var vrHelper = scene.createDefaultVRExperience({floorMeshes: []})
     vrHelper.raySelectionPredicate = (mesh:BABYLON.AbstractMesh):boolean=>{
         return mesh.isVisible && mesh.isPickable;
     }
