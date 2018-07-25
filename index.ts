@@ -26,12 +26,10 @@ class SpeechRecognizer {
                 //Do something here
             }
             else if (event instanceof SDK.SpeechHypothesisEvent) {
-                console.log(JSON.stringify(event.Result));
                 hypothesisCallback(event.Result.Text);
             }
             else if (event instanceof SDK.SpeechSimplePhraseEvent) {
-                console.log(JSON.stringify(event.Result));
-                phraseCallback(JSON.stringify(event.Result));
+                phraseCallback(event.Result.DisplayText);
             }
             else if (event instanceof SDK.RecognitionEndedEvent) {
                 console.log(JSON.stringify(event));
@@ -212,10 +210,14 @@ var main = async () => {
     var recognizer = new SpeechRecognizer(SDK, SDK.RecognitionMode.Conversation, "en-us", SDK.SpeechResultFormat.Simple, "92069ee289b84e5594a9564ab77ed2ba");
     var win:any = window
     win.shell = new Shell(scene, vrHelper, recognizer);
+    
+    console.log(win.shell.apps)
+    //shell.launchApp(shell.apps[2]);
 
     // Model taken from https://poly.google.com/view/3oGDGMrc6rm
     // CC-BY for Google as the content creator
     // this is the 3D Phone model that will be the app launcher device
+    
     var phoneContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync("/public/tablet/", "1327 iPhone.gltf", scene)
     var loadedPhone = phoneContainer.createRootMesh()
 
@@ -239,9 +241,25 @@ var main = async () => {
     var advancedTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
     var buttons = []
     
-    var available_apps = [{name: "testApp", iconUrl: "public/appicons/test_app_logo.png"}, {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, {name: "chatApp", iconUrl: "public/appicons/flatchat.png"}, {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}]
-    for (let i = 0; i < 6; i++) {
-        var button = Stage.GUI.Button.CreateImageWithCenterTextButton("button" + i, available_apps[i].name, available_apps[i].iconUrl);\
+
+    var available_apps = [ {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, {name: "chatApp", iconUrl: "public/appicons/flatchat.png"}, {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}]
+    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch game.", 2], ["launch wikipedia.", 3]]);
+    win.shell.recognizer.StartOneShotRecognition(
+        function (trex) {
+            console.log(trex);
+        },
+        function (text)
+        {
+            text = text.toLowerCase();
+            debugger
+            if (appMap.has(text))
+            {
+                debugger
+                win.shell.launchApp(win.shell.apps[appMap.get(text)]);
+            }
+        });
+    for (let i = 0; i < 4; i++) {
+        var button = Stage.GUI.Button.CreateImageWithCenterTextButton("button" + i, available_apps[i].name, available_apps[i].iconUrl);
         button.width = 1;
         button.height = 1;
         button.color = "transparent";
@@ -283,6 +301,8 @@ var main = async () => {
     
     parentMenuMesh.addChild(plane)
     parentMenuMesh.addChild(loadedPhone)
+
+    /*
     //https://poly.google.com/search/beachside
     var container = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/beach/model.gltf", "", scene)  
     container.addAllToScene();
@@ -337,6 +357,7 @@ var main = async () => {
             }
         });
     });
+    */
 
 }
 main()

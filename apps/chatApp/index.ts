@@ -286,9 +286,9 @@ shell.registerApp({
             record.thickness = 20
             let inputTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(inputPlane);
             let input = new Stage.GUI.InputText();
-                input.text = "...";
+                input.text = "talk to me baby";
                 input.color = "blue";
-                input.fontSize = "200px;";
+                input.fontSize = "50px;";
                 input.background = "white";
                 input.autoStretchWidth = false;
                 inputTexture.addControl(input);
