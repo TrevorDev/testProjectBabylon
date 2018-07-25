@@ -105,7 +105,10 @@ class Shell {
                 if((<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition){
                     camPos = (<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition;
                 }
-                var angle = Math.sin((camPos.x-sphere.position.x)/(camPos.z-sphere.position.z))
+                var angle = Math.atan((camPos.x-sphere.position.x)/(camPos.z-sphere.position.z))
+                if((camPos.z-sphere.position.z) > 0){
+                    angle+=Math.PI
+                }
                 anchor.rotation.y = angle
             })
     

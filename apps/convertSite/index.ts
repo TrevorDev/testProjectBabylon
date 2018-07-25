@@ -20,21 +20,38 @@ var renderSite = async function (data, windowAnchor){
     var arr = $.parseHTML(data);
     var contentArr = [];
 
-    var xpos = 0, ypos = 0;
-
+    var zpos = 0;
+    var leftx = 0, midx = 2, rightx = 4;
+    var lefty = 6, midy = 6, righty = 6;
     for(var i in arr){
-        var node = arr[i];
+        let node = arr[i];
         if(node.nodeName == 'TEXT-3D'){
             var text = node.children[0].innerText, pos = node.attributes[0].nodeValue;
             contentArr.push({'text':text,'pos':pos});
 
             var plane = BABYLON.MeshBuilder.CreatePlane("plane", {size: 1}, scene);
-            if(pos == 'left')
-                ypos += 2
-            else if(pos == 'right')
-                xpos += 2
-            plane.position.x = xpos
-            plane.position.y = ypos
+            if(pos == 'left'){
+                zpos = -0.5
+                plane.position.x = leftx
+                plane.position.y = lefty
+                plane.position.z = zpos
+                lefty -= 2
+            }
+            else if(pos == 'right'){
+                zpos = -0.5
+                plane.position.x = rightx
+                plane.position.y = righty
+                plane.position.z = zpos
+                righty -= 2
+            }
+            else if(pos == 'mid'){
+                zpos = 0
+                plane.position.x = midx
+                plane.position.y = midy
+                plane.position.z = zpos
+                midy -= 2
+            }
+            
             // GUI
 
             var advancedTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
@@ -54,19 +71,34 @@ var renderSite = async function (data, windowAnchor){
             textures.push(advancedTexture);
         }
         else if(node.nodeName == 'IMG-3D'){
-            var img = node.children[0].src, pos = node.attributes[0].nodeValue;
+            var img = node.children[0].src, pos = node.getAttribute("pos");
             contentArr.push({'image':img,'pos':pos});
 
             var mat = new BABYLON.StandardMaterial("mat", scene);
             var tex = new BABYLON.Texture(img, scene)
             mat.diffuseTexture = tex;
             var plane = BABYLON.MeshBuilder.CreatePlane("plane",{},scene);
-            if(pos == 'left')
-                ypos += 2
-            else if(pos == 'right')
-                xpos += 2
-            plane.position.x = xpos
-            plane.position.y = ypos;
+            if(pos == 'left'){
+                zpos = -0.5
+                plane.position.x = leftx
+                plane.position.y = lefty
+                plane.position.z = zpos
+                lefty -= 2
+            }
+            else if(pos == 'right'){
+                zpos = -0.5
+                plane.position.x = rightx
+                plane.position.y = righty
+                plane.position.z = zpos
+                righty -= 2
+            }
+            else if(pos == 'mid'){
+                zpos = 0
+                plane.position.x = midx
+                plane.position.y = midy
+                plane.position.z = zpos
+                midy -= 2
+            }
             plane.material = mat;
 
             plane.parent = windowAnchor;
@@ -80,12 +112,27 @@ var renderSite = async function (data, windowAnchor){
 
             // Create GUI button
             var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1, height: 1}, scene)
-            if(pos == 'left')
-                ypos += 2
-            else if(pos == 'right')
-                xpos += 2
-            plane.position.x = xpos;
-            plane.position.y = ypos;
+            if(pos == 'left'){
+                zpos = -0.5
+                plane.position.x = leftx
+                plane.position.y = lefty
+                plane.position.z = zpos
+                lefty -= 2
+            }
+            else if(pos == 'right'){
+                zpos = -0.5
+                plane.position.x = rightx
+                plane.position.y = righty
+                plane.position.z = zpos
+                righty -= 2
+            }
+            else if(pos == 'mid'){
+                zpos = 0
+                plane.position.x = midx
+                plane.position.y = midy
+                plane.position.z = zpos
+                midy -= 2
+            }
             plane.parent = windowAnchor // set windowAnchor as parent
             var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane)
             guiTexture
@@ -121,6 +168,40 @@ var renderSite = async function (data, windowAnchor){
 
             planes.push(plane);
             textures.push(guiTexture);
+        }else if(node.nodeName == 'MODEL-3D'){
+            pos = node.getAttribute("pos")
+            var plane = new BABYLON.Mesh("", scene);
+            plane.parent = windowAnchor
+            console.log("Pos" + pos)
+            if(pos == 'left'){
+                zpos = -0.5
+                plane.position.x = leftx
+                plane.position.y = lefty
+                plane.position.z = zpos
+                lefty -= 2
+            }
+            else if(pos == 'right'){
+                zpos = -0.5
+                plane.position.x = rightx
+                plane.position.y = righty
+                plane.position.z = zpos
+                righty -= 2
+            }
+            else if(pos == 'mid'){
+                zpos = 0
+                plane.position.x = midx
+                plane.position.y = midy
+                plane.position.z = zpos
+                midy -= 2
+            }
+            var container = await BABYLON.SceneLoader.LoadAssetContainerAsync(node.getAttribute("src"), "", scene)  
+            container.addAllToScene();
+            container.meshes[0].parent = plane;
+            container.meshes[0].position.z = -1
+            container.meshes[0].position.y = -1.5
+            container.meshes[0].position.x = 0.8
+            planes.push(plane);
+            
         }
     }
     console.log(contentArr)
