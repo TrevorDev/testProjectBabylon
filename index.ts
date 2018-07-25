@@ -17,12 +17,13 @@ class Shell {
     private apps:Array<App> = []
     private x: number = 0
     constructor(public scene:BABYLON.Scene, public vrHelper:BABYLON.VRExperienceHelper){}
+    registeredAppCounter = 0
     positionSphere = (sphere: any) => {
         sphere.position.x = this.x;
         this.x += 1;
     }
-    registerApp = (app:App)=>{
-        // This settimeout is needed to handle a weird bug where the spheres are not rendered
+    launchApp = (app:App) => {
+        //  maximize the application at the given index
         setTimeout(() => {
             var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
             sphere.position.y += 0.2
@@ -34,13 +35,14 @@ class Shell {
             mat.diffuseTexture.hasAlpha = true;
             mat.backFaceCulling = false;
             sphere.material = mat;
+            this.registeredAppCounter += 1
     
             this.positionSphere(sphere)
             var anchor = new BABYLON.Mesh("", this.scene);
             anchor.scaling.scaleInPlace(0)
          
             sphere.rotation.y=Math.PI/4
-            this.apps.push(app)
+            // this.apps.push(app)
     
             // app.launch(anchor, this.vrHelper)
     
@@ -100,7 +102,7 @@ class Shell {
                 if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
                     if(e.pickInfo.pickedMesh == sphere) {
                         if(!launched){
-                            this.apps.push(app)
+                            // this.apps.push(app)
                             app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
                         }
                         launched = true;
@@ -123,6 +125,10 @@ class Shell {
                 }
             })
         }, 1000)
+    }
+    registerApp = (app:App)=>{
+        // This settimeout is needed to handle a weird bug where the spheres are not rendered
+        this.apps.push(app)
 
     }
 }
@@ -181,38 +187,42 @@ var main = async () => {
     // var advancedTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
     // var buttons = []
     
-    // for (var i = 0; i < 6; i++) {
-    //     var button = Stage.GUI.Button.CreateSimpleButton("button" + i, "App " + i);
-    //     button.width = 1;
-    //     button.height = 1;
-    //     button.color = "white";
-    //     button.fontSize = 50;
-    //     button.background = "green";
-    //     button.paddingLeft = "3%";
-    //     button.paddingRight = "3%";
-    //     button.paddingBottom = "3%";
+    var available_apps = [{name: "testApp", iconUrl: "public/appicons/test_app_logo.png"}, {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, {name: "chatApp", iconUrl: "public/appicons/flatchat.png"}, {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}]
+    for (let i = 0; i < 6; i++) {
+        var button = Stage.GUI.Button.CreateImageWithCenterTextButton("button" + i, available_apps[i].name, available_apps[i].iconUrl);\
+        button.width = 1;
+        button.height = 1;
+        button.color = "transparent";
+        button.fontSize = 50;
+        button.paddingLeft = "3%";
+        button.paddingRight = "3%";
+        button.paddingBottom = "3%";
         
-    //     button.onPointerUpObservable.add(function() {
-    //         alert("you launched app");
-    //     });
 
-    //     buttons.push(button)
-    // }
+        button.onPointerUpObservable.add(function(e) {
+            console.log(i)
+            
+            console.log(shell.launchApp(shell.apps[i]))
+        });
 
-    // // grid for icons
-    // var grid = new Stage.GUI.Grid(); 
-    // grid.addColumnDefinition(0.5);
-    // grid.addColumnDefinition(0.5);
-    // grid.addRowDefinition(0.3);
-    // grid.addRowDefinition(0.3);
-    // grid.addRowDefinition(0.3);
+        buttons.push(button)
+    }
 
-    // grid.addControl(buttons[0], 0, 0);   
-    // grid.addControl(buttons[1], 0, 1);
-    // grid.addControl(buttons[2], 1, 0);
-    // grid.addControl(buttons[3], 1, 1);
-    // grid.addControl(buttons[4], 2, 0);
-    // grid.addControl(buttons[5], 2, 1);
+    // grid for icons
+    var grid = new Stage.GUI.Grid(); 
+    grid.addColumnDefinition(0.5);
+    grid.addColumnDefinition(0.5);
+    grid.addRowDefinition(0.3);
+    grid.addRowDefinition(0.3);
+    grid.addRowDefinition(0.3);
+
+    grid.addControl(buttons[0], 0, 0);   
+    grid.addControl(buttons[1], 0, 1);
+    grid.addControl(buttons[2], 1, 0);
+    grid.addControl(buttons[3], 1, 1);
+    grid.addControl(buttons[4], 2, 0);
+    grid.addControl(buttons[5], 2, 1);
+
     
     // advancedTexture.addControl(grid);
 
@@ -242,6 +252,38 @@ var main = async () => {
     // scene.addMesh(loadedModel)
     //makeNotPickable(loadedModel)
 
-    // vrController.addChild(parentMenuMesh))
+    parentMenuMesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
+    parentMenuMesh.rotation.x = Math.PI / 8;
+    parentMenuMesh.rotation.y = 0;
+    parentMenuMesh.rotation.z = 0;
+
+    var phoneIsUp = false;
+    parentMenuMesh.setEnabled(false);
+    function togglePhone(controller) {
+        if (phoneIsUp === false) {
+            controller.mesh.addChild(parentMenuMesh);
+            parentMenuMesh.setEnabled(true);
+    
+            parentMenuMesh.position.x = -0.1
+            parentMenuMesh.position.y = 0.1
+            parentMenuMesh.position.z = -0.1;
+        }
+        else {
+            controller.mesh.removeChild(parentMenuMesh);
+            parentMenuMesh.setEnabled(false);
+        }
+
+        phoneIsUp = !phoneIsUp;
+    }
+
+    vrHelper.onControllerMeshLoaded.add(function(controller) {
+        // secondary button is the select button
+        controller.onSecondaryButtonStateChangedObservable.add(function (stateObject) {
+            if (stateObject.value === 1) {
+                togglePhone(controller);
+            }
+        });
+    });
+
 }
 main()
