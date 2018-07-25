@@ -220,9 +220,6 @@ var main = async () => {
     var win:any = window
     win.shell = new Shell(scene, vrHelper, recognizer);
     
-    console.log(win.shell.apps)
-    //shell.launchApp(shell.apps[2]);
-
     // Model taken from https://poly.google.com/view/3oGDGMrc6rm
     // CC-BY for Google as the content creator
     // this is the 3D Phone model that will be the app launcher device
@@ -309,7 +306,6 @@ var main = async () => {
     parentMenuMesh.addChild(plane)
     parentMenuMesh.addChild(loadedPhone)
 
-    /*
     //https://poly.google.com/search/beachside
     var container = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/beach/model.gltf", "", scene)  
     container.addAllToScene();
@@ -364,7 +360,6 @@ var main = async () => {
             }
         });
     });
-    */
 
 }
 main()
