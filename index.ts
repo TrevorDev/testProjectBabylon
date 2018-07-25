@@ -342,7 +342,6 @@ var main = async () => {
     var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch game.", 2], ["launch wikipedia.", 3]]);
     function toggleRecognizer() {
         if (listening == false) {
-            listening = true;
             win.shell.recognizer.StartOneShotRecognition(
                 function (trex) {
                     console.log(trex);
@@ -353,9 +352,11 @@ var main = async () => {
                         win.shell.launchApp(win.shell.apps[appMap.get(text)], true);
                     }
                 });
+            listening = true;
         }
         else {
             win.shell.recognizer.RecognizerStop();
+            listening = false;
         }
     }
     
