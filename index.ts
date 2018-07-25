@@ -218,7 +218,7 @@ var main = async () => {
     vrHelper.raySelectionPredicate = (mesh:BABYLON.AbstractMesh):boolean=>{
         return mesh.isVisible && mesh.isPickable;
     }
-    var recognizer = new SpeechRecognizer(SDK, SDK.RecognitionMode.Conversation, "en-us", SDK.SpeechResultFormat.Simple, "92069ee289b84e5594a9564ab77ed2ba");
+    var recognizer = new SpeechRecognizer(SDK, SDK.RecognitionMode.Interactive, "en-us", SDK.SpeechResultFormat.Simple, "92069ee289b84e5594a9564ab77ed2ba");
     var win:any = window
     win.shell = new Shell(scene, vrHelper, recognizer);
     
@@ -244,7 +244,7 @@ var main = async () => {
     scene.addMesh(loadedPhone, true)
 
     // menu launcher plane
-    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.5, height:1.5}, scene);
+    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.5, height:4}, scene);
 
     plane.position.z = -0.2;
 
@@ -262,12 +262,11 @@ var main = async () => {
     for (let i = 0; i < available_apps.length; i++) {
         var button = Stage.GUI.Button.CreateImageWithCenterTextButton("button" + i, available_apps[i].name, available_apps[i].iconUrl);
         button.width = 1;
-        button.height = 1;
+        button.height = 0.75;
         button.color = "transparent";
         button.fontSize = 50;
         button.paddingLeft = "3%";
         button.paddingRight = "3%";
-        button.paddingBottom = "3%";
         
 
         button.onPointerUpObservable.add(function(e) {
@@ -291,14 +290,35 @@ var main = async () => {
     grid.addControl(buttons[3], 1, 1);
     grid.addControl(buttons[4], 2, 0);
 
-    
+    grid.paddingTop = 250;
+    grid.paddingBottom = 250
     advancedTexture.addControl(grid);
+
+    var materialPlane = new BABYLON.StandardMaterial("texturePlane", scene);
+    materialPlane.diffuseTexture = new BABYLON.Texture("public/msft.png", scene);
+    materialPlane.specularColor = new BABYLON.Color3(0, 0, 0);
+    materialPlane.backFaceCulling = true;//Allways show the front and the back of an element
+
+    //Creation of a plane for the logo 
+    var planeLogo= BABYLON.MeshBuilder.CreatePlane("plane", {width: 0.25, height:0.25}, scene);
+    planeLogo.position.z = -0.2;
+    planeLogo.position.y = -1.4    
+
+    planeLogo.material = materialPlane;
+
+    var dialogText = new Stage.GUI.TextBlock()
+    dialogText.color = 'black'
+    dialogText.fontSize = 100
+    dialogText.textVerticalAlignment = Stage.GUI.Control.VERTICAL_ALIGNMENT_TOP
+
+    advancedTexture.addControl(dialogText)
 
     // parent menu mesh that holds both the phone and ui
     var parentMenuMesh = new BABYLON.Mesh('parentMesh1', scene)
     
     parentMenuMesh.addChild(plane)
     parentMenuMesh.addChild(loadedPhone)
+    parentMenuMesh.addChild(planeLogo)
 
     //https://poly.google.com/search/beachside
     var container = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/beach/model.gltf", "", scene)  
@@ -390,10 +410,17 @@ var main = async () => {
         if (listening == false) {
             win.shell.recognizer.StartOneShotRecognition(
                 function (trex) {
-                    console.log(trex);
+                    dialogText.text = trex;
                 },
                 function (text) {
+                    dialogText.text = text;
+
+                    setTimeout(function(){
+                        dialogText.text = ""
+                    }, 5000)
+
                     text = text.toLowerCase();
+                    
                     if (appMap.has(text)) {
                         win.shell.launchApp(win.shell.apps[appMap.get(text)], true);
                     }
@@ -415,6 +442,5 @@ var main = async () => {
             }
         });
     });
-
 }
 main()
