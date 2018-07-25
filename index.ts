@@ -385,7 +385,7 @@ var main = async () => {
     }
 
     var listening = false;
-    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch game.", 2], ["launch wikipedia.", 3]]);
+    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch game.", 2], ["launch wikipedia.", 3], ["launch architecture.", 4]]);
     function toggleRecognizer() {
         if (listening == false) {
             win.shell.recognizer.StartOneShotRecognition(
