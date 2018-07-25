@@ -9,33 +9,94 @@ var makeNotPickable = (mesh:BABYLON.AbstractMesh)=>{
     })
 }
 
+var renderSite = async function (data, windowAnchor){
+    // Get scene
+    var scene = windowAnchor.getScene();
+
+    var planes = []
+    var materials = []
+    var textures = []
+
+    var arr = $.parseHTML(data);
+    var contentArr = [];
+    for(var i in arr){
+        var node = arr[i];
+        if(node.nodeName == 'TEXT-3D'){
+            contentArr.push({'text':node.children[0].innerText});
+        }
+        else if(node.nodeName == 'IMG-3D'){
+            contentArr.push({'image':node.children[0].src});
+
+        var mat = new BABYLON.StandardMaterial("mat", scene);
+        var tex = new BABYLON.Texture(node.children[0].src, scene)
+        mat.diffuseTexture = tex;
+        var plane = BABYLON.MeshBuilder.CreatePlane("plane",{},scene);
+        plane.position.x = 1
+        plane.position.y = 1;
+        plane.material = mat;
+        plane.parent = windowAnchor;
+
+        planes.push(plane);
+        materials.push(mat);
+        textures.push(tex);
+        }
+        else if(node.nodeName == 'BTN-3D'){
+            contentArr.push({'href':node.children[0].pathname,'btnText':node.children[0].innerText});
+
+            // Create GUI button
+            var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1, height: 1}, scene)
+            plane.position.x = 3;
+            plane.position.y = 1;
+            plane.parent = windowAnchor // set windowAnchor as parent
+            var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane)
+            guiTexture
+            var guiPanel = new Stage.GUI.StackPanel()  
+            guiPanel.top = "0px"
+            guiTexture.addControl(guiPanel)
+            var button = Stage.GUI.Button.CreateSimpleButton("", node.children[0].innerText)
+            
+            button.fontSize = 300
+            button.color = "white"
+            button.background = "#4AB3F4"
+            button.cornerRadius = 200
+            button.thickness = 20
+            button.onPointerClickObservable.add(async ()=>{
+                
+                //remove previous page
+                for(var i in planes){
+                    planes[i].dispose();
+                }
+                for(var i in materials){
+                    materials[i].dispose();
+                }
+                for(var i in textures){
+                    textures[i].dispose();
+                }
+                console.log("hit2");
+
+                var newdata = await $.get("/public/testSite"+node.children[0].pathname);
+                renderSite(newdata, windowAnchor);
+            });
+            guiPanel.addControl(button);
+
+            planes.push(plane);
+            textures.push(guiTexture);
+        }
+    }
+    console.log(contentArr)
+}
+
+
+
 shell.registerApp({
     name: "convertSite", 
     iconUrl: "public/appicons/wikipedia.png",
     launch: async (windowAnchor:BABYLON.Mesh, vrHelper: VRExperienceHelper)=>{
-        // Get scene
-        var scene = windowAnchor.getScene();
 
         console.log("conv app")
-        await $.get("/public/testSite/home.html",function(data){
-            var arr = $.parseHTML(data);
-            var contentArr = [];
-            for(var i in arr){
-                var node = arr[i];
-                if(node.nodeName == 'TEXT-3D'){
-                    contentArr.push({'text':node.children[0].innerText});
-                }
-                else if(node.nodeName == 'IMG-3D'){
-                    contentArr.push({'image':node.children[0].src});
-                }
-                else if(node.nodeName == 'BTN-3D'){
-                    contentArr.push({'href':node.children[0].href});
-                }
-            }
-            console.log(contentArr)
-        })
-        
-        
+        var data = await $.get("/public/testSite/home.html");
+        await renderSite(data, windowAnchor);
+      
     }, 
     dispose: async ()=>{
 
