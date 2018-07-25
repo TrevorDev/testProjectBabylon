@@ -18,6 +18,7 @@ var archTrueScale = 0.05;
 var isDollhouseScale = true;
 var architecturalModel:BABYLON.Mesh;
 var cachedDollhousePosition:BABYLON.Vector3;
+var archInputDownTime:Date = new Date(); 
 
 function setDollhouseScale() {
     architecturalModel.scaling.x = dollhouseScale;
@@ -46,17 +47,16 @@ shell.registerApp({
 		//BABYLON.SceneLoader.Append("public/architectureReview/models", "xboxcontroller.glb", scene, function()
 		//{
 		//});
-		let architecturalContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/architectureReview/models/lecce_bath.glb", "", scene);
+		let architecturalContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/architectureReview/models/lecce_bath.fbx", "", scene);
 		architecturalModel = architecturalContainer.createRootMesh();
 		
-        var sceneCam = scene.activeCamera;
-        var camPos = sceneCam.position;
-        var anchorPos = windowAnchor.position;
-        var midpoint = camPos.add(anchorPos).scale(0.5);
-        //var camDir = sceneCam.
-        architecturalModel.position.x = midpoint.x;//windowAnchor.position.x;
-        architecturalModel.position.y = midpoint.y;//windowAnchor.position.y;
-        architecturalModel.position.z = midpoint.z;//windowAnchor.position.z;
+        //var sceneCam = scene.activeCamera;
+        //var camPos = sceneCam.position;
+        //var anchorPos = windowAnchor.position;
+        //var midpoint = camPos.add(anchorPos).scale(0.5);
+        architecturalModel.position.x = /*midpoint.x;*/windowAnchor.position.x;
+        architecturalModel.position.y = /*midpoint.y;*/windowAnchor.position.y + 0.1;
+        architecturalModel.position.z = /*midpoint.z;*/windowAnchor.position.z;
         
         cachedDollhousePosition = architecturalModel.position;
         setDollhouseScale();
@@ -84,11 +84,19 @@ shell.registerApp({
         });*/
 		
 		scene.onPointerObservable.add((e)=>{
-            if(e.type == BABYLON.PointerEventTypes.POINTERDOWN && e.pickInfo.pickedMesh && e.pickInfo.pickedMesh.isDescendantOf(architecturalModel)){
-                if (isDollhouseScale)
-                    setTrueScale();
-                else
-                    setDollhouseScale();
+            if (e.pickInfo.pickedMesh && e.pickInfo.pickedMesh.isDescendantOf(architecturalModel)) {
+                if(e.type == BABYLON.PointerEventTypes.POINTERDOWN){
+                    archInputDownTime = new Date();
+                }
+                else if (e.type == BABYLON.PointerEventTypes.POINTERUP) {
+                    var archInputUpTime = new Date();
+                    if (archInputUpTime.getTime() - archInputDownTime.getTime() < 200) {
+                        if (isDollhouseScale)
+                            setTrueScale();
+                        else
+                            setDollhouseScale();
+                    }
+                }
             }
         });
         
