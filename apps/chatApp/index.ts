@@ -1,4 +1,4 @@
-import { VRExperienceHelper, ActionManager, StandardMaterial, VideoTexture } from "babylonjs";
+import { VRExperienceHelper, ActionManager, StandardMaterial, VideoTexture, Color3 } from "babylonjs";
 import {Stage} from "../../src/stage"
 
 var shell:any = (<any>window).shell
@@ -228,6 +228,8 @@ shell.registerApp({
                 hoverEffect(option2);
             }
         }
+        
+    let chatWindowTextLog = {};
 
         let stopVideos = function () {
             let contactList = ["name0","name1","name2","name3"];
@@ -256,6 +258,14 @@ shell.registerApp({
             //     dialogBox.position.addInPlace(evt.delta);
             // });
             dialogBox.addBehavior(drag);
+            let shadowBox = BABYLON.MeshBuilder.CreatePlane('shadowBox.'+parentPerson.id, {width: 2, height: 1.5}, scene);
+            shadowBox.position.z = -.1;
+            shadowBox.visibility = 0;
+            let shadowMaterial = new StandardMaterial('shadowBox.Mat.'+ parentPerson.id, scene);
+            shadowMaterial.diffuseColor = Color3.White();
+            shadowMaterial.alpha = .5; 
+            shadowBox.material = shadowMaterial;
+            shadowBox.parent = dialogBox;
 
             var closePlane = BABYLON.MeshBuilder.CreatePlane("closePlane" + parentPerson.id, {width: 0.2, height: 0.2}, scene)
             closePlane.position.x= 0.9;
@@ -263,6 +273,10 @@ shell.registerApp({
             closePlane.position.z= -0.01;
             closePlane.parent = dialogBox 
             var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(closePlane)
+
+            let textLogKey = dialogBox.name;
+            console.log(textLogKey);
+            chatWindowTextLog[textLogKey] = {left: [], right: []};
 
             var guiPanel = new Stage.GUI.StackPanel()  
             guiPanel.top = "0px"
@@ -274,8 +288,8 @@ shell.registerApp({
             close.cornerRadius = 200
             close.thickness = 20
             close.onPointerClickObservable.add(()=>{
-                scene.getMeshByName("dialogBox" + parentPerson.id).visibility = 0;
                 scene.getMeshByName("closePlane" + parentPerson.id).visibility = 0;
+        scene.getMeshByName("shadowBox."+ parentPerson.id).visibility = 0;
                 scene.getMeshByName("voicePlane" + parentPerson.id).visibility = 0;
                 scene.getMeshByName("inputPlane" + parentPerson.id).visibility = 0;
 
@@ -319,9 +333,9 @@ shell.registerApp({
             let input = new Stage.GUI.InputText();
                 input.height = "130px";             
                 input.text = "default";
-                input.color = "blue";
+                input.color = "white";
                 input.fontSize = "120";
-                input.background = "white";
+                input.background = "black";
                 input.autoStretchWidth = false;
                 inputTexture.addControl(input);
                         
@@ -381,6 +395,37 @@ shell.registerApp({
         loadedModel.parent = windowAnchor;
         //var chatActions = new ActionManager(scene);
 
+        let checkTextIsNotEmpty = function(textObj){
+            //TODO: Fix this
+            return true;
+        }
+
+        let wrapTextHelper = {x: 0, y: 0, lineHeight: 0 }
+
+        let wrapText = function(context, text, x, y, maxWidth, lineHeight) {
+            var words = text.split(' ');
+            var line = '';
+    
+            for(var n = 0; n < words.length; n++) {
+              var testLine = line + words[n] + ' ';
+              var metrics = context.measureText(testLine);
+              var testWidth = metrics.width;
+              if (testWidth > maxWidth && n > 0) {
+                context.fillText(line, x, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+              }
+              else {
+                line = testLine;
+              }
+            }
+            //wrapTextHelper.lineHeight = lineHeight;
+            //wrapTextHelper.x = x;
+            wrapTextHelper.y = y;
+            context.fillText(line, x, y);
+          }
+          
+
         scene.onPointerObservable.add((evt)=> {
 
             // console.log(evt.pickInfo.pickedMesh.name);
@@ -400,9 +445,131 @@ shell.registerApp({
                     summonAwesome(scene,windowAnchor);
                 }
                 scene.getMeshByName("dialogBox" + evt.pickInfo.pickedMesh.id).visibility = 1;
+                scene.getMeshByName("shadowBox." + evt.pickInfo.pickedMesh.id).visibility = 1;
                 scene.getMeshByName("closePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
-                scene.getMeshByName("voicePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
-                scene.getMeshByName("inputPlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
+        scene.getMeshByName("voicePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
+        scene.getMeshByName("inputPlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
+                
+                //Load data
+                let textData = chatWindowTextLog[evt.pickInfo.pickedMesh.id];
+                if(checkTextIsNotEmpty(textData)){
+                    //TODO: move code into this big if
+                }
+
+                textData = [
+                            {left: "Hello there! I saw you using this fancy new magic", right: undefined},
+                            {left: "Hey, are you there?", right: undefined},
+                            {left: undefined, right: "Sorry about that - hackathon == FUNNNN TIMES"},
+                            {left: "FINALLY - you're slow today ;)", right: undefined}]
+
+                let dialogTextureUpdateName = "dialogBox" + evt.pickInfo.pickedMesh.id;
+
+                let dialogBoxDynamicTexture = new BABYLON.DynamicTexture("texture." + dialogTextureUpdateName, 720, scene, true);
+                dialogBoxDynamicTexture.hasAlpha = true;
+                  
+                let dialogBoxDynamicMaterial = new BABYLON.StandardMaterial("mat." + dialogTextureUpdateName, scene);
+                dialogBoxDynamicMaterial.diffuseTexture = dialogBoxDynamicTexture;
+                
+                //dialogBoxDynamicMaterial.specularColor = new BABYLON.Color3(0, 0, 0);
+                dialogBoxDynamicMaterial.backFaceCulling = false;
+                //dialogBoxDynamicMaterial.alpha = .5;
+
+                let dialogBoxMesh = scene.getMeshByName("dialogBox" + evt.pickInfo.pickedMesh.id);
+                dialogBoxMesh.material = dialogBoxDynamicMaterial;
+
+
+                let context = dialogBoxDynamicTexture.getContext();
+
+                //context.globalAlpha = 1;
+                
+                let dialogBoxFont = "40px arial";
+                let dialogTextColor = "#696969";//"#555555";
+                let { width, height } = dialogBoxDynamicTexture.getSize();
+                let bordersPercentage = .05;
+                let widthBorder = width*bordersPercentage;
+                let heightBorder = height*bordersPercentage;
+                
+                //context.save();
+                //context.globalAlpha = 0.4;
+                //context.fillStyle = "rgba(255, 255, 255, 0.5)";
+                //context.fillRect(0, 0, width, height);
+                //context.restore();
+                //context.save();
+                //context.fillStyle = dialogTextColor;
+                
+                //context.fillText();
+                //let size = dialogBoxDynamicTexture.getSize();
+                
+                //context.fillRect(widthBorder, heightBorder, (width-widthBorder), (height-heightBorder));
+                
+                //let bufferEdges = 15;
+                let colorChoice = {left: "Fuchsia", right: "Aqua"};
+                
+                wrapTextHelper.lineHeight = 50;
+                wrapTextHelper.y = heightBorder;
+                for(let i = 0; i < textData.length; i++ ){
+                    context.font = dialogBoxFont;
+                    let curr = textData[i];
+                    let text = "";
+                    let widthToUse;
+                    if(curr.left){
+                        context.textAlign = 'left';
+                        dialogTextColor = colorChoice.left;
+                        text = curr.left;
+                        wrapTextHelper.x = widthBorder;
+                        widthToUse = width/2 + widthBorder;
+                    }else if (curr.right){
+                        context.textAlign = 'left';
+                        dialogTextColor = colorChoice.right;
+                        text = curr.right;
+                        wrapTextHelper.x = width/2 - widthBorder;
+                        widthToUse = width/2  - widthBorder;
+                    }
+                    console.log(widthBorder);
+                    context.fillStyle = dialogTextColor;
+                    wrapText(context, text, wrapTextHelper.x, wrapTextHelper.y, widthToUse, wrapTextHelper.lineHeight);
+                    wrapTextHelper.y += wrapTextHelper.lineHeight;
+                    //wrapTextHelper.lineHeight = 50;
+                    //dialogBoxDynamicTexture.drawText(text, x, y, dialogBoxFont, color, canvas color, invertY, update);
+                }
+                
+                dialogBoxDynamicTexture.update();
+                
+                
+                // var advancedTexture3 = Stage.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+                // var rectangle = new Stage.GUI.Rectangle("rect");
+                //     rectangle.top = "-100px";
+                //     rectangle.background = "white";
+                //     rectangle.color = "yellow";
+                //     rectangle.width = "200px";
+                //     rectangle.height = "40px";
+                //     advancedTexture3.addControl(rectangle);
+
+                //     var name = new Stage.GUI.TextBlock("name");
+                //     name.fontFamily = "Helvetica";
+                //     name.textWrapping = true;
+                //     name.text = "name: Hello!";
+                //     name.color = "black";
+                //     name.fontSize = 20;
+                //     rectangle.addControl(name);   
+                //     rectangle.linkWithMesh(loadedModel);   
+                //     rectangle.linkOffsetY = -25;
+                //     rectangle.linkOffsetX = 400;
+
+                //     var advancedTexture2 = Stage.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
+
+                // var input = new Stage.GUI.InputText();
+                // input.width = 0.2;
+                // input.maxWidth = 0.2;
+                // input.height = "40px";
+                // input.text = "";
+                // input.color = "blue";
+                // input.background = "white";
+                // advancedTexture2.addControl(input);  
+
+                // input.linkWithMesh(loadedModel);   
+                // input.linkOffsetY = 50;
+                // input.linkOffsetX = 400
             }
             if ( evt.type==BABYLON.PointerEventTypes.POINTERUP && evt.pickInfo.pickedMesh && evt.pickInfo.pickedMesh.id === "node_id32") {
                 scene.getAnimationGroupByName("popGroupassetContainerRootMesh").stop();
@@ -410,7 +577,6 @@ shell.registerApp({
                 listMesh.getChildMeshes().forEach(element => {
                     element.visibility = element.visibility === 1 ? 0:1;
                     visibility = element.visibility;
-
                 });
                 if (visibility === 0){
                     scene.getMeshByName("dialogBoxname0").visibility = 0;
