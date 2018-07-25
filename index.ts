@@ -439,9 +439,5 @@ var main = async () => {
             }
         });
     });
-    setInterval(function(){
-        toggleRecognizer()
-    },8000)
-
 }
 main()
