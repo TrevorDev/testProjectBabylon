@@ -117,15 +117,15 @@ shell.registerApp({
         var pickerPanel = new Stage.GUI.StackPanel()
 
         // Video texture
-        var bunnyVideo = new BABYLON.VideoTexture("bunny", ["public/mov_bbb.mp4"], scene, true);
+        var mixerVideo = new BABYLON.VideoTexture("bunny", ["public/MixerClipVid_30seconds.mp4"], scene, true);
         var waterfallVideo = new BABYLON.VideoTexture("waterfall", ["public/waterfall.mp4"], scene, true);
         
         var videoMaterial = new BABYLON.StandardMaterial("", scene);
         videoMaterial.emissiveColor = new BABYLON.Color3(1,1,1)
-        videoMaterial.diffuseTexture = bunnyVideo
+        videoMaterial.diffuseTexture = mixerVideo
         ribbon.material = videoMaterial
 
-        bunnyVideo.video.pause()
+        mixerVideo.video.pause()
         waterfallVideo.video.pause()
 
         // Events
@@ -133,8 +133,8 @@ shell.registerApp({
             var currentVid = videoMaterial.diffuseTexture.name
 
             if(currentVid=="bunny"){
-                bunnyVideo.video.play()
-                progressBar.value = bunnyVideo.video.currentTime
+                mixerVideo.video.play()
+                progressBar.value = mixerVideo.video.currentTime
             }
             else if(currentVid=="waterfall"){
                 waterfallVideo.video.play()
@@ -146,15 +146,15 @@ shell.registerApp({
             var currentVid = videoMaterial.diffuseTexture.name
 
             if(currentVid=="bunny"){
-                bunnyVideo.video.pause()
+                mixerVideo.video.pause()
             }
             else if(currentVid=="waterfall"){
                 waterfallVideo.video.pause()
             }  
         })
 
-        bunnyVideo.video.ontimeupdate = function(){
-            progressBar.value = bunnyVideo.video.currentTime
+        mixerVideo.video.ontimeupdate = function(){
+            progressBar.value = mixerVideo.video.currentTime
         }
 
         waterfallVideo.video.ontimeupdate = function(){
@@ -165,8 +165,8 @@ shell.registerApp({
             var currentVid = videoMaterial.diffuseTexture.name
 
             if(currentVid=="bunny"){
-                bunnyVideo.video.pause()
-                bunnyVideo.video.currentTime = progressBar.value
+                mixerVideo.video.pause()
+                mixerVideo.video.currentTime = progressBar.value
             }
             else if(currentVid=="waterfall"){
                 waterfallVideo.video.pause()
@@ -195,7 +195,7 @@ shell.registerApp({
                 pickerPanel.removeControl(waterfallButton)
                 pickerPanel.removeControl(bunnyButton)
                 pickerPanelTexture.removeControl(pickerPanel)
-                bunnyVideo.video.pause()
+                mixerVideo.video.pause()
                 progressBar.maximum = waterfallVideo.video.duration
                 progressBar.value = waterfallVideo.video.currentTime
                 videoMaterial.diffuseTexture = waterfallVideo
@@ -206,15 +206,15 @@ shell.registerApp({
                 pickerPanel.removeControl(bunnyButton)
                 pickerPanelTexture.removeControl(pickerPanel)
                 waterfallVideo.video.pause()
-                progressBar.maximum = bunnyVideo.video.duration
-                progressBar.value = bunnyVideo.video.currentTime
-                videoMaterial.diffuseTexture = bunnyVideo
+                progressBar.maximum = mixerVideo.video.duration
+                progressBar.value = mixerVideo.video.currentTime
+                videoMaterial.diffuseTexture = mixerVideo
             })
 
         })
 
-        bunnyVideo.video.onloadedmetadata = function(){
-            progressBar.maximum = bunnyVideo.video.duration
+        mixerVideo.video.onloadedmetadata = function(){
+            progressBar.maximum = mixerVideo.video.duration
             progressBarTexture.addControl(progressBar)
         }
     }, 
