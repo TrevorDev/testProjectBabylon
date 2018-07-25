@@ -1,80 +1,61 @@
 import { Stage } from './src/stage'
 import * as SDK from 'microsoft-speech-browser-sdk'
 
-function RecognizerSetup(SDK, recognitionMode, language, format, subscriptionKey) {
-    let recognizerConfig = new SDK.RecognizerConfig(
-        new SDK.SpeechConfig(
-            new SDK.Context(
-                new SDK.OS(navigator.userAgent, "Browser", null),
-                new SDK.Device("SpeechSample", "SpeechSample", "1.0.00000"))),
-        recognitionMode, // SDK.RecognitionMode.Interactive  (Options - Interactive/Conversation/Dictation)
-        language, // Supported languages are specific to each recognition mode Refer to docs.
-        format); // SDK.SpeechResultFormat.Simple (Options - Simple/Detailed)
 
-    // Alternatively use SDK.CognitiveTokenAuthentication(fetchCallback, fetchOnExpiryCallback) for token auth
-    let authentication = new SDK.CognitiveSubscriptionKeyAuthentication(subscriptionKey);
- 
-    return SDK.CreateRecognizer(recognizerConfig, authentication);
-}
+class SpeechRecognizer {
+    private recognizer: SDK.Recognizer
+    constructor(SDK, recognitionMode, language, format, subscriptionKey) {
+        let recognizerConfig = new SDK.RecognizerConfig(
+            new SDK.SpeechConfig(
+                new SDK.Context(
+                    new SDK.OS(navigator.userAgent, "Browser", null),
+                    new SDK.Device("SpeechSample", "SpeechSample", "1.0.00000"))),
+            recognitionMode, // SDK.RecognitionMode.Interactive  (Options - Interactive/Conversation/Dictation)
+            language, // Supported languages are specific to each recognition mode Refer to docs.
+            format); // SDK.SpeechResultFormat.Simple (Options - Simple/Detailed)
 
-function RecognizerStart(SDK, recognizer) {
-    recognizer.Recognize((event) => {
-        /*
-            Alternative syntax for typescript devs.
-            if (event instanceof SDK.RecognitionTriggeredEvent)
-        */
-        switch (event.Name) {
-            case "RecognitionTriggeredEvent" :
-                //UpdateStatus("Initializing");
-                break;
-            case "ListeningStartedEvent" :
-                //UpdateStatus("Listening");
-                break;
-            case "RecognitionStartedEvent" :
-                //UpdateStatus("Listening_Recognizing");
-                break;
-            case "SpeechStartDetectedEvent" :
-                //UpdateStatus("Listening_DetectedSpeech_Recognizing");
-                console.log(JSON.stringify(event.Result)); // check console for other information in result
-                break;
-            case "SpeechHypothesisEvent" :
-                //UpdateRecognizedHypothesis(event.Result.Text);
-                console.log(JSON.stringify(event.Result)); // check console for other information in result
-                break;
-            case "SpeechFragmentEvent" :
-                //UpdateRecognizedHypothesis(event.Result.Text);
-                console.log(JSON.stringify(event.Result)); // check console for other information in result
-                break;
-            case "SpeechEndDetectedEvent" :
-                //OnSpeechEndDetected();
-                //UpdateStatus("Processing_Adding_Final_Touches");
-                console.log(JSON.stringify(event.Result)); // check console for other information in result
-                break;
-            case "SpeechSimplePhraseEvent" :
-                console.log(JSON.stringify(event.Result));
-                //UpdateRecognizedPhrase(JSON.stringify(event.Result, null, 3));
-                break;
-            case "SpeechDetailedPhraseEvent" :
-                //UpdateRecognizedPhrase(JSON.stringify(event.Result, null, 3));
-                break;
-            case "RecognitionEndedEvent" :
-                //OnComplete();
-                //UpdateStatus("Idle");
-                console.log(JSON.stringify(event)); // Debug information
-                break;
-        }
-    })
-    .On(() => {
-        // The request succeeded. Nothing to do here.
-    },
-    (error) => {
-        console.error(error);
-    });
-}
+        // Alternatively use SDK.CognitiveTokenAuthentication(fetchCallback, fetchOnExpiryCallback) for token auth
+        let authentication = new SDK.CognitiveSubscriptionKeyAuthentication(subscriptionKey);
 
-function RecognizerStop(SDK, recognizer) {
-    // recognizer.AudioSource.Detach(audioNodeId) can be also used here. (audioNodeId is part of ListeningStartedEvent)
-    recognizer.AudioSource.TurnOff();
+        this.recognizer = SDK.CreateRecognizer(recognizerConfig, authentication);
+    }
+
+    StartOneShotRecognition(hypothesisCallback, phraseCallback) {
+        this.recognizer.Recognize((event) => {
+            /*
+                Alternative syntax for typescript devs.
+                if (event instanceof SDK.RecognitionTriggeredEvent)
+            */
+            switch (event.Name) {
+                case "ListeningStartedEvent":
+                    //UpdateStatus("Listening");
+                    break;
+                case "SpeechHypothesisEvent":
+                    console.log(JSON.stringify(event.Result)); 
+                    hypothesisCallback(event.Result.Text);
+                    break;
+                case "SpeechSimplePhraseEvent":
+                    console.log(JSON.stringify(event.Result));
+                    phraseCallback(JSON.stringify(event.Result));
+                    break;
+                case "RecognitionEndedEvent":
+                    console.log(JSON.stringify(event));
+                    this.recognizer.AudioSource.TurnOff();
+                    break;
+            }
+        })
+            .On(() => {
+                // The request succeeded. Nothing to do here.
+            },
+                (error) => {
+                    console.error(error);
+                });
+    }
+
+    RecognizerStop() {
+        // recognizer.AudioSource.Detach(audioNodeId) can be also used here. (audioNodeId is part of ListeningStartedEvent)
+        this.recognizer.AudioSource.TurnOff();
+    }
 }
 
 class App {
@@ -85,7 +66,7 @@ class App {
 class Shell {
     private apps:Array<App> = []
     private x: number = 1
-    constructor(public scene:BABYLON.Scene, public vrHelper:BABYLON.VRExperienceHelper){}
+    constructor(public scene:BABYLON.Scene, public vrHelper:BABYLON.VRExperienceHelper, public recognizer:SpeechRecognizer){}
     positionSphere = (sphere: any) => {
         sphere.position.x = this.x;
         this.x += 1;
@@ -192,10 +173,7 @@ vrHelper.raySelectionPredicate = (mesh:BABYLON.AbstractMesh):boolean=>{
     return mesh.isVisible && mesh.isPickable;
 }
 
-var win:any = window
-win.shell = new Shell(scene, vrHelper);
-   
-var recognizer = RecognizerSetup(SDK, SDK.RecognitionMode.Conversation, "en-us", SDK.SpeechResultFormat.Simple, "92069ee289b84e5594a9564ab77ed2ba");
-RecognizerStart(SDK, recognizer);
+var recognizer = new SpeechRecognizer(SDK, SDK.RecognitionMode.Conversation, "en-us", SDK.SpeechResultFormat.Simple, "92069ee289b84e5594a9564ab77ed2ba");
 
-console.log(win.shell.apps)
+var win:any = window
+win.shell = new Shell(scene, vrHelper, recognizer);

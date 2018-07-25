@@ -275,30 +275,29 @@ shell.registerApp({
             record.fontSize = 300
             record.color = "white"
             
-            record.cornerRadius = 500
-            record.thickness = 20
-            record.onPointerClickObservable.add(()=>{
-                console.log("start recording");
-            })
-            guiPanel2.addControl(record);
-            voicePlane.visibility = 0;
-
-
-             let inputPlane = BABYLON.MeshBuilder.CreatePlane("inputPlane" + parentPerson.id, {width: 1.7, height: 0.2}, scene)
+            let inputPlane = BABYLON.MeshBuilder.CreatePlane("inputPlane" + parentPerson.id, {width: 1.7, height: 0.2}, scene)
             inputPlane.position.x= -0.1;
             inputPlane.position.y= -0.9;
             inputPlane.position.z = -0.01;
             inputPlane.parent = dialogBox;
 
+            record.cornerRadius = 500
+            record.thickness = 20
             let inputTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(inputPlane);
 
             let input = new Stage.GUI.InputText();
-                input.text = "default";
+                input.text = "...";
                 input.color = "blue";
-                input.fontSize = "400px;";
+                input.fontSize = "20px;";
                 input.background = "white";
-                inputTexture.addControl(input);  
-
+                inputTexture.addControl(input);
+                        
+            
+            record.onPointerClickObservable.add(()=>{
+                shell.recognizer.StartOneShotRecognition(function(x) {input.text=x; inputTexture.addControl(input)}, function(y) {input.text=y; inputTexture.addControl(input)})
+            })
+            guiPanel2.addControl(record);
+            voicePlane.visibility = 0;
             inputPlane.visibility = 0;
             //     //input.linkWithMesh(inputPlane);   
             //     input.linkOffsetY = 50;
