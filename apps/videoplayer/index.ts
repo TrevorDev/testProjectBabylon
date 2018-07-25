@@ -177,7 +177,7 @@ shell.registerApp({
         fileButton.onPointerClickObservable.add(()=>{
             pickerPanelTexture.addControl(pickerPanel)
 
-            var waterfallButton = Stage.GUI.Button.CreateSimpleButton("", "Waterfall")
+            var waterfallButton = Stage.GUI.Button.CreateSimpleButton("", "Balloon Pop")
             waterfallButton.fontSize = 150
             waterfallButton.color = "white"
             waterfallButton.height = "50%"
