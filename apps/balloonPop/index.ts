@@ -10,7 +10,7 @@ var makeNotPickable = (mesh:BABYLON.AbstractMesh)=>{
 }
 
 shell.registerApp({
-    name: "testApp", 
+    name: "balloonPop", 
     iconUrl: "public/appicons/balloonPop.png",
     launch: async (windowAnchor:BABYLON.Mesh, vrHelper: VRExperienceHelper)=>{
         // Get scene
@@ -21,7 +21,7 @@ shell.registerApp({
        
         var fountain = BABYLON.Mesh.CreateBox("foutain", 0.01, scene);
         fountain.visibility = 0.1;
-        windowAnchor.addChild(fountain);
+        fountain.parent = windowAnchor;
         
         let createNewSystem = function():BABYLON.ParticleSystem {
             var particleSystem;
@@ -52,14 +52,14 @@ shell.registerApp({
         var y = 0;
         var spheres = []
         var materialAmiga = new BABYLON.StandardMaterial("amiga", scene);
-        materialAmiga.diffuseTexture = new BABYLON.Texture("textures/amiga.jpg", scene);
+        materialAmiga.diffuseTexture = new BABYLON.Texture("public/textures/amiga.jpg", scene);
         materialAmiga.emissiveColor = new BABYLON.Color3(0.5, 0.5, 0.5);
         for (var index = 0; index < 10; index++) {
             let sphere = BABYLON.Mesh.CreateSphere("sphere", 16, 1, scene);
             sphere.material = materialAmiga
-            sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1 }, scene);
+            //sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1 }, scene);
             sphere.position = new BABYLON.Vector3(Math.random() * 20 - 10, y, Math.random() * 10 - 5);
-            windowAnchor.addChild(sphere)
+            sphere.parent = windowAnchor
 
             y += 2;
             spheres.push(sphere)
