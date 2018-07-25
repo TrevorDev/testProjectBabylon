@@ -225,7 +225,7 @@ var main = async () => {
     var win:any = window
     win.shell = new Shell(scene, vrHelper, recognizer);
     
-    (<BABYLON.FreeCamera>scene.activeCamera).speed *= 0.3
+    (<BABYLON.FreeCamera>scene.activeCamera).speed *= 0.03
 
     // Model taken from https://poly.google.com/view/3oGDGMrc6rm
     // CC-BY for Google as the content creator
