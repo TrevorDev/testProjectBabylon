@@ -1,4 +1,54 @@
 import { Stage } from './src/stage'
+import * as SDK from 'microsoft-speech-browser-sdk'
+
+
+class SpeechRecognizer {
+    private recognizer: SDK.Recognizer
+    constructor(SDK, recognitionMode, language, format, subscriptionKey) {
+        let recognizerConfig = new SDK.RecognizerConfig(
+            new SDK.SpeechConfig(
+                new SDK.Context(
+                    new SDK.OS(navigator.userAgent, "Browser", null),
+                    new SDK.Device("SpeechSample", "SpeechSample", "1.0.00000"))),
+            recognitionMode, // SDK.RecognitionMode.Interactive  (Options - Interactive/Conversation/Dictation)
+            language, // Supported languages are specific to each recognition mode Refer to docs.
+            format); // SDK.SpeechResultFormat.Simple (Options - Simple/Detailed)
+
+        // Alternatively use SDK.CognitiveTokenAuthentication(fetchCallback, fetchOnExpiryCallback) for token auth
+        let authentication = new SDK.CognitiveSubscriptionKeyAuthentication(subscriptionKey);
+
+        this.recognizer = SDK.CreateRecognizer(recognizerConfig, authentication);
+    }
+
+    StartOneShotRecognition(hypothesisCallback, phraseCallback) {
+        this.recognizer.Recognize((event) => {
+            if (event instanceof SDK.RecognitionTriggeredEvent) {
+                //Do something here
+            }
+            else if (event instanceof SDK.SpeechHypothesisEvent) {
+                hypothesisCallback(event.Result.Text);
+            }
+            else if (event instanceof SDK.SpeechSimplePhraseEvent) {
+                phraseCallback(event.Result.DisplayText);
+            }
+            else if (event instanceof SDK.RecognitionEndedEvent) {
+                console.log(JSON.stringify(event));
+                this.recognizer.AudioSource.TurnOff();
+            }
+        })
+            .On(() => {
+                // The request succeeded. Nothing to do here.
+            },
+                (error) => {
+                    console.error(error);
+                });
+    }
+
+    RecognizerStop() {
+        // recognizer.AudioSource.Detach(audioNodeId) can be also used here. (audioNodeId is part of ListeningStartedEvent)
+        this.recognizer.AudioSource.TurnOff();
+    }
+}
 
 class App {
     constructor(public name:string, public iconUrl:string, public launch:Function, public dispose:Function){
@@ -16,7 +66,7 @@ var makeNotPickable = (mesh:BABYLON.AbstractMesh)=>{
 class Shell {
     private apps:Array<App> = []
     private x: number = 0
-    constructor(public scene:BABYLON.Scene, public vrHelper:BABYLON.VRExperienceHelper){}
+    constructor(public scene:BABYLON.Scene, public vrHelper:BABYLON.VRExperienceHelper, public recognizer:SpeechRecognizer){}
     registeredAppCounter = 0
     positionSphere = (sphere: any) => {
         sphere.position.x = this.x;
@@ -166,13 +216,14 @@ var main = async () => {
     vrHelper.raySelectionPredicate = (mesh:BABYLON.AbstractMesh):boolean=>{
         return mesh.isVisible && mesh.isPickable;
     }
-        
+    var recognizer = new SpeechRecognizer(SDK, SDK.RecognitionMode.Conversation, "en-us", SDK.SpeechResultFormat.Simple, "92069ee289b84e5594a9564ab77ed2ba");
     var win:any = window
-    win.shell = new Shell(scene, vrHelper);
-
+    win.shell = new Shell(scene, vrHelper, recognizer);
+    
     // Model taken from https://poly.google.com/view/3oGDGMrc6rm
     // CC-BY for Google as the content creator
     // this is the 3D Phone model that will be the app launcher device
+    
     var phoneContainer = await BABYLON.SceneLoader.LoadAssetContainerAsync("/public/tablet/", "1327 iPhone.gltf", scene)
     var loadedPhone = phoneContainer.createRootMesh()
 
@@ -195,13 +246,27 @@ var main = async () => {
 
     var advancedTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
     var buttons = []
-    
+
     var available_apps = [
-    {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, 
-    {name: "chatApp", iconUrl: "public/appicons/flatchat.png"}, 
-    {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, 
-    {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}
-]
+        {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, 
+        {name: "chatApp", iconUrl: "public/appicons/flatchat.png"}, 
+        {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, 
+        {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}
+    ]
+    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch game.", 2], ["launch wikipedia.", 3]]);
+    win.shell.recognizer.StartOneShotRecognition(
+        function (trex) {
+            console.log(trex);
+        },
+        function (text)
+        {
+            text = text.toLowerCase();
+            if (appMap.has(text))
+            {
+                win.shell.launchApp(win.shell.apps[appMap.get(text)]);
+            }
+        });
+
     for (let i = 0; i < available_apps.length; i++) {
         var button = Stage.GUI.Button.CreateImageWithCenterTextButton("button" + i, available_apps[i].name, available_apps[i].iconUrl);
         button.width = 1;
@@ -240,6 +305,7 @@ var main = async () => {
     
     parentMenuMesh.addChild(plane)
     parentMenuMesh.addChild(loadedPhone)
+
     //https://poly.google.com/search/beachside
     var container = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/beach/model.gltf", "", scene)  
     container.addAllToScene();
