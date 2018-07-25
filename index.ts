@@ -22,26 +22,20 @@ class SpeechRecognizer {
 
     StartOneShotRecognition(hypothesisCallback, phraseCallback) {
         this.recognizer.Recognize((event) => {
-            /*
-                Alternative syntax for typescript devs.
-                if (event instanceof SDK.RecognitionTriggeredEvent)
-            */
-            switch (event.Name) {
-                case "ListeningStartedEvent":
-                    //UpdateStatus("Listening");
-                    break;
-                case "SpeechHypothesisEvent":
-                    console.log(JSON.stringify(event.Result)); 
-                    hypothesisCallback(event.Result.Text);
-                    break;
-                case "SpeechSimplePhraseEvent":
-                    console.log(JSON.stringify(event.Result));
-                    phraseCallback(JSON.stringify(event.Result));
-                    break;
-                case "RecognitionEndedEvent":
-                    console.log(JSON.stringify(event));
-                    this.recognizer.AudioSource.TurnOff();
-                    break;
+            if (event instanceof SDK.RecognitionTriggeredEvent) {
+                //Do something here
+            }
+            else if (event instanceof SDK.SpeechHypothesisEvent) {
+                console.log(JSON.stringify(event.Result));
+                hypothesisCallback(event.Result.Text);
+            }
+            else if (event instanceof SDK.SpeechSimplePhraseEvent) {
+                console.log(JSON.stringify(event.Result));
+                phraseCallback(JSON.stringify(event.Result));
+            }
+            else if (event instanceof SDK.RecognitionEndedEvent) {
+                console.log(JSON.stringify(event));
+                this.recognizer.AudioSource.TurnOff();
             }
         })
             .On(() => {
