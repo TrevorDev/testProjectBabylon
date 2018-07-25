@@ -3,17 +3,19 @@ import {Stage} from "../../src/stage"
 
 var shell:any = (<any>window).shell
 
-var makeNotPickable = (mesh:BABYLON.AbstractMesh)=>{
+var hideMesh = (mesh:BABYLON.AbstractMesh)=>{
+    mesh.visibility = 0;
     mesh.isPickable = false;
     mesh.getChildMeshes().forEach((m)=>{
-        makeNotPickable(m)
+        hideMesh(m);
     })
 }
 
-var makePickable = (mesh:BABYLON.AbstractMesh)=>{
+var showMesh = (mesh:BABYLON.AbstractMesh)=>{
+    mesh.visibility = 1;
     mesh.isPickable = true;
     mesh.getChildMeshes().forEach((m)=>{
-        makePickable(m)
+        showMesh(m);
     })
 }
 
@@ -163,7 +165,8 @@ shell.registerApp({
                 myMaterial.diffuseTexture = texture;
                 myMaterial.emissiveTexture = texture;
 
-                myPlane.visibility = 0;
+                //myPlane.visibility = 0;
+                hideMesh(myPlane);
 
                 hoverEffect(myPlane);
 
@@ -179,7 +182,8 @@ shell.registerApp({
                 option1.position.x = 0.6
                 option1.position.y = 0;
                 option1.parent = myPlane;
-                option1.visibility = 0;
+                //option1.visibility = 0;
+                hideMesh(option1);
                 let guiTexture1 = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(option1)
 
                 let guiPanel1 = new Stage.GUI.StackPanel()  
@@ -203,7 +207,8 @@ shell.registerApp({
                 option2.position.x = 0.9
                 option2.position.y = 0;
                 option2.parent = myPlane;
-                option2.visibility = 0;
+                //option2.visibility = 0;
+                hideMesh(option2);
                 let guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(option2)
 
                 let guiPanel = new Stage.GUI.StackPanel()  
@@ -215,12 +220,14 @@ shell.registerApp({
                 video.cornerRadius = 500
                 video.onPointerClickObservable.add((evt)=>{
                     stopVideos();
-                    scene.getMeshByName("videoBox"+myPlane.name).visibility = 1;
+                    //scene.getMeshByName("videoBox"+myPlane.name).visibility = 1;
+                    showMesh(scene.getMeshByName("videoBox"+myPlane.name));
                     let material = scene.getMeshByName("videoBox"+myPlane.name).material as StandardMaterial;
                     let videoTexture = material.diffuseTexture as VideoTexture;
                     videoTexture.video.loop = false;
                     videoTexture.video.onended = function (){
-                        scene.getMeshByName("videoBox"+myPlane.name).visibility = 0;
+                        //scene.getMeshByName("videoBox"+myPlane.name).visibility = 0;
+                        hideMesh(scene.getMeshByName("videoBox"+myPlane.name));
                     } 
                     videoTexture.video.play();
                 })
@@ -239,7 +246,8 @@ shell.registerApp({
                     let material = scene.getMeshByName("videoBox"+contactList[i]).material as StandardMaterial;
                     let videoTexture = material.diffuseTexture as VideoTexture;
                     videoTexture.video.pause();
-                    scene.getMeshByName("videoBox"+contactList[i]).visibility = 0;
+                    //scene.getMeshByName("videoBox"+contactList[i]).visibility = 0;
+                    hideMesh(scene.getMeshByName("videoBox"+contactList[i]));
                 }
             }
         }
@@ -248,8 +256,10 @@ shell.registerApp({
              console.log(parentPerson.id);
             let dialogBox = BABYLON.MeshBuilder.CreatePlane("dialogBox" + parentPerson.id, {width: 2, height: 1.5}, scene);
             dialogBox.position.x = -2;
-            dialogBox.position.y = parentPerson.position.y + 2;
-            dialogBox.visibility = 0;
+            dialogBox.position.y = parentPerson.position.y;
+            hideMesh(dialogBox);
+            //dialogBox.visibility = 0;
+            dialogBox.rotation.y = -Math.PI/8;
             //makeNotPickable(dialogBox);
             dialogBox.parent = windowAnchor;
             let drag = new BABYLON.SixDofDragBehavior()
@@ -260,7 +270,8 @@ shell.registerApp({
             dialogBox.addBehavior(drag);
             let shadowBox = BABYLON.MeshBuilder.CreatePlane('shadowBox.'+parentPerson.id, {width: 2, height: 1.5}, scene);
             shadowBox.position.z = -.1;
-            shadowBox.visibility = 0;
+            //shadowBox.visibility = 0;
+            hideMesh(shadowBox);
             let shadowMaterial = new StandardMaterial('shadowBox.Mat.'+ parentPerson.id, scene);
             shadowMaterial.diffuseColor = Color3.White();
             shadowMaterial.alpha = .5; 
@@ -288,16 +299,18 @@ shell.registerApp({
             close.cornerRadius = 200
             close.thickness = 20
             close.onPointerClickObservable.add(()=>{
-                scene.getMeshByName("closePlane" + parentPerson.id).visibility = 0;
-        scene.getMeshByName("shadowBox."+ parentPerson.id).visibility = 0;
-                scene.getMeshByName("voicePlane" + parentPerson.id).visibility = 0;
-                scene.getMeshByName("inputPlane" + parentPerson.id).visibility = 0;
-
-                
+                //scene.getMeshByName("closePlane" + parentPerson.id).visibility = 0;
+                //scene.getMeshByName("shadowBox."+ parentPerson.id).visibility = 0;
+                //scene.getMeshByName("voicePlane" + parentPerson.id).visibility = 0;
+                //scene.getMeshByName("inputPlane" + parentPerson.id).visibility = 0;
+                hideMesh(scene.getMeshByName("closePlane" + parentPerson.id));
+                hideMesh(scene.getMeshByName("shadowBox."+ parentPerson.id));
+                hideMesh(scene.getMeshByName("voicePlane" + parentPerson.id));
+                hideMesh(scene.getMeshByName("inputPlane" + parentPerson.id));
             })
             guiPanel.addControl(close);
-            closePlane.visibility = 0;
-
+            //closePlane.visibility = 0;
+            hideMesh(closePlane);
             var voicePlane = BABYLON.MeshBuilder.CreatePlane("voicePlane" + parentPerson.id, {width: 0.2, height: 0.2}, scene)
             voicePlane.position.x= 0.9;
             voicePlane.position.y= - 0.9;
@@ -318,8 +331,8 @@ shell.registerApp({
                 console.log("start recording");
             })
             guiPanel2.addControl(record);
-            voicePlane.visibility = 0;
-
+            //voicePlane.visibility = 0;
+            hideMesh(voicePlane);
 
              let inputPlane = BABYLON.MeshBuilder.CreatePlane("inputPlane" + parentPerson.id, {width: 1.7, height: 1.7}, scene)
             inputPlane.position.x= -0.1;
@@ -344,8 +357,10 @@ shell.registerApp({
                 shell.recognizer.StartOneShotRecognition(function(trex) {input.text=trex; inputTexture.addControl(input)}, function(text) {input.text=text; inputTexture.addControl(input), shell.recognizer.RecognizerStop()})
             })
             guiPanel2.addControl(record);
-            voicePlane.visibility = 0;
-            inputPlane.visibility = 0;
+            //voicePlane.visibility = 0;
+            //inputPlane.visibility = 0;
+            hideMesh(voicePlane);
+            hideMesh(inputPlane);
             //     //input.linkWithMesh(inputPlane);   
             //     input.linkOffsetY = 50;
             //     input.linkOffsetX = 400
@@ -357,7 +372,8 @@ shell.registerApp({
             let videoBox = BABYLON.MeshBuilder.CreatePlane("videoBox" + parentPerson.id, {width: 2.5, height: 1.5}, scene);
             videoBox.position.x = -2;
             videoBox.position.y = parentPerson.position.y + 1;
-            videoBox.visibility = 0;
+            //videoBox.visibility = 0;
+            hideMesh(videoBox);
             videoBox.parent = windowAnchor;
             let drag = new BABYLON.SixDofDragBehavior()
             // drag.moveAttached = false;
@@ -444,12 +460,16 @@ shell.registerApp({
                 if(evt.pickInfo.pickedMesh.id === "name0" ){
                     summonAwesome(scene,windowAnchor);
                 }
-                scene.getMeshByName("dialogBox" + evt.pickInfo.pickedMesh.id).visibility = 1;
-                scene.getMeshByName("shadowBox." + evt.pickInfo.pickedMesh.id).visibility = 1;
-                scene.getMeshByName("closePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
-        scene.getMeshByName("voicePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
-        scene.getMeshByName("inputPlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
-                
+                //scene.getMeshByName("dialogBox" + evt.pickInfo.pickedMesh.id).visibility = 1;
+                //scene.getMeshByName("shadowBox." + evt.pickInfo.pickedMesh.id).visibility = 1;
+                //scene.getMeshByName("closePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
+                //scene.getMeshByName("voicePlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
+                //scene.getMeshByName("inputPlane" + evt.pickInfo.pickedMesh.id).visibility = 1;
+                showMesh(scene.getMeshByName("dialogBox" + evt.pickInfo.pickedMesh.id));
+                showMesh(scene.getMeshByName("shadowBox." + evt.pickInfo.pickedMesh.id));
+                showMesh(scene.getMeshByName("closePlane" + evt.pickInfo.pickedMesh.id));
+                showMesh(scene.getMeshByName("voicePlane" + evt.pickInfo.pickedMesh.id));
+                showMesh(scene.getMeshByName("inputPlane" + evt.pickInfo.pickedMesh.id));
                 //Load data
                 let textData = chatWindowTextLog[evt.pickInfo.pickedMesh.id];
                 if(checkTextIsNotEmpty(textData)){
@@ -535,67 +555,53 @@ shell.registerApp({
                 
                 dialogBoxDynamicTexture.update();
                 
-                
-                // var advancedTexture3 = Stage.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-                // var rectangle = new Stage.GUI.Rectangle("rect");
-                //     rectangle.top = "-100px";
-                //     rectangle.background = "white";
-                //     rectangle.color = "yellow";
-                //     rectangle.width = "200px";
-                //     rectangle.height = "40px";
-                //     advancedTexture3.addControl(rectangle);
-
-                //     var name = new Stage.GUI.TextBlock("name");
-                //     name.fontFamily = "Helvetica";
-                //     name.textWrapping = true;
-                //     name.text = "name: Hello!";
-                //     name.color = "black";
-                //     name.fontSize = 20;
-                //     rectangle.addControl(name);   
-                //     rectangle.linkWithMesh(loadedModel);   
-                //     rectangle.linkOffsetY = -25;
-                //     rectangle.linkOffsetX = 400;
-
-                //     var advancedTexture2 = Stage.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
-                // var input = new Stage.GUI.InputText();
-                // input.width = 0.2;
-                // input.maxWidth = 0.2;
-                // input.height = "40px";
-                // input.text = "";
-                // input.color = "blue";
-                // input.background = "white";
-                // advancedTexture2.addControl(input);  
-
-                // input.linkWithMesh(loadedModel);   
-                // input.linkOffsetY = 50;
-                // input.linkOffsetX = 400
             }
             if ( evt.type==BABYLON.PointerEventTypes.POINTERUP && evt.pickInfo.pickedMesh && evt.pickInfo.pickedMesh.id === "node_id32") {
                 scene.getAnimationGroupByName("popGroupassetContainerRootMesh").stop();
                 let visibility;
-                listMesh.getChildMeshes().forEach(element => {
-                    element.visibility = element.visibility === 1 ? 0:1;
+                listMesh.getChildMeshes(true).forEach(element => {
+                    if(element.visibility === 1){
+                        hideMesh(element);
+                    } else {
+                        showMesh(element);
+                    }
+                    //element.visibility = element.visibility === 1 ? 0:1;
                     visibility = element.visibility;
                 });
                 if (visibility === 0){
-                    scene.getMeshByName("dialogBoxname0").visibility = 0;
-                    scene.getMeshByName("dialogBoxname1").visibility = 0;
-                    scene.getMeshByName("dialogBoxname2").visibility = 0;
-                    scene.getMeshByName("dialogBoxname3").visibility = 0;
-                    scene.getMeshByName("closePlanename0").visibility = 0;
-                    scene.getMeshByName("closePlanename1").visibility = 0;
-                    scene.getMeshByName("closePlanename2").visibility = 0;
-                    scene.getMeshByName("closePlanename3").visibility = 0;
-                    scene.getMeshByName("voicePlanename0").visibility = 0;
-                    scene.getMeshByName("voicePlanename1").visibility = 0;
-                    scene.getMeshByName("voicePlanename2").visibility = 0;
-                    scene.getMeshByName("voicePlanename3").visibility = 0;
-                    scene.getMeshByName("inputPlanename0").visibility = 0;
-                    scene.getMeshByName("inputPlanename1").visibility = 0;
-                    scene.getMeshByName("inputPlanename2").visibility = 0;
-                    scene.getMeshByName("inputPlanename3").visibility = 0;
 
+                    // scene.getMeshByName("dialogBoxname0").visibility = 0;
+                    // scene.getMeshByName("dialogBoxname1").visibility = 0;
+                    // scene.getMeshByName("dialogBoxname2").visibility = 0;
+                    // scene.getMeshByName("dialogBoxname3").visibility = 0;
+                    // scene.getMeshByName("closePlanename0").visibility = 0;
+                    // scene.getMeshByName("closePlanename1").visibility = 0;
+                    // scene.getMeshByName("closePlanename2").visibility = 0;
+                    // scene.getMeshByName("closePlanename3").visibility = 0;
+                    // scene.getMeshByName("voicePlanename0").visibility = 0;
+                    // scene.getMeshByName("voicePlanename1").visibility = 0;
+                    // scene.getMeshByName("voicePlanename2").visibility = 0;
+                    // scene.getMeshByName("voicePlanename3").visibility = 0;
+                    // scene.getMeshByName("inputPlanename0").visibility = 0;
+                    // scene.getMeshByName("inputPlanename1").visibility = 0;
+                    // scene.getMeshByName("inputPlanename2").visibility = 0;
+                    // scene.getMeshByName("inputPlanename3").visibility = 0;
+                    hideMesh(scene.getMeshByName("dialogBoxname0"));
+                    hideMesh(scene.getMeshByName("dialogBoxname1"));
+                    hideMesh(scene.getMeshByName("dialogBoxname2"));
+                    hideMesh(scene.getMeshByName("dialogBoxname3"));
+                    hideMesh(scene.getMeshByName("closePlanename0"));
+                    hideMesh(scene.getMeshByName("closePlanename1"));
+                    hideMesh(scene.getMeshByName("closePlanename2"));
+                    hideMesh(scene.getMeshByName("closePlanename3"));
+                    hideMesh(scene.getMeshByName("voicePlanename0"));
+                    hideMesh(scene.getMeshByName("voicePlanename1"));
+                    hideMesh(scene.getMeshByName("voicePlanename2"));
+                    hideMesh(scene.getMeshByName("voicePlanename3"));
+                    hideMesh(scene.getMeshByName("inputPlanename0"));
+                    hideMesh(scene.getMeshByName("inputPlanename1"));
+                    hideMesh(scene.getMeshByName("inputPlanename2"));
+                    hideMesh(scene.getMeshByName("inputPlanename3"));
                     
                     }
 
