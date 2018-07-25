@@ -22,6 +22,7 @@ class Shell {
         sphere.position.x = this.x;
         this.x += 1;
     }
+    
     launchApp = (app:App, maximize:boolean) => {
         //  maximize the application at the given index
         setTimeout(() => {
@@ -98,10 +99,7 @@ class Shell {
     
             let launched = false;
             var pDownTime:Date; 
-            if (maximize === true) {
-                app.launch(anchor, this.vrHelper)
-                launched = true
-            }
+            
             this.scene.onPointerObservable.add((e)=>{
                 if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
                     if(e.pickInfo.pickedMesh == sphere) {
@@ -128,6 +126,13 @@ class Shell {
                     }
                 }
             })
+
+            if (maximize === true) {
+                app.launch(anchor, this.vrHelper)
+                state = VisibleState.Transition
+                launched = true;
+                scaleDelta = APP_OPEN_SPEED
+            }
         }, 1000)
     }
     registerApp = (app:App)=>{
