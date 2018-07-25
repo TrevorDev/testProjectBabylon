@@ -12,7 +12,7 @@ var makeNotPickable = (mesh:BABYLON.AbstractMesh)=>{
 var renderSite = async function (data, windowAnchor){
     // Get scene
     var scene = windowAnchor.getScene();
-
+    
     var planes = []
     var materials = []
     var textures = []
@@ -21,10 +21,18 @@ var renderSite = async function (data, windowAnchor){
     var contentArr = [];
 
     var zpos = 0;
-    var leftx = 0, midx = 2, rightx = 4;
-    var lefty = 6, midy = 6, righty = 6;
+    var leftx = -2, midx = 0, rightx = 2;
+    var lefty = 4, midy = 4, righty = 4;
     for(var i in arr){
         let node = arr[i];
+        if(!node.attributes){
+            continue;
+        }
+        console.log(node)
+        if(node.attributes[0]){
+            console.log(node.attributes[0].nodeValue)
+        }
+        
         if(node.nodeName == 'TEXT-3D'){
             var text = node.children[0].innerText, pos = node.attributes[0].nodeValue;
             contentArr.push({'text':text,'pos':pos});
@@ -35,21 +43,21 @@ var renderSite = async function (data, windowAnchor){
                 plane.position.x = leftx
                 plane.position.y = lefty
                 plane.position.z = zpos
-                lefty -= 2
+                lefty -= 1.3
             }
             else if(pos == 'right'){
                 zpos = -0.5
                 plane.position.x = rightx
                 plane.position.y = righty
                 plane.position.z = zpos
-                righty -= 2
+                righty -= 1.3
             }
             else if(pos == 'mid'){
                 zpos = 0
                 plane.position.x = midx
                 plane.position.y = midy
                 plane.position.z = zpos
-                midy -= 2
+                midy -= 1.3
             }
             
             // GUI
@@ -71,7 +79,7 @@ var renderSite = async function (data, windowAnchor){
             textures.push(advancedTexture);
         }
         else if(node.nodeName == 'IMG-3D'){
-            var img = node.children[0].src, pos = node.getAttribute("pos");
+            var img = node.children[0].src, pos = node.attributes[0].nodeValue;
             contentArr.push({'image':img,'pos':pos});
 
             var mat = new BABYLON.StandardMaterial("mat", scene);
@@ -83,21 +91,21 @@ var renderSite = async function (data, windowAnchor){
                 plane.position.x = leftx
                 plane.position.y = lefty
                 plane.position.z = zpos
-                lefty -= 2
+                lefty -= 1.3
             }
             else if(pos == 'right'){
                 zpos = -0.5
                 plane.position.x = rightx
                 plane.position.y = righty
                 plane.position.z = zpos
-                righty -= 2
+                righty -= 1.3
             }
             else if(pos == 'mid'){
                 zpos = 0
                 plane.position.x = midx
                 plane.position.y = midy
                 plane.position.z = zpos
-                midy -= 2
+                midy -= 1.3
             }
             plane.material = mat;
 
@@ -108,6 +116,7 @@ var renderSite = async function (data, windowAnchor){
             textures.push(tex);
         }
         else if(node.nodeName == 'BTN-3D'){
+            pos = node.attributes[0].nodeValue;
             contentArr.push({'href':node.children[0].pathname,'btnText':node.children[0].innerText,'pos':node.attributes[0].nodeValue});
 
             // Create GUI button
@@ -117,21 +126,21 @@ var renderSite = async function (data, windowAnchor){
                 plane.position.x = leftx
                 plane.position.y = lefty
                 plane.position.z = zpos
-                lefty -= 2
+                lefty -= 1.3
             }
             else if(pos == 'right'){
                 zpos = -0.5
                 plane.position.x = rightx
                 plane.position.y = righty
                 plane.position.z = zpos
-                righty -= 2
+                righty -= 1.3
             }
             else if(pos == 'mid'){
                 zpos = 0
                 plane.position.x = midx
                 plane.position.y = midy
                 plane.position.z = zpos
-                midy -= 2
+                midy -= 1.3
             }
             plane.parent = windowAnchor // set windowAnchor as parent
             var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane)
@@ -158,10 +167,8 @@ var renderSite = async function (data, windowAnchor){
                 for(var i in textures){
                     textures[i].dispose();
                 }
-                console.log("hit2");
 
                 var newdata = await $.get("/public/testSite"+node.children[0].pathname);
-                console.log(newdata)
                 renderSite(newdata, windowAnchor);
             });
             guiPanel.addControl(button);
@@ -169,30 +176,29 @@ var renderSite = async function (data, windowAnchor){
             planes.push(plane);
             textures.push(guiTexture);
         }else if(node.nodeName == 'MODEL-3D'){
-            pos = node.getAttribute("pos")
+            pos = node.attributes[0].nodeValue
             var plane = new BABYLON.Mesh("", scene);
             plane.parent = windowAnchor
-            console.log("Pos" + pos)
             if(pos == 'left'){
                 zpos = -0.5
                 plane.position.x = leftx
                 plane.position.y = lefty
                 plane.position.z = zpos
-                lefty -= 2
+                lefty -= 1.3
             }
             else if(pos == 'right'){
                 zpos = -0.5
                 plane.position.x = rightx
                 plane.position.y = righty
                 plane.position.z = zpos
-                righty -= 2
+                righty -= 1.3
             }
             else if(pos == 'mid'){
                 zpos = 0
                 plane.position.x = midx
                 plane.position.y = midy
                 plane.position.z = zpos
-                midy -= 2
+                midy -= 1.3
             }
             var container = await BABYLON.SceneLoader.LoadAssetContainerAsync(node.getAttribute("src"), "", scene)  
             container.addAllToScene();
@@ -204,7 +210,6 @@ var renderSite = async function (data, windowAnchor){
             
         }
     }
-    console.log(contentArr)
 }
 
 
@@ -213,10 +218,11 @@ shell.registerApp({
     name: "convertSite", 
     iconUrl: "public/appicons/wikipedia.png",
     launch: async (windowAnchor:BABYLON.Mesh, vrHelper: VRExperienceHelper)=>{
-
-        console.log("conv app")
+        var godPlane = new BABYLON.Mesh("", windowAnchor.getScene())
+        godPlane.parent = windowAnchor;
+        godPlane.scaling.scaleInPlace(0.3)
         var data = await $.get("/public/testSite/home.html");
-        await renderSite(data, windowAnchor);
+        await renderSite(data, godPlane);
       
     }, 
     dispose: async ()=>{
