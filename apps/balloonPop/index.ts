@@ -57,20 +57,63 @@ shell.registerApp({
         for (var index = 0; index < 10; index++) {
             let sphere = BABYLON.Mesh.CreateSphere("sphere", 16, 1, scene);
             sphere.material = materialAmiga
-            //sphere.physicsImpostor = new BABYLON.PhysicsImpostor(sphere, BABYLON.PhysicsImpostor.SphereImpostor, { mass: 1 }, scene);
-            sphere.position = new BABYLON.Vector3(Math.random() * 20 - 10, y, Math.random() * 10 - 5);
             sphere.parent = windowAnchor
-
+            sphere.position = new BABYLON.Vector3(Math.random() * 20 - 10, y, Math.random() * 10 - 5);
             y += 2;
             spheres.push(sphere)
         }
 
+        // Reset button
+        var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 0.2, height: 0.2}, scene)
+        plane.position.y= 1
+        plane.parent = windowAnchor // set windowAnchor as parent
+        var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane)
+        guiTexture
+        var guiPanel = new Stage.GUI.StackPanel()  
+        guiPanel.top = "0px"
+        guiTexture.addControl(guiPanel)
+        var button = Stage.GUI.Button.CreateSimpleButton("", "Replay ↺")
+        button.fontSize = 300
+        button.color = "white"
+        button.background = "#4AB3F4"
+        button.cornerRadius = 200
+        button.thickness = 20
+        
+
+        var counter = 0;
+        var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1, height: 1}, scene)
+        plane.position.y= 2
+        plane.parent = windowAnchor // set windowAnchor as parent
+        var guiTexture2 = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane)
+        var guiPanel2 = new Stage.GUI.StackPanel()  
+        guiPanel2.top = "0px"
+        guiTexture2.addControl(guiPanel2)
+        let input = new Stage.GUI.InputText();
+        input.text = "Score: "+counter;
+        input.color = "blue";
+        input.fontSize = "200px;";
+        input.background = "white";
+        input.autoStretchWidth = false;
+        guiPanel2.addControl(input);  
+
+        button.onPointerClickObservable.add(()=>{
+            y = 0;
+            counter = 0
+            input.text = "Score: 0"
+            spheres.forEach((sphere)=>{
+                sphere.position = new BABYLON.Vector3(Math.random() * 20 - 10, y, Math.random() * 10 - 5);
+                y += 2;
+            })
+        })
+        guiPanel.addControl(button)
+        
         scene.onPointerObservable.add((e)=>{
             if(e.type == BABYLON.PointerEventTypes.POINTERDOWN && spheres.indexOf(e.pickInfo.pickedMesh)!=-1){
                 fountain.position.copyFrom(e.pickInfo.pickedMesh.position);
                 particleSystem.targetStopDuration = 3;
                 particleSystem.start();
-                e.pickInfo.pickedMesh.dispose();
+                e.pickInfo.pickedMesh.position.z = 1000000;
+                input.text = "Score: "+(++counter);
             }
         })
 
@@ -79,6 +122,8 @@ shell.registerApp({
                 s.position.y-=0.01
             })
         })
+
+        
     }, 
     dispose: async ()=>{
 
