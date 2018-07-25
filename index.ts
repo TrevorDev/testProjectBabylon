@@ -29,7 +29,10 @@ class SpeechRecognizer {
                 hypothesisCallback(event.Result.Text);
             }
             else if (event instanceof SDK.SpeechSimplePhraseEvent) {
-                phraseCallback(event.Result.DisplayText);
+                if (event.Result.RecognitionStatus === "Success")
+                {
+                    phraseCallback(event.Result.DisplayText);
+                }
             }
             else if (event instanceof SDK.RecognitionEndedEvent) {
                 //Do something here
@@ -305,7 +308,8 @@ var main = async () => {
 
     var dialogText = new Stage.GUI.TextBlock()
     dialogText.color = 'black'
-    dialogText.fontSize = 100
+    dialogText.fontSize = 80
+    dialogText.zIndex = -1
     dialogText.textVerticalAlignment = Stage.GUI.Control.VERTICAL_ALIGNMENT_TOP
 
     advancedTexture.addControl(dialogText)
