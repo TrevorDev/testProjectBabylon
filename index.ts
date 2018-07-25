@@ -234,24 +234,23 @@ var main = async () => {
     leftBox.material = new BABYLON.StandardMaterial('right', scene);
 
     parentMenuMesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
-    parentMenuMesh.rotation.x = 0;
-    parentMenuMesh.rotation.y = Math.PI / 4;
-    parentMenuMesh.rotation.z = Math.PI;
+    parentMenuMesh.rotation.x = Math.PI / 8;
+    parentMenuMesh.rotation.y = 0;
+    parentMenuMesh.rotation.z = 0;
 
     var phoneIsUp = false;
     function togglePhone(controller) {
         if (phoneIsUp === false) {
-            controller.mesh.setEnabled(false);
-            parentMenuMesh.isPickable = true;
-            plane.isPickable = true;
-            controller.attachToMesh(parentMenuMesh);
-            controller.mesh.setEnabled(true);
+            controller.mesh.addChild(parentMenuMesh);
+            parentMenuMesh.setEnabled(true);
+    
+            parentMenuMesh.position.x = -0.1
+            parentMenuMesh.position.y = 0.1
+            parentMenuMesh.position.z = -0.1;
         }
         else {
-            controller.mesh.setEnabled(false);
-            controller.attachToMesh(controller.defaultModel);
-            controller.mesh.setEnabled(true);
-            controller.mesh.isPickable = false;
+            controller.mesh.removeChild(parentMenuMesh);
+            parentMenuMesh.setEnabled(false);
         }
 
         phoneIsUp = !phoneIsUp;
