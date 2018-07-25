@@ -327,6 +327,8 @@ shell.registerApp({
             inputPlane.position.z = -0.01;
             inputPlane.parent = dialogBox;
 
+            record.cornerRadius = 500
+            record.thickness = 20
             let inputTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(inputPlane);
             let input = new Stage.GUI.InputText();
                 input.height = "130px";             
@@ -335,8 +337,14 @@ shell.registerApp({
                 input.fontSize = "120";
                 input.background = "black";
                 input.autoStretchWidth = false;
-                inputTexture.addControl(input);  
-
+                inputTexture.addControl(input);
+                        
+            
+            record.onPointerClickObservable.add(()=>{
+                shell.recognizer.StartOneShotRecognition(function(x) {input.text=x; inputTexture.addControl(input)}, function(y) {input.text=y; inputTexture.addControl(input)})
+            })
+            guiPanel2.addControl(record);
+            voicePlane.visibility = 0;
             inputPlane.visibility = 0;
             //     //input.linkWithMesh(inputPlane);   
             //     input.linkOffsetY = 50;
