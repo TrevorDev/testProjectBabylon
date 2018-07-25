@@ -307,6 +307,7 @@ shell.registerApp({
                 hideMesh(scene.getMeshByName("shadowBox."+ parentPerson.id));
                 hideMesh(scene.getMeshByName("voicePlane" + parentPerson.id));
                 hideMesh(scene.getMeshByName("inputPlane" + parentPerson.id));
+                hideMesh(scene.getMeshByName("dialogBox" + parentPerson.id));
             })
             guiPanel.addControl(close);
             //closePlane.visibility = 0;
