@@ -307,6 +307,7 @@ var main = async () => {
     planeLogo.material = materialPlane;
 
     var dialogText = new Stage.GUI.TextBlock()
+    dialogText.text = "Listening..."
     dialogText.color = 'black'
     dialogText.fontSize = 80
     dialogText.zIndex = -1
@@ -406,7 +407,7 @@ var main = async () => {
     }
 
     var listening = false;
-    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch game.", 2], ["launch wikipedia.", 3]]);
+    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch balloon game.", 2], ["launch game.", 2], ["launch wikipedia.", 3]]);
     function toggleRecognizer() {
         if (listening == false) {
             win.shell.recognizer.StartOneShotRecognition(
@@ -414,11 +415,13 @@ var main = async () => {
                     dialogText.text = trex;
                 },
                 function (text) {
+                    listening = false;
                     dialogText.text = text;
 
                     setTimeout(function(){
-                        dialogText.text = ""
-                    }, 5000)
+                        dialogText.text = "Listening...";
+                        toggleRecognizer();
+                    }, 2500)
 
                     text = text.toLowerCase();
                     
