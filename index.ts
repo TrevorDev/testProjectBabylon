@@ -22,7 +22,8 @@ class Shell {
         sphere.position.x = this.x;
         this.x += 1;
     }
-    launchApp = (app:App) => {
+    
+    launchApp = (app:App, maximize:boolean) => {
         //  maximize the application at the given index
         setTimeout(() => {
             var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
@@ -97,7 +98,8 @@ class Shell {
             })
     
             let launched = false;
-            var pDownTime:Date;
+            var pDownTime:Date; 
+            
             this.scene.onPointerObservable.add((e)=>{
                 if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
                     if(e.pickInfo.pickedMesh == sphere) {
@@ -124,6 +126,13 @@ class Shell {
                     }
                 }
             })
+
+            if (maximize === true) {
+                app.launch(anchor, this.vrHelper)
+                state = VisibleState.Transition
+                launched = true;
+                scaleDelta = APP_OPEN_SPEED
+            }
         }, 1000)
     }
     registerApp = (app:App)=>{
@@ -187,9 +196,14 @@ var main = async () => {
     var advancedTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(plane);
     var buttons = []
     
-    var available_apps = [{name: "testApp", iconUrl: "public/appicons/test_app_logo.png"}, {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, {name: "chatApp", iconUrl: "public/appicons/flatchat.png"}, {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}]
-    for (let i = 0; i < 6; i++) {
-        var button = Stage.GUI.Button.CreateImageWithCenterTextButton("button" + i, available_apps[i].name, available_apps[i].iconUrl);\
+    var available_apps = [
+    {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, 
+    {name: "chatApp", iconUrl: "public/appicons/flatchat.png"}, 
+    {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, 
+    {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}
+]
+    for (let i = 0; i < available_apps.length; i++) {
+        var button = Stage.GUI.Button.CreateImageWithCenterTextButton("button" + i, available_apps[i].name, available_apps[i].iconUrl);
         button.width = 1;
         button.height = 1;
         button.color = "transparent";
@@ -200,9 +214,7 @@ var main = async () => {
         
 
         button.onPointerUpObservable.add(function(e) {
-            console.log(i)
-            
-            console.log(shell.launchApp(shell.apps[i]))
+            shell.launchApp(shell.apps[i], true)
         });
 
         buttons.push(button)
@@ -212,16 +224,13 @@ var main = async () => {
     var grid = new Stage.GUI.Grid(); 
     grid.addColumnDefinition(0.5);
     grid.addColumnDefinition(0.5);
-    grid.addRowDefinition(0.3);
-    grid.addRowDefinition(0.3);
-    grid.addRowDefinition(0.3);
+    grid.addRowDefinition(0.5);
+    grid.addRowDefinition(0.5);
 
     grid.addControl(buttons[0], 0, 0);   
     grid.addControl(buttons[1], 0, 1);
     grid.addControl(buttons[2], 1, 0);
     grid.addControl(buttons[3], 1, 1);
-    grid.addControl(buttons[4], 2, 0);
-    grid.addControl(buttons[5], 2, 1);
 
     
     advancedTexture.addControl(grid);
@@ -257,7 +266,7 @@ var main = async () => {
     parentMenuMesh.rotation.z = 0;
 
     var phoneIsUp = false;
-    
+
     parentMenuMesh.setEnabled(true); // TODO CHANGE THIS FOR VR USE
 
     function togglePhone(controller) {
