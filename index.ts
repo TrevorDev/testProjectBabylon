@@ -223,22 +223,13 @@ var main = async () => {
     parentMenuMesh.addChild(plane)
     parentMenuMesh.addChild(loadedPhone)
 
-    // vrController.addChild(parentMenuMesh))
-
-    var rightBox = BABYLON.Mesh.CreateBox("sphere1", 0.1, scene);
-    rightBox.scaling.copyFromFloats(2, 1, 2);
-    var leftBox = BABYLON.Mesh.CreateBox("sphere1", 0.1, scene);
-    leftBox.scaling.copyFromFloats(2, 1, 2);
-
-    rightBox.material = new BABYLON.StandardMaterial('right', scene);
-    leftBox.material = new BABYLON.StandardMaterial('right', scene);
-
     parentMenuMesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
     parentMenuMesh.rotation.x = Math.PI / 8;
     parentMenuMesh.rotation.y = 0;
     parentMenuMesh.rotation.z = 0;
 
     var phoneIsUp = false;
+    parentMenuMesh.setEnabled(false);
     function togglePhone(controller) {
         if (phoneIsUp === false) {
             controller.mesh.addChild(parentMenuMesh);
@@ -257,8 +248,6 @@ var main = async () => {
     }
 
     vrHelper.onControllerMeshLoaded.add(function(controller) {
-        let mesh = controller.hand === 'right' ? rightBox : leftBox;
-
         // secondary button is the select button
         controller.onSecondaryButtonStateChangedObservable.add(function (stateObject) {
             if (stateObject.value === 1) {
