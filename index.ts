@@ -222,6 +222,8 @@ var main = async () => {
     var win:any = window
     win.shell = new Shell(scene, vrHelper, recognizer);
     
+    (<BABYLON.FreeCamera>scene.activeCamera).speed *= 0.3
+
     // Model taken from https://poly.google.com/view/3oGDGMrc6rm
     // CC-BY for Google as the content creator
     // this is the 3D Phone model that will be the app launcher device
