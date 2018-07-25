@@ -205,7 +205,7 @@ var main = async () => {
     //light.intensity = 0.7
 
     // Setup vr
-    var vrHelper = scene.createDefaultVRExperience({floorMeshes: [env.ground]})
+    var vrHelper = scene.createDefaultVRExperience({floorMeshes: []})
     vrHelper.raySelectionPredicate = (mesh:BABYLON.AbstractMesh):boolean=>{
         return mesh.isVisible && mesh.isPickable;
     }
@@ -309,7 +309,9 @@ var main = async () => {
     parentMenuMesh.rotation.z = 0;
 
     var phoneIsUp = false;
-    parentMenuMesh.setEnabled(false);
+    
+    parentMenuMesh.setEnabled(true); // TODO CHANGE THIS FOR VR USE
+
     function togglePhone(controller) {
         if (phoneIsUp === false) {
             controller.mesh.addChild(parentMenuMesh);
@@ -326,7 +328,7 @@ var main = async () => {
 
         phoneIsUp = !phoneIsUp;
     }
-
+    
     vrHelper.onControllerMeshLoaded.add(function(controller) {
         // secondary button is the select button
         controller.onSecondaryButtonStateChangedObservable.add(function (stateObject) {
