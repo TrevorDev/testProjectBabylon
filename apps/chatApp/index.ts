@@ -327,7 +327,7 @@ shell.registerApp({
                         
             
             record.onPointerClickObservable.add(()=>{
-                shell.recognizer.StartOneShotRecognition(function(x) {input.text=x; inputTexture.addControl(input)}, function(y) {input.text=y; inputTexture.addControl(input)})
+                shell.recognizer.StartOneShotRecognition(function(trex) {input.text=trex; inputTexture.addControl(input)}, function(text) {input.text=text; inputTexture.addControl(input), shell.recognizer.RecognizerStop()})
             })
             guiPanel2.addControl(record);
             voicePlane.visibility = 0;
