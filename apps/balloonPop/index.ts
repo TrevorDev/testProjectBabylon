@@ -99,23 +99,51 @@ shell.registerApp({
                  else{
                     m.material = materialSnow;
                  }
+/*
+                 m.material = cloudMaterial;
+
+                 var planeVertexData = BABYLON.VertexData.ExtractFromMesh(m as BABYLON.Mesh, true, true); //BABYLON.VertexData.CreatePlane({ size: 16 });
+                 delete planeVertexData.normals; // We do not need normals
+    
+                 // Transform
+                 var randomScaling = Math.random()  * 1.15 + 0.05;
+                 var transformMatrix = BABYLON.Matrix.Scaling(randomScaling, randomScaling, 1.0);
+                 transformMatrix = transformMatrix.multiply(BABYLON.Matrix.RotationZ(Math.random() * Math.PI));
+                 transformMatrix = transformMatrix.multiply(BABYLON.Matrix.Translation(Math.random() * 0.01 - 0.005, -Math.random() * Math.random() * 0.01, 3));
+         
+                 planeVertexData.transform(transformMatrix);
+         
+                 // Merge
+                 if (!globalVertexData) {
+                     globalVertexData = planeVertexData;
+                 } else {
+                     globalVertexData.merge(planeVertexData);
+                     
+                 }
+                 globalVertexData.transform(transformMatrix);
+                 */
+
+     //  var clouds = new BABYLON.Mesh("Clouds", scene);
+
+     //  globalVertexData.applyToMesh(clouds)
+     //  clouds.material = cloudMaterial;
+     //  clouds.position = m.position;
+    //   clouds.parent = windowAnchor
 
              //   m.actionManager.registerAction(new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger, (evt) => { 
              //       m.material = cloudMaterial;
              //   }));
             }
         });
-        var count = 8;
-             
+        var count = 80;
 
-    
         for (var i = 0; i < count; i++) {
             var planeVertexData = BABYLON.VertexData.CreatePlane({ size: 16 });
     
             delete planeVertexData.normals; // We do not need normals
     
             // Transform
-            var randomScaling = Math.random() * Math.random() * 0.15 + 0.05;
+            var randomScaling = Math.random() * Math.random() * 2 + 0.2;
             var transformMatrix = BABYLON.Matrix.Scaling(randomScaling, randomScaling, 1.0);
             transformMatrix = transformMatrix.multiply(BABYLON.Matrix.RotationZ(Math.random() * Math.PI));
             transformMatrix = transformMatrix.multiply(BABYLON.Matrix.Translation(Math.random() * 0.01 - 0.005, -Math.random() * Math.random() * 0.01, count - i));
@@ -129,14 +157,12 @@ shell.registerApp({
                 globalVertexData.merge(planeVertexData);
             }
         }
-    
-
        var clouds = new BABYLON.Mesh("Clouds", scene);
 
        globalVertexData.applyToMesh(clouds)
        clouds.material = cloudMaterial;
        clouds.parent = windowAnchor
-
+       clouds.position = new BABYLON.Vector3(3, 3, 3);
 
         scene.onPointerObservable.add((e)=>{
             if(e.type == BABYLON.PointerEventTypes.POINTERDOWN && spheres.indexOf(e.pickInfo.pickedMesh)!=-1){
