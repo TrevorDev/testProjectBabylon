@@ -68,7 +68,7 @@ class Shell {
             this.scene.onBeforeRenderObservable.add(()=>{
                // console.log(sphere.position.x)
                 anchor.position.copyFrom(sphere.position)
-                anchor.rotation.copyFrom(anchor.rotation)
+                anchor.rotation.copyFrom(sphere.rotation)
 
                 if (state == VisibleState.Transition)
                 {
