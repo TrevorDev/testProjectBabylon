@@ -1,4 +1,4 @@
-import { VRExperienceHelper, ActionManager } from "babylonjs";
+import { VRExperienceHelper, ActionManager, StandardMaterial, VideoTexture } from "babylonjs";
 import {Stage} from "../../src/stage"
 
 var shell:any = (<any>window).shell
@@ -147,13 +147,13 @@ shell.registerApp({
             "https://raw.githubusercontent.com/rachyliu/assets/master/contactPeople3.png"];
 
             for (var i in Contacts){
-                var myPlane = BABYLON.MeshBuilder.CreatePlane("name"+i, {width: 0.8, height: 0.25}, scene);
+                let myPlane = BABYLON.MeshBuilder.CreatePlane("name"+i, {width: 0.8, height: 0.25}, scene);
                 //myPlane.dispose();
                 myPlane.position.z = 0
                 myPlane.position.x = 0
                 myPlane.position.y = 0.5 +0.3*(+i);
                 myPlane.parent = listMesh;
-                var myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
+                let myMaterial = new BABYLON.StandardMaterial("myMaterial", scene);
                 // myMaterial.emissiveColor = new BABYLON.Color3(1, 0, 0);
 
                 myPlane.material = myMaterial;//(+i === Contacts.length-1)? myMaterial:null;
@@ -171,29 +171,29 @@ shell.registerApp({
 
                 createDialogBox(myPlane);
 
-                //createVideoChat(myPlane);
+                createVideoChat(myPlane,"public/video"+i+".mov");
 
-                var option1 = BABYLON.MeshBuilder.CreatePlane("listAction1." + myPlane.name, {width: 0.25, height: 0.25}, scene);
+                let option1 = BABYLON.MeshBuilder.CreatePlane("listAction1." + myPlane.name, {width: 0.25, height: 0.25}, scene);
                 //myPlane.dispose();
                 option1.position.z = 0
                 option1.position.x = 0.6
                 option1.position.y = 0;
                 option1.parent = myPlane;
                 option1.visibility = 0;
-                var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(option1)
+                let guiTexture1 = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(option1)
 
-                var guiPanel = new Stage.GUI.StackPanel()  
-                guiPanel.top = "0px"
-                guiTexture.addControl(guiPanel)
-                var close = Stage.GUI.Button.CreateImageOnlyButton("chat", "https://raw.githubusercontent.com/rachyliu/assets/master/chatIcon.png");
-                close.fontSize = 300
-                close.color = "white"
-                close.cornerRadius = 500
+                let guiPanel1 = new Stage.GUI.StackPanel()  
+                guiPanel1.top = "0px"
+                guiTexture1.addControl(guiPanel1)
+                let chat = Stage.GUI.Button.CreateImageOnlyButton("chat", "https://raw.githubusercontent.com/rachyliu/assets/master/chatIcon.png");
+                chat.fontSize = 300
+                chat.color = "white"
+                chat.cornerRadius = 500
 
-                close.onPointerClickObservable.add(()=>{
+                chat.onPointerClickObservable.add(()=>{
                     console.log("1");
                 })
-                guiPanel.addControl(close);
+                guiPanel1.addControl(chat);
                 hoverEffect(option1);
 
 
@@ -204,19 +204,27 @@ shell.registerApp({
                 option2.position.y = 0;
                 option2.parent = myPlane;
                 option2.visibility = 0;
-                var guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(option2)
+                let guiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(option2)
 
-                var guiPanel = new Stage.GUI.StackPanel()  
+                let guiPanel = new Stage.GUI.StackPanel()  
                 guiPanel.top = "0px"
                 guiTexture.addControl(guiPanel)
-                var close = Stage.GUI.Button.CreateImageOnlyButton("video", "https://raw.githubusercontent.com/rachyliu/assets/master/videoIcon.png");
-                close.fontSize = 300
-                close.color = "white"
-                close.cornerRadius = 500
-                close.onPointerClickObservable.add(()=>{
-                    console.log("2");
+                let video = Stage.GUI.Button.CreateImageOnlyButton("video", "https://raw.githubusercontent.com/rachyliu/assets/master/videoIcon.png");
+                video.fontSize = 300
+                video.color = "white"
+                video.cornerRadius = 500
+                video.onPointerClickObservable.add((evt)=>{
+                    console.log(evt);
+                    scene.getMeshByName("videoBox"+myPlane.name).visibility = 1;
+                    let material = scene.getMeshByName("videoBox"+myPlane.name).material as StandardMaterial;
+                    let videoTexture = material.diffuseTexture as VideoTexture;
+                    videoTexture.video.loop = false;
+                    videoTexture.video.onended = function (){
+                        scene.getMeshByName("videoBox"+myPlane.name).visibility = 0;
+                    } 
+                    videoTexture.video.play();
                 })
-                guiPanel.addControl(close);
+                guiPanel.addControl(video);
                 hoverEffect(option2);
             }
         }
@@ -227,8 +235,9 @@ shell.registerApp({
             dialogBox.position.x = -2;
             dialogBox.position.y = parentPerson.position.y + 2;
             dialogBox.visibility = 0;
+            //makeNotPickable(dialogBox);
             dialogBox.parent = windowAnchor;
-            let drag = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
+            let drag = new BABYLON.SixDofDragBehavior()
             // drag.moveAttached = false;
             // drag.onDragObservable.add(function(evt){
             //     dialogBox.position.addInPlace(evt.delta);
@@ -307,24 +316,27 @@ shell.registerApp({
 
         }
 
-        let createVideoChat = function(parentPerson) {
-            let videoBox = BABYLON.MeshBuilder.CreatePlane("videoBox" + parentPerson.id, {width: 2, height: 1.5}, scene);
+        let createVideoChat = function(parentPerson, path) {
+            console.log(parentPerson.id);
+            let videoBox = BABYLON.MeshBuilder.CreatePlane("videoBox" + parentPerson.id, {width: 2.5, height: 1.5}, scene);
             videoBox.position.x = -2;
-            videoBox.position.y = parentPerson.position.y + 2;
+            videoBox.position.y = parentPerson.position.y + 1;
             videoBox.visibility = 0;
             videoBox.parent = windowAnchor;
-            let drag = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
+            let drag = new BABYLON.SixDofDragBehavior()
             // drag.moveAttached = false;
             // drag.onDragObservable.add(function(evt){
             //     dialogBox.position.addInPlace(evt.delta);
             // });
             videoBox.addBehavior(drag);
-
-            var videoTexture = new BABYLON.VideoTexture("video", ["public/mov_bbb.mp4"], scene, true);
+            console.log(path);
+            var videoTexture = new BABYLON.VideoTexture("video" + parentPerson.id, [path], scene, true);
             var videoMaterial = new BABYLON.StandardMaterial("", scene);
             videoMaterial.emissiveColor = new BABYLON.Color3(1,1,1)
             videoMaterial.diffuseTexture = videoTexture
             videoBox.material = videoMaterial
+
+            videoTexture.video.pause();
 
         }
         let listMesh = new BABYLON.Mesh("contactList", scene);
@@ -333,7 +345,7 @@ shell.registerApp({
         createContactList();
         // createDialogBox();
 
-        let b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
+        let b = new BABYLON.SixDofDragBehavior()
         loadedModel.addBehavior(b)
 
         loadedModel.position.z = 0
