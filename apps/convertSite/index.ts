@@ -17,9 +17,25 @@ shell.registerApp({
         var scene = windowAnchor.getScene();
 
         console.log("conv app")
-        var req = await $.get("/public/testSite/home.html")
-        console.log(req)
-
+        await $.get("/public/testSite/home.html",function(data){
+            var arr = $.parseHTML(data);
+            var contentArr = [];
+            for(var i in arr){
+                var node = arr[i];
+                if(node.nodeName == 'TEXT-3D'){
+                    contentArr.push({'text':node.children[0].innerText});
+                }
+                else if(node.nodeName == 'IMG-3D'){
+                    contentArr.push({'image':node.children[0].src});
+                }
+                else if(node.nodeName == 'BTN-3D'){
+                    contentArr.push({'href':node.children[0].href});
+                }
+            }
+            console.log(contentArr)
+        })
+        
+        
     }, 
     dispose: async ()=>{
 
