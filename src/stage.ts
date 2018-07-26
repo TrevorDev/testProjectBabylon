@@ -4,6 +4,8 @@ import 'babylonjs-loaders'
 var x:any = BABYLON;
 x.GUI = GUI;
 export class Stage {
+    static BABYLON = BABYLON;
+    static GUI = GUI;
     canvas:HTMLCanvasElement
     engine:BABYLON.Engine
     scene:BABYLON.Scene

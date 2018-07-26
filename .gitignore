@@ -1,4 +1,6 @@
-dist/
+dist/*
+!dist/public
 node_modules/
 bower_components/
 .cache/
+package-lock.json
