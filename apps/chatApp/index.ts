@@ -1,5 +1,6 @@
 import { VRExperienceHelper, ActionManager, StandardMaterial, VideoTexture, Color3 } from "babylonjs";
-import {Stage} from "../../src/stage"
+import {Stage} from "../../src/stage";
+import { ChatLogRender } from './chatLog';
 
 var shell:any = (<any>window).shell
 
@@ -230,6 +231,7 @@ shell.registerApp({
         }
         
     let chatWindowTextLog = new Map();
+    let chatRender = new Map();
 
         let stopVideos = function () {
             let contactList = ["name0","name1","name2","name3"];
@@ -346,15 +348,20 @@ shell.registerApp({
             
             record.onPointerClickObservable.add(()=>{
                 shell.recognizer.StartOneShotRecognition(
-                    function(x) {
-                        input.text=x; inputTexture.addControl(input)
+                    function(trex) {
+                        input.text=trex; 
+                        inputTexture.addControl(input)
                     }, 
-                    function(y) {
-                    let parentid = parentPerson.id;
-                    let res = chatWindowTextLog.get(parentid);
-                    res.push({left: undefined, right: input});
-                    input.text=y; inputTexture.addControl(input);
-                })
+                    function(text) {
+                        inputTexture.addControl(input) 
+                        if(text){
+                            chatRender[parentPerson.id].push({left: undefined, right: text});
+                            input.text=text;
+                        } else {
+                            input.text = "";
+                        }
+                        shell.recognizer.RecognizerStop()
+                    })
             });
             guiPanel2.addControl(record);
             voicePlane.visibility = 0;
@@ -438,7 +445,7 @@ shell.registerApp({
             context.fillText(line, x, y);
           }
           
-
+        
         scene.onPointerObservable.add((evt)=> {
 
             // console.log(evt.pickInfo.pickedMesh.name);
@@ -465,6 +472,9 @@ shell.registerApp({
                 
                 //Load data
                 let textData = chatWindowTextLog.get(evt.pickInfo.pickedMesh.id);
+                let renderer = chatRender.get(evt.pickInfo.pickedMesh.id);
+                
+                
                 if(checkTextIsNotEmpty(textData)){
                     //TODO: move code into this big if
 
@@ -494,22 +504,39 @@ shell.registerApp({
                     let bordersPercentage = .05;
                     let widthBorder = width*bordersPercentage;
                     let heightBorder = height*bordersPercentage;
-                    
-                    //context.save();
-                    //context.globalAlpha = 0.4;
-                    //context.fillStyle = "rgba(255, 255, 255, 0.5)";
-                    //context.fillRect(0, 0, width, height);
-                    //context.restore();
-                    //context.save();
-                    //context.fillStyle = dialogTextColor;
-                    
-                    //context.fillText();
-                    //let size = dialogBoxDynamicTexture.getSize();
-                    
-                    //context.fillRect(widthBorder, heightBorder, (width-widthBorder), (height-heightBorder));
-                    
-                    //let bufferEdges = 15;
-                    let colorChoice = {left: "Fuchsia", right: "Aqua"};
+
+                    if( !renderer ){
+                        chatRender[evt.pickInfo.pickedMesh.id] = new ChatLogRender(height, width, context, dialogBoxDynamicTexture, bordersPercentage);
+                        chatRender[evt.pickInfo.pickedMesh.id].push(textData[0]);
+
+                        chatRender[evt.pickInfo.pickedMesh.id].push(textData[1]);
+                        chatRender[evt.pickInfo.pickedMesh.id].push(textData[2]);
+
+                        chatRender[evt.pickInfo.pickedMesh.id].push(textData[3]);
+
+                        //chatRender[evt.pickInfo.pickedMesh.id].push(textData[0]);
+                        //chatRender[evt.pickInfo.pickedMesh.id].push(textData[1]);
+                        //chatRender[evt.pickInfo.pickedMesh.id].push(textData[1]);
+                        //chatRender[evt.pickInfo.pickedMesh.id].push(textData[1]);
+                        //chatRender[evt.pickInfo.pickedMesh.id].push(textData[1]);
+
+                        //chatRender[evt.pickInfo.pickedMesh.id].push(textData[0]);
+                        //chatRender[evt.pickInfo.pickedMesh.id].push(textData[2]);
+                        //chatRender[evt.pickInfo.pickedMesh.id].push(textData[3]);
+
+                        //chatRender[evt.pickInfo.pickedMesh.id].push(textData[0]);
+
+
+                    }
+
+                    /*let colorChoice = {left: "Fuchsia", right: "Aqua"};
+                    let t = true;
+                    let Cords = {
+                        x: widthBorder,
+                        y: 0,
+                        width: width/2 + widthBorder,
+                        height:0
+                    }
                     
                     wrapTextHelper.lineHeight = 50;
                     wrapTextHelper.y = heightBorder;
@@ -529,54 +556,29 @@ shell.registerApp({
                             dialogTextColor = colorChoice.right;
                             text = curr.right;
                             wrapTextHelper.x = width/2 - widthBorder;
-                            widthToUse = width/2  - widthBorder;
+                            widthToUse = width/2 - widthBorder;
                         }
+                    
                         console.log(widthBorder);
                         context.fillStyle = dialogTextColor;
                         wrapText(context, text, wrapTextHelper.x, wrapTextHelper.y, widthToUse, wrapTextHelper.lineHeight);
                         wrapTextHelper.y += wrapTextHelper.lineHeight;
+                       
+                        if(t){
+                            Cords.height = wrapTextHelper.y;
+
+                            wrapTextHelper.y -= Cords.height;
+                            
+                            context.clearRect(Cords.x, Cords.y, Cords.width, Cords.height);
+                            
+                            t = false;
+                        }
                         //wrapTextHelper.lineHeight = 50;
                         //dialogBoxDynamicTexture.drawText(text, x, y, dialogBoxFont, color, canvas color, invertY, update);
-                    }
+                    }*/
                     
-                    dialogBoxDynamicTexture.update();
+                    //dialogBoxDynamicTexture.update();
                 }
-                
-                
-                // var advancedTexture3 = Stage.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-                // var rectangle = new Stage.GUI.Rectangle("rect");
-                //     rectangle.top = "-100px";
-                //     rectangle.background = "white";
-                //     rectangle.color = "yellow";
-                //     rectangle.width = "200px";
-                //     rectangle.height = "40px";
-                //     advancedTexture3.addControl(rectangle);
-
-                //     var name = new Stage.GUI.TextBlock("name");
-                //     name.fontFamily = "Helvetica";
-                //     name.textWrapping = true;
-                //     name.text = "name: Hello!";
-                //     name.color = "black";
-                //     name.fontSize = 20;
-                //     rectangle.addControl(name);   
-                //     rectangle.linkWithMesh(loadedModel);   
-                //     rectangle.linkOffsetY = -25;
-                //     rectangle.linkOffsetX = 400;
-
-                //     var advancedTexture2 = Stage.GUI.AdvancedDynamicTexture.CreateFullscreenUI("UI");
-
-                // var input = new Stage.GUI.InputText();
-                // input.width = 0.2;
-                // input.maxWidth = 0.2;
-                // input.height = "40px";
-                // input.text = "";
-                // input.color = "blue";
-                // input.background = "white";
-                // advancedTexture2.addControl(input);  
-
-                // input.linkWithMesh(loadedModel);   
-                // input.linkOffsetY = 50;
-                // input.linkOffsetX = 400
             }
             if ( evt.type==BABYLON.PointerEventTypes.POINTERUP && evt.pickInfo.pickedMesh && evt.pickInfo.pickedMesh.id === "node_id32") {
                 scene.getAnimationGroupByName("popGroupassetContainerRootMesh").stop();
