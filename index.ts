@@ -433,6 +433,7 @@ var main = async () => {
         }
         else {
             win.shell.recognizer.RecognizerStop();
+            dialogText.text = "Listening...";
             listening = false;
         }
     }
