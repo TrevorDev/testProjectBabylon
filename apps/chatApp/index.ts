@@ -5,7 +5,7 @@ import { ChatLogRender } from './chatLog';
 import io from 'socket.io-client';
 
 const port = 4705;
-const socket = io.connect("http://localhost:"+port);
+const socket = io.connect("https://localhost:"+port);
 const chatUserName = 'vr_user';
 socket.emit('add user', chatUserName);
 
