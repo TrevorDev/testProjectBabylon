@@ -256,7 +256,8 @@ var main = async () => {
         {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, 
         {name: "chatApp", iconUrl: "public/appicons/flatchat.png"}, 
         {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, 
-        {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}
+        {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"},
+        {name: "architectureReview", iconUrl: "public/appicons/architectureReview.png"}
     ]
 
     for (let i = 0; i < available_apps.length; i++) {
@@ -282,11 +283,13 @@ var main = async () => {
     grid.addColumnDefinition(0.5);
     grid.addRowDefinition(0.5);
     grid.addRowDefinition(0.5);
+    grid.addRowDefinition(0.5);
 
     grid.addControl(buttons[0], 0, 0);   
     grid.addControl(buttons[1], 0, 1);
     grid.addControl(buttons[2], 1, 0);
     grid.addControl(buttons[3], 1, 1);
+    grid.addControl(buttons[4], 2, 0);
 
     grid.paddingTop = 250;
     grid.paddingBottom = 250
@@ -405,7 +408,9 @@ var main = async () => {
     }
 
     var listening = false;
-    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch balloon game.", 2], ["launch game.", 2], ["launch wikipedia.", 3]]);
+
+    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch balloon game.", 2], ["launch game.", 2], ["launch wikipedia.", 3], ["launch architecture.", 4]]);
+
     function toggleRecognizer() {
         if (listening == false) {
             win.shell.recognizer.StartOneShotRecognition(
