@@ -9,7 +9,9 @@ var archTrueScale = 0.025;
 var isDollhouseScale = true;
 var architecturalModel:BABYLON.Mesh;
 var cachedDollhousePosition:BABYLON.Vector3;
-var archInputDownTime:Date = new Date(); 
+var archInputDownTime:Date = new Date();
+
+var archSubmeshColorIndex = new Object();
 
 function setDollhouseScale() {
     //architecturalModel.position = cachedDollhousePosition;
@@ -68,6 +70,22 @@ shell.registerApp({
         
         cachedDollhousePosition = architecturalModel.position;
         setDollhouseScale();
+
+        var archPickerColors = [
+            new BABYLON.Color3(0.5, 0.5, 0.5),
+            new BABYLON.Color3(1, 1, 1),
+            new BABYLON.Color3(0.2, 0.2, 0.2),
+            new BABYLON.Color3(0.5, 0.5, 0.8),
+            new BABYLON.Color3(1, 1, 1),
+            new BABYLON.Color3(0.4, 0.3, 0.05)
+        ];
+        var colorPickerMaterials = new Array();
+        for (var i = 0; i < archPickerColors.length; i++) {
+            var colorMat = new BABYLON.StandardMaterial("surfaceMat " + i.toString(), scene);
+            colorMat.diffuseColor = archPickerColors[i];
+            colorMat.backFaceCulling = false;
+            colorPickerMaterials.push(colorMat);
+        }
 		
 		scene.onPointerObservable.add((e)=>{
             if (e.pickInfo.pickedMesh && e.pickInfo.pickedMesh.isDescendantOf(architecturalModel)) {
@@ -77,10 +95,27 @@ shell.registerApp({
                 else if (e.type == BABYLON.PointerEventTypes.POINTERUP) {
                     var archInputUpTime = new Date();
                     if (archInputUpTime.getTime() - archInputDownTime.getTime() < 200) {
-                        if (isDollhouseScale)
+                        /*if (isDollhouseScale)
                             setTrueScale();
                         else
-                            setDollhouseScale();
+                            setDollhouseScale();*/
+                        
+                        var currentColorIndex = 0;
+                        if (archSubmeshColorIndex.hasOwnProperty(e.pickInfo.pickedMesh.id)) {
+                            currentColorIndex = archSubmeshColorIndex[e.pickInfo.pickedMesh.id];
+                        }
+                        
+                        currentColorIndex = (currentColorIndex + 1) % archPickerColors.length;
+                        archSubmeshColorIndex[e.pickInfo.pickedMesh.id] = currentColorIndex;
+
+                        var matToUse = colorPickerMaterials[currentColorIndex];
+
+                        var surfMultiMat = new BABYLON.MultiMaterial("surfMultiMat", scene);
+                        var pickedMesh = e.pickInfo.pickedMesh;
+                        for(var i = 0; i < pickedMesh.subMeshes.length; i++) {
+                            surfMultiMat.subMaterials.push(matToUse);
+                        }
+                        pickedMesh.material = surfMultiMat;
                     }
                 }
             }
