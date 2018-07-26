@@ -39,15 +39,18 @@ shell.registerApp({
         var ribbon = BABYLON.MeshBuilder.CreateRibbon("ribbon", { pathArray }, scene);
 
         ribbon.rotation.z = Math.PI/2;
+        //ribbon.scaling.scaleInPlace = new BABYLON.Vector3(1, 1, 1);
 
-        ribbon.position.x = 4;
-        ribbon.position.y = 2;
+        ribbon.position.x = 1.5;
+        ribbon.position.y = 1;
+        ribbon.position.z = 0.5;
+        ribbon.scaling.scaleInPlace(0.3)
         ribbon.parent = windowAnchor
 
         // Play button panel
-        var playButtonPane = BABYLON.MeshBuilder.CreatePlane("buttonPlane", {width: 0.2, height: 0.2}, scene)
+        var playButtonPane = BABYLON.MeshBuilder.CreatePlane("buttonPlane", {width: 0.4, height: 0.4}, scene)
         playButtonPane.parent = ribbon
-        playButtonPane.position.y= 5
+        playButtonPane.position.y = 5.6
         playButtonPane.position.x = -0.9
         playButtonPane.rotation.z = -Math.PI/2;        
         var playGuiTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(playButtonPane)
@@ -61,8 +64,8 @@ shell.registerApp({
         playGuiTexture.addControl(playbutton)
 
         // Pause button panel
-        var pauseButtonPane = BABYLON.MeshBuilder.CreatePlane("pauseButtonPlane", {width: 0.2, height: 0.2}, scene)
-        pauseButtonPane.position.y= 4.8
+        var pauseButtonPane = BABYLON.MeshBuilder.CreatePlane("pauseButtonPlane", {width: 0.4, height: 0.4}, scene)
+        pauseButtonPane.position.y= 5.2
         pauseButtonPane.position.x = -0.9
         pauseButtonPane.rotation.z = -Math.PI/2;
         pauseButtonPane.parent = ribbon
@@ -77,8 +80,8 @@ shell.registerApp({
         pauseGuiTexture.addControl(pauseButton)
 
         // Progress bar
-        var progressBarPane = BABYLON.MeshBuilder.CreatePlane("progressBarPlane", {width: 1.4, height: 0.2}, scene)
-        progressBarPane.position.y = 4
+        var progressBarPane = BABYLON.MeshBuilder.CreatePlane("progressBarPlane", {width: 1.6, height: 0.4}, scene)
+        progressBarPane.position.y = 4.2
         progressBarPane.position.x = -0.9
         progressBarPane.rotation.z = -Math.PI/2;
         progressBarPane.parent = ribbon
@@ -92,7 +95,7 @@ shell.registerApp({
         progressBar.borderColor = "black"
 
         // File menu button panel
-        var fileButtonPane = BABYLON.MeshBuilder.CreatePlane("fileButtonPlane", {width: 0.2, height: 0.2}, scene)
+        var fileButtonPane = BABYLON.MeshBuilder.CreatePlane("fileButtonPlane", {width: 0.4, height: 0.4}, scene)
         fileButtonPane.position.y= 3.2
         fileButtonPane.position.x = -0.9
         fileButtonPane.rotation.z = -Math.PI/2;
@@ -111,14 +114,14 @@ shell.registerApp({
         var pickerPanelTexture = Stage.GUI.AdvancedDynamicTexture.CreateForMesh(pickerPlane)
 
         pickerPlane.parent = fileButtonPane
-        pickerPlane.position.x = -0.15
-        pickerPlane.position.y = -0.35
+        pickerPlane.position.x = -0.3
+        pickerPlane.position.y = -0.45
 
         var pickerPanel = new Stage.GUI.StackPanel()
 
         // Video texture
         var mixerVideo = new BABYLON.VideoTexture("mixer", ["public/MixerClipVid_30secondsInverted.mp4"], scene, true);
-        var waterfallVideo = new BABYLON.VideoTexture("waterfall", ["public/waterfall.mp4"], scene, true);
+        var balloonPopVideo = new BABYLON.VideoTexture("balloon", ["public/BalloonPopInverted.mp4"], scene, true);
         
         var videoMaterial = new BABYLON.StandardMaterial("", scene);
         videoMaterial.emissiveColor = new BABYLON.Color3(1,1,1)
@@ -126,7 +129,7 @@ shell.registerApp({
         ribbon.material = videoMaterial
 
         mixerVideo.video.pause()
-        waterfallVideo.video.pause()
+        balloonPopVideo.video.pause()
 
         // Events
         playbutton.onPointerClickObservable.add(()=>{
@@ -136,9 +139,9 @@ shell.registerApp({
                 mixerVideo.video.play()
                 progressBar.value = mixerVideo.video.currentTime
             }
-            else if(currentVid=="waterfall"){
-                waterfallVideo.video.play()
-                progressBar.value = waterfallVideo.video.currentTime
+            else if(currentVid=="balloon"){
+                balloonPopVideo.video.play()
+                progressBar.value = balloonPopVideo.video.currentTime
             }            
         })
 
@@ -148,8 +151,8 @@ shell.registerApp({
             if(currentVid=="mixer"){
                 mixerVideo.video.pause()
             }
-            else if(currentVid=="waterfall"){
-                waterfallVideo.video.pause()
+            else if(currentVid=="balloon"){
+                balloonPopVideo.video.pause()
             }  
         })
 
@@ -157,8 +160,8 @@ shell.registerApp({
             progressBar.value = mixerVideo.video.currentTime
         }
 
-        waterfallVideo.video.ontimeupdate = function(){
-            progressBar.value = waterfallVideo.video.currentTime
+        balloonPopVideo.video.ontimeupdate = function(){
+            progressBar.value = balloonPopVideo.video.currentTime
         }
 
         progressBar.onPointerClickObservable.add(function() {
@@ -168,44 +171,44 @@ shell.registerApp({
                 mixerVideo.video.pause()
                 mixerVideo.video.currentTime = progressBar.value
             }
-            else if(currentVid=="waterfall"){
-                waterfallVideo.video.pause()
-                waterfallVideo.video.currentTime = progressBar.value
+            else if(currentVid=="balloon"){
+                balloonPopVideo.video.pause()
+                balloonPopVideo.video.currentTime = progressBar.value
             } 
         })
 
         fileButton.onPointerClickObservable.add(()=>{
             pickerPanelTexture.addControl(pickerPanel)
 
-            var waterfallButton = Stage.GUI.Button.CreateSimpleButton("", "Waterfall")
-            waterfallButton.fontSize = 150
-            waterfallButton.color = "white"
-            waterfallButton.height = "50%"
-            waterfallButton.background = "#4AB3F4"
-            pickerPanel.addControl(waterfallButton)
+            var balloonPopButton = Stage.GUI.Button.CreateSimpleButton("", "Balloon Pop")
+            balloonPopButton.fontSize = 150
+            balloonPopButton.color = "white"
+            balloonPopButton.height = "50%"
+            balloonPopButton.background = "gray"
+            pickerPanel.addControl(balloonPopButton)
 
             var mixerButton = Stage.GUI.Button.CreateSimpleButton("", "Mixer")
             mixerButton.fontSize = 150
             mixerButton.color = "white"
             mixerButton.height = "50%"
-            mixerButton.background = "#4AB3F4"
+            mixerButton.background = "gray"
             pickerPanel.addControl(mixerButton)
 
-            waterfallButton.onPointerClickObservable.add(()=>{                
-                pickerPanel.removeControl(waterfallButton)
+            balloonPopButton.onPointerClickObservable.add(()=>{                
+                pickerPanel.removeControl(balloonPopButton)
                 pickerPanel.removeControl(mixerButton)
                 pickerPanelTexture.removeControl(pickerPanel)
                 mixerVideo.video.pause()
-                progressBar.maximum = waterfallVideo.video.duration
-                progressBar.value = waterfallVideo.video.currentTime
-                videoMaterial.diffuseTexture = waterfallVideo
+                progressBar.maximum = balloonPopVideo.video.duration
+                progressBar.value = balloonPopVideo.video.currentTime
+                videoMaterial.diffuseTexture = balloonPopVideo
             })
 
             mixerButton.onPointerClickObservable.add(()=>{
-                pickerPanel.removeControl(waterfallButton)
+                pickerPanel.removeControl(balloonPopButton)
                 pickerPanel.removeControl(mixerButton)
                 pickerPanelTexture.removeControl(pickerPanel)
-                waterfallVideo.video.pause()
+                balloonPopVideo.video.pause()
                 progressBar.maximum = mixerVideo.video.duration
                 progressBar.value = mixerVideo.video.currentTime
                 videoMaterial.diffuseTexture = mixerVideo
@@ -216,7 +219,7 @@ shell.registerApp({
         mixerVideo.video.onloadedmetadata = function(){
             progressBar.maximum = mixerVideo.video.duration
             progressBarTexture.addControl(progressBar)
-        }
+        }        
     }, 
     dispose: async ()=>{
     }

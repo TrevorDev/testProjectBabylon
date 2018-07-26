@@ -29,7 +29,10 @@ class SpeechRecognizer {
                 hypothesisCallback(event.Result.Text);
             }
             else if (event instanceof SDK.SpeechSimplePhraseEvent) {
-                phraseCallback(event.Result.DisplayText);
+                if (event.Result.RecognitionStatus === "Success")
+                {
+                    phraseCallback(event.Result.DisplayText);
+                }
             }
             else if (event instanceof SDK.RecognitionEndedEvent) {
                 //Do something here
@@ -74,115 +77,116 @@ class Shell {
     
     launchApp = (app:App, maximize:boolean) => {
         //  maximize the application at the given index
-        setTimeout(() => {
-            var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
-            sphere.position.y += 0.2
-            var mat = new BABYLON.StandardMaterial("icon", this.scene);
-            var iconTexture = new BABYLON.Texture(app.iconUrl, this.scene);
-            iconTexture.uScale = -1;
-            iconTexture.vScale = -1;
-            mat.diffuseTexture = iconTexture;
-            mat.diffuseTexture.hasAlpha = true;
-            mat.backFaceCulling = false;
-            sphere.material = mat;
-            this.registeredAppCounter += 1
-    
-            this.positionSphere(sphere)
-            var anchor = new BABYLON.Mesh("", this.scene);
-            anchor.scaling.scaleInPlace(0)
-         
-            sphere.rotation.y=Math.PI/4
-            // this.apps.push(app)
-    
-            // app.launch(anchor, this.vrHelper)
-    
-            var b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
-            sphere.addBehavior(b)
-            
-            b.onDragObservable.add(()=>{
-                // Rotate apps that are dragged to face you
-                var camPos = this.scene.activeCamera.position
-                if((<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition){
-                    camPos = (<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition;
-                }
-                var angle = Math.sin((camPos.x-sphere.position.x)/(camPos.z-sphere.position.z))
-                anchor.rotation.y = angle
-            })
-    
-            // related to controls the opening and closing animation
-            enum VisibleState { Visible = 0, Hidden, Transition }
-            var state = VisibleState.Hidden
-            var FPS = 60
-            var APP_OPEN_SPEED = 3.0/FPS
-            var scaleDelta = 0
-            var scaleDeltaIter = 0
+        var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
+        sphere.position.y += 0.2
+        var mat = new BABYLON.StandardMaterial("icon", this.scene);
+        var iconTexture = new BABYLON.Texture(app.iconUrl, this.scene);
+        iconTexture.uScale = -1;
+        iconTexture.vScale = -1;
+        mat.diffuseTexture = iconTexture;
+        mat.diffuseTexture.hasAlpha = true;
+        mat.backFaceCulling = false;
+        sphere.material = mat;
+        this.registeredAppCounter += 1
 
-            this.scene.onBeforeRenderObservable.add(()=>{
-               // console.log(sphere.position.x)
-                anchor.position.copyFrom(sphere.position)
-                anchor.rotation.copyFrom(anchor.rotation)
+        this.positionSphere(sphere)
+        var anchor = new BABYLON.Mesh("", this.scene);
+        anchor.scaling.scaleInPlace(0)
+        
+        sphere.rotation.y=Math.PI/4
+        // this.apps.push(app)
 
-                if (state == VisibleState.Transition)
-                {
-                    if (scaleDeltaIter == 1/APP_OPEN_SPEED)
-                    {               
-                        if (scaleDelta == APP_OPEN_SPEED)
-                        {
-                            state = VisibleState.Visible
-                            scaleDelta = 0.0
-                        }
-                        else if (scaleDelta == -APP_OPEN_SPEED)
-                        {
-                            state = VisibleState.Hidden
-                            scaleDelta = 0.0
-                        }
-                        scaleDeltaIter = 0
-                    }
-                    else
-                    {
-                        anchor.scaling.addInPlace(new BABYLON.Vector3(scaleDelta, scaleDelta, scaleDelta));
-                        scaleDeltaIter++;
-                    }
-                }
-            })
-    
-            let launched = false;
-            var pDownTime:Date; 
-            
-            this.scene.onPointerObservable.add((e)=>{
-                if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
-                    if(e.pickInfo.pickedMesh == sphere) {
-                        if(!launched){
-                            // this.apps.push(app)
-                            app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
-                        }
-                        launched = true;
+        // app.launch(anchor, this.vrHelper)
 
-                        pDownTime = new Date();
-                    }
-                }else if(e.type == BABYLON.PointerEventTypes.POINTERUP){
-                    if(pDownTime && (new Date().getTime()-pDownTime.getTime())<200){
-                        if (state == VisibleState.Hidden)
-                        {
-                            state = VisibleState.Transition
-                            scaleDelta = APP_OPEN_SPEED
-                        }
-                        else if (state == VisibleState.Visible)
-                        {
-                            state = VisibleState.Transition
-                            scaleDelta = -APP_OPEN_SPEED
-                        }
-                    }
-                }
-            })
-
-            if (maximize === true) {
-                app.launch(anchor, this.vrHelper)
-                state = VisibleState.Transition
-                launched = true;
-                scaleDelta = APP_OPEN_SPEED
+        var b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
+        sphere.addBehavior(b)
+        
+        b.onDragObservable.add(()=>{
+            // Rotate apps that are dragged to face you
+            var camPos = this.scene.activeCamera.position
+            if((<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition){
+                camPos = (<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition;
             }
-        }, 1000)
+            var angle = Math.atan((camPos.x-sphere.position.x)/(camPos.z-sphere.position.z))
+            if((camPos.z-sphere.position.z) > 0){
+                angle+=Math.PI
+            }
+            anchor.rotation.y = angle
+        })
+
+        // related to controls the opening and closing animation
+        enum VisibleState { Visible = 0, Hidden, Transition }
+        var state = VisibleState.Hidden
+        var FPS = 60
+        var APP_OPEN_SPEED = 3.0/FPS
+        var scaleDelta = 0
+        var scaleDeltaIter = 0
+
+        this.scene.onBeforeRenderObservable.add(()=>{
+            // console.log(sphere.position.x)
+            anchor.position.copyFrom(sphere.position)
+            anchor.rotation.copyFrom(anchor.rotation)
+
+            if (state == VisibleState.Transition)
+            {
+                if (scaleDeltaIter == 1/APP_OPEN_SPEED)
+                {               
+                    if (scaleDelta == APP_OPEN_SPEED)
+                    {
+                        state = VisibleState.Visible
+                        scaleDelta = 0.0
+                    }
+                    else if (scaleDelta == -APP_OPEN_SPEED)
+                    {
+                        state = VisibleState.Hidden
+                        scaleDelta = 0.0
+                    }
+                    scaleDeltaIter = 0
+                }
+                else
+                {
+                    anchor.scaling.addInPlace(new BABYLON.Vector3(scaleDelta, scaleDelta, scaleDelta));
+                    scaleDeltaIter++;
+                }
+            }
+        })
+
+        let launched = false;
+        var pDownTime:Date; 
+        
+        this.scene.onPointerObservable.add((e)=>{
+            if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
+                if(e.pickInfo.pickedMesh == sphere) {
+                    if(!launched){
+                        // this.apps.push(app)
+                        app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
+                    }
+                    launched = true;
+
+                    pDownTime = new Date();
+                }
+            }else if(e.type == BABYLON.PointerEventTypes.POINTERUP){
+                if(pDownTime && (new Date().getTime()-pDownTime.getTime())<200){
+                    if (state == VisibleState.Hidden)
+                    {
+                        state = VisibleState.Transition
+                        scaleDelta = APP_OPEN_SPEED
+                    }
+                    else if (state == VisibleState.Visible)
+                    {
+                        state = VisibleState.Transition
+                        scaleDelta = -APP_OPEN_SPEED
+                    }
+                }
+            }
+        })
+
+        if (maximize === true) {
+            app.launch(anchor, this.vrHelper)
+            state = VisibleState.Transition
+            launched = true;
+            scaleDelta = APP_OPEN_SPEED
+        }
     }
     registerApp = (app:App)=>{
         // This settimeout is needed to handle a weird bug where the spheres are not rendered
@@ -215,10 +219,12 @@ var main = async () => {
     vrHelper.raySelectionPredicate = (mesh:BABYLON.AbstractMesh):boolean=>{
         return mesh.isVisible && mesh.isPickable;
     }
-    var recognizer = new SpeechRecognizer(SDK, SDK.RecognitionMode.Conversation, "en-us", SDK.SpeechResultFormat.Simple, "92069ee289b84e5594a9564ab77ed2ba");
+    var recognizer = new SpeechRecognizer(SDK, SDK.RecognitionMode.Interactive, "en-us", SDK.SpeechResultFormat.Simple, "92069ee289b84e5594a9564ab77ed2ba");
     var win:any = window
     win.shell = new Shell(scene, vrHelper, recognizer);
     
+    (<BABYLON.FreeCamera>scene.activeCamera).speed *= 0.03
+
     // Model taken from https://poly.google.com/view/3oGDGMrc6rm
     // CC-BY for Google as the content creator
     // this is the 3D Phone model that will be the app launcher device
@@ -239,7 +245,7 @@ var main = async () => {
     scene.addMesh(loadedPhone, true)
 
     // menu launcher plane
-    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.5, height:1.5}, scene);
+    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1.5, height:4}, scene);
 
     plane.position.z = -0.2;
 
@@ -250,18 +256,18 @@ var main = async () => {
         {name: "videoplayer", iconUrl: "public/appicons/videoflat.png"}, 
         {name: "chatApp", iconUrl: "public/appicons/flatchat.png"}, 
         {name: "balloonPop", iconUrl: "public/appicons/baloonflat.png"}, 
-        {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"}
+        {name: "convertSite", iconUrl: "public/appicons/flatwikipedia.png"},
+        {name: "architectureReview", iconUrl: "public/appicons/architectureReview.png"}
     ]
 
     for (let i = 0; i < available_apps.length; i++) {
         var button = Stage.GUI.Button.CreateImageWithCenterTextButton("button" + i, available_apps[i].name, available_apps[i].iconUrl);
         button.width = 1;
-        button.height = 1;
+        button.height = 0.75;
         button.color = "transparent";
         button.fontSize = 50;
         button.paddingLeft = "3%";
         button.paddingRight = "3%";
-        button.paddingBottom = "3%";
         
 
         button.onPointerUpObservable.add(function(e) {
@@ -277,20 +283,45 @@ var main = async () => {
     grid.addColumnDefinition(0.5);
     grid.addRowDefinition(0.5);
     grid.addRowDefinition(0.5);
+    grid.addRowDefinition(0.5);
 
     grid.addControl(buttons[0], 0, 0);   
     grid.addControl(buttons[1], 0, 1);
     grid.addControl(buttons[2], 1, 0);
     grid.addControl(buttons[3], 1, 1);
+    grid.addControl(buttons[4], 2, 0);
 
-    
+    grid.paddingTop = 250;
+    grid.paddingBottom = 250
     advancedTexture.addControl(grid);
+
+    var materialPlane = new BABYLON.StandardMaterial("texturePlane", scene);
+    materialPlane.diffuseTexture = new BABYLON.Texture("public/msft.png", scene);
+    materialPlane.specularColor = new BABYLON.Color3(0, 0, 0);
+    materialPlane.backFaceCulling = true;//Allways show the front and the back of an element
+
+    //Creation of a plane for the logo 
+    var planeLogo= BABYLON.MeshBuilder.CreatePlane("plane", {width: 0.25, height:0.25}, scene);
+    planeLogo.position.z = -0.2;
+    planeLogo.position.y = -1.4    
+
+    planeLogo.material = materialPlane;
+
+    var dialogText = new Stage.GUI.TextBlock()
+    dialogText.text = "Listening..."
+    dialogText.color = 'black'
+    dialogText.fontSize = 80
+    dialogText.zIndex = -1
+    dialogText.textVerticalAlignment = Stage.GUI.Control.VERTICAL_ALIGNMENT_TOP
+
+    advancedTexture.addControl(dialogText)
 
     // parent menu mesh that holds both the phone and ui
     var parentMenuMesh = new BABYLON.Mesh('parentMesh1', scene)
     
     parentMenuMesh.addChild(plane)
     parentMenuMesh.addChild(loadedPhone)
+    parentMenuMesh.addChild(planeLogo)
 
     //https://poly.google.com/search/beachside
     var container = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/beach/model.gltf", "", scene)  
@@ -306,11 +337,49 @@ var main = async () => {
     box.scaling.x = 1000
     box.position.y = -3
 
-    // console.log("loaded")
-    // var loadedModel = container.createRootMesh()
-    // loadedModel.scaling.scaleInPlace(0.001)
-    // scene.addMesh(loadedModel)
-    //makeNotPickable(loadedModel)
+
+    var cloudMaterial = new BABYLON.ShaderMaterial("cloud", scene, "./public/shaders/cloud",
+    {
+        needAlphaBlending: true,
+        attributes: ["position", "uv", "normal"],
+        uniforms: ["worldViewProjection"],
+        samplers: ["textureSampler"]
+    });
+    cloudMaterial.setTexture("textureSampler", new BABYLON.Texture("public/textures/cloud.png", scene));
+    cloudMaterial.setFloat("fogNear", -100);
+    cloudMaterial.setFloat("fogFar", 3000);
+    cloudMaterial.setColor3("fogColor", BABYLON.Color3.FromInts(69, 132, 180));
+    var time = 0
+    
+    // loading oalf
+    var materialCarrot = new BABYLON.StandardMaterial("carrot", scene);
+    materialCarrot.diffuseTexture = new BABYLON.Texture("public/textures/carrot.jpg", scene);
+    var materialSnow = new BABYLON.StandardMaterial("carrot", scene);
+    materialSnow.diffuseTexture = new BABYLON.Texture("public/textures/snow.jpg", scene);
+    var materialBranch = new BABYLON.StandardMaterial("carrot", scene);
+    materialBranch.diffuseTexture = new BABYLON.Texture("public/textures/wood.jpg", scene);
+
+    BABYLON.SceneLoader.ImportMesh(null, "public/", "olaf.obj", scene, function (meshes, particleSystems, skeletons) {
+        for(let m of meshes){
+                m.position = new BABYLON.Vector3(7, 7, 7);
+                m.rotate(new BABYLON.Vector3(0, 1, 0), 180);
+                m.scaling.scaleInPlace(0.02);
+                if(m.name == "Nose"){
+                    m.material = materialCarrot
+                }
+                else if(m.name == "L_Arms" || m.name == "R_Arms"){
+                    m.material = materialBranch
+                }
+                else{
+                m.material = cloudMaterial;
+                }
+        }
+    });
+    
+    scene.registerBeforeRender(function () {
+        time += 0.005
+        cloudMaterial.setFloat("time", time)
+    })
 
     parentMenuMesh.scaling = new BABYLON.Vector3(0.1, 0.1, 0.1);
     parentMenuMesh.rotation.x = Math.PI / 8;
@@ -339,23 +408,36 @@ var main = async () => {
     }
 
     var listening = false;
-    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch game.", 2], ["launch wikipedia.", 3]]);
+
+    var appMap = new Map([["launch video player.", 0], ["launch mixer.", 0], ["launch chat app.", 1], ["launch teams.", 1], ["launch balloon pop.", 2], ["launch balloon game.", 2], ["launch game.", 2], ["launch wikipedia.", 3], ["launch architecture.", 4]]);
+
     function toggleRecognizer() {
         if (listening == false) {
-            listening = true;
             win.shell.recognizer.StartOneShotRecognition(
                 function (trex) {
-                    console.log(trex);
+                    dialogText.text = trex;
                 },
                 function (text) {
+                    listening = false;
+                    dialogText.text = text;
+
+                    setTimeout(function(){
+                        dialogText.text = "Listening...";
+                        toggleRecognizer();
+                    }, 2500)
+
                     text = text.toLowerCase();
+                    
                     if (appMap.has(text)) {
                         win.shell.launchApp(win.shell.apps[appMap.get(text)], true);
                     }
                 });
+            listening = true;
         }
         else {
             win.shell.recognizer.RecognizerStop();
+            dialogText.text = "Listening...";
+            listening = false;
         }
     }
     
@@ -368,6 +450,5 @@ var main = async () => {
             }
         });
     });
-
 }
 main()
