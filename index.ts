@@ -77,118 +77,116 @@ class Shell {
     
     launchApp = (app:App, maximize:boolean) => {
         //  maximize the application at the given index
-        setTimeout(() => {
-            var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
-            sphere.position.y += 0.2
-            var mat = new BABYLON.StandardMaterial("icon", this.scene);
-            var iconTexture = new BABYLON.Texture(app.iconUrl, this.scene);
-            iconTexture.uScale = -1;
-            iconTexture.vScale = -1;
-            mat.diffuseTexture = iconTexture;
-            mat.diffuseTexture.hasAlpha = true;
-            mat.backFaceCulling = false;
-            sphere.material = mat;
-            this.registeredAppCounter += 1
-    
-            this.positionSphere(sphere)
-            var anchor = new BABYLON.Mesh("", this.scene);
-            anchor.scaling.scaleInPlace(0)
-         
-            sphere.rotation.y=Math.PI/4
-            // this.apps.push(app)
-    
-            // app.launch(anchor, this.vrHelper)
-    
-            var b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
-            sphere.addBehavior(b)
-            
-            b.onDragObservable.add(()=>{
-                // Rotate apps that are dragged to face you
-                var camPos = this.scene.activeCamera.position
-                if((<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition){
-                    camPos = (<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition;
-                }
-                var angle = Math.atan((camPos.x-sphere.position.x)/(camPos.z-sphere.position.z))
-                if((camPos.z-sphere.position.z) > 0){
-                    angle+=Math.PI
-                }
-                anchor.rotation.y = angle
-            })
-    
-            // related to controls the opening and closing animation
-            enum VisibleState { Visible = 0, Hidden, Transition }
-            var state = VisibleState.Hidden
-            var FPS = 60
-            var APP_OPEN_SPEED = 3.0/FPS
-            var scaleDelta = 0
-            var scaleDeltaIter = 0
+        var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 0.5, this.scene)
+        sphere.position.y += 0.2
+        var mat = new BABYLON.StandardMaterial("icon", this.scene);
+        var iconTexture = new BABYLON.Texture(app.iconUrl, this.scene);
+        iconTexture.uScale = -1;
+        iconTexture.vScale = -1;
+        mat.diffuseTexture = iconTexture;
+        mat.diffuseTexture.hasAlpha = true;
+        mat.backFaceCulling = false;
+        sphere.material = mat;
+        this.registeredAppCounter += 1
 
-            this.scene.onBeforeRenderObservable.add(()=>{
-               // console.log(sphere.position.x)
-                anchor.position.copyFrom(sphere.position)
-                anchor.rotation.copyFrom(anchor.rotation)
+        this.positionSphere(sphere)
+        var anchor = new BABYLON.Mesh("", this.scene);
+        anchor.scaling.scaleInPlace(0)
+        
+        sphere.rotation.y=Math.PI/4
+        // this.apps.push(app)
 
-                if (state == VisibleState.Transition)
-                {
-                    if (scaleDeltaIter == 1/APP_OPEN_SPEED)
-                    {               
-                        if (scaleDelta == APP_OPEN_SPEED)
-                        {
-                            state = VisibleState.Visible
-                            scaleDelta = 0.0
-                        }
-                        else if (scaleDelta == -APP_OPEN_SPEED)
-                        {
-                            state = VisibleState.Hidden
-                            scaleDelta = 0.0
-                        }
-                        scaleDeltaIter = 0
-                    }
-                    else
-                    {
-                        anchor.scaling.addInPlace(new BABYLON.Vector3(scaleDelta, scaleDelta, scaleDelta));
-                        scaleDeltaIter++;
-                    }
-                }
-            })
-    
-            let launched = false;
-            var pDownTime:Date; 
-            
-            this.scene.onPointerObservable.add((e)=>{
-                if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
-                    if(e.pickInfo.pickedMesh == sphere) {
-                        if(!launched){
-                            // this.apps.push(app)
-                            app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
-                        }
-                        launched = true;
+        // app.launch(anchor, this.vrHelper)
 
-                        pDownTime = new Date();
-                    }
-                }else if(e.type == BABYLON.PointerEventTypes.POINTERUP){
-                    if(pDownTime && (new Date().getTime()-pDownTime.getTime())<200){
-                        if (state == VisibleState.Hidden)
-                        {
-                            state = VisibleState.Transition
-                            scaleDelta = APP_OPEN_SPEED
-                        }
-                        else if (state == VisibleState.Visible)
-                        {
-                            state = VisibleState.Transition
-                            scaleDelta = -APP_OPEN_SPEED
-                        }
-                    }
-                }
-            })
-
-            if (maximize === true) {
-                app.launch(anchor, this.vrHelper)
-                state = VisibleState.Transition
-                launched = true;
-                scaleDelta = APP_OPEN_SPEED
+        var b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
+        sphere.addBehavior(b)
+        
+        b.onDragObservable.add(()=>{
+            // Rotate apps that are dragged to face you
+            var camPos = this.scene.activeCamera.position
+            if((<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition){
+                camPos = (<BABYLON.WebVRFreeCamera>this.scene.activeCamera).devicePosition;
             }
-        }, 1000)
+            var angle = Math.atan((camPos.x-sphere.position.x)/(camPos.z-sphere.position.z))
+            if((camPos.z-sphere.position.z) > 0){
+                angle+=Math.PI
+            }
+            anchor.rotation.y = angle
+        })
+
+        // related to controls the opening and closing animation
+        enum VisibleState { Visible = 0, Hidden, Transition }
+        var state = VisibleState.Hidden
+        var FPS = 60
+        var APP_OPEN_SPEED = 3.0/FPS
+        var scaleDelta = 0
+        var scaleDeltaIter = 0
+
+        this.scene.onBeforeRenderObservable.add(()=>{
+            // console.log(sphere.position.x)
+            anchor.position.copyFrom(sphere.position)
+            anchor.rotation.copyFrom(anchor.rotation)
+
+            if (state == VisibleState.Transition)
+            {
+                if (scaleDeltaIter == 1/APP_OPEN_SPEED)
+                {               
+                    if (scaleDelta == APP_OPEN_SPEED)
+                    {
+                        state = VisibleState.Visible
+                        scaleDelta = 0.0
+                    }
+                    else if (scaleDelta == -APP_OPEN_SPEED)
+                    {
+                        state = VisibleState.Hidden
+                        scaleDelta = 0.0
+                    }
+                    scaleDeltaIter = 0
+                }
+                else
+                {
+                    anchor.scaling.addInPlace(new BABYLON.Vector3(scaleDelta, scaleDelta, scaleDelta));
+                    scaleDeltaIter++;
+                }
+            }
+        })
+
+        let launched = false;
+        var pDownTime:Date; 
+        
+        this.scene.onPointerObservable.add((e)=>{
+            if (e.type == BABYLON.PointerEventTypes.POINTERDOWN) {
+                if(e.pickInfo.pickedMesh == sphere) {
+                    if(!launched){
+                        // this.apps.push(app)
+                        app.launch(anchor, this.vrHelper) // BUG: this is launch new app with each click? 
+                    }
+                    launched = true;
+
+                    pDownTime = new Date();
+                }
+            }else if(e.type == BABYLON.PointerEventTypes.POINTERUP){
+                if(pDownTime && (new Date().getTime()-pDownTime.getTime())<200){
+                    if (state == VisibleState.Hidden)
+                    {
+                        state = VisibleState.Transition
+                        scaleDelta = APP_OPEN_SPEED
+                    }
+                    else if (state == VisibleState.Visible)
+                    {
+                        state = VisibleState.Transition
+                        scaleDelta = -APP_OPEN_SPEED
+                    }
+                }
+            }
+        })
+
+        if (maximize === true) {
+            app.launch(anchor, this.vrHelper)
+            state = VisibleState.Transition
+            launched = true;
+            scaleDelta = APP_OPEN_SPEED
+        }
     }
     registerApp = (app:App)=>{
         // This settimeout is needed to handle a weird bug where the spheres are not rendered
