@@ -388,11 +388,12 @@ var main = async () => {
 
     var phoneIsUp = false;
 
-    parentMenuMesh.setEnabled(true); // TODO CHANGE THIS FOR VR USE
+    parentMenuMesh.setEnabled(false); // TODO CHANGE THIS FOR VR USE
 
     function togglePhone(controller) {
         if (phoneIsUp === false) {
             controller.mesh.addChild(parentMenuMesh);
+            plane.isPickable = true
             parentMenuMesh.setEnabled(true);
     
             parentMenuMesh.position.x = -0.1
@@ -402,6 +403,8 @@ var main = async () => {
         else {
             controller.mesh.removeChild(parentMenuMesh);
             parentMenuMesh.setEnabled(false);
+            plane.isPickable = false
+            phoneContainer
         }
 
         phoneIsUp = !phoneIsUp;
