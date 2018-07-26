@@ -8,8 +8,10 @@ var dollhouseScale = 0.005;
 var archTrueScale = 0.025;
 var isDollhouseScale = true;
 var architecturalModel:BABYLON.Mesh;
+var dollhousingSphere:BABYLON.Mesh;
 var cachedDollhousePosition:BABYLON.Vector3;
 var archInputDownTime:Date = new Date();
+var dollhousingInputDownTime:Date = new Date();
 
 var archSubmeshColorIndex = new Object();
 
@@ -25,6 +27,9 @@ function setDollhouseScale() {
     architecturalModel.scaling.z = dollhouseScale;
 
     architecturalModel.parent = tempParent;
+
+    dollhousingSphere.position.y = 20;
+    dollhousingSphere.scaling = new BABYLON.Vector3(1, 1, 1);
     
     isDollhouseScale = true;
 }
@@ -42,6 +47,9 @@ function setTrueScale() {
     architecturalModel.scaling.z = archTrueScale;
 
     architecturalModel.parent = tempParent;
+
+    dollhousingSphere.position.y = 40;
+    dollhousingSphere.scaling = new BABYLON.Vector3(0.3, 0.3, 0.3);
     
     isDollhouseScale = false;
 }
@@ -64,6 +72,13 @@ shell.registerApp({
 		
 		//let b = new BABYLON.PointerDragBehavior({dragPlaneNormal: new BABYLON.Vector3(0,1,0)})
         //architecturalModel.addBehavior(b)
+
+        dollhousingSphere = BABYLON.Mesh.CreateSphere("dollhousingSphere", 16, 20, scene);
+        dollhousingSphere.parent = architecturalModel;
+
+        var dollhousingMat = new BABYLON.StandardMaterial("dollhousingMat", scene);
+        dollhousingMat.diffuseColor = new BABYLON.Color3(0.9, 0.6, 0.6);
+        dollhousingSphere.material = dollhousingMat;
 		
         scene.addMesh(architecturalModel, true);
         architecturalModel.parent = windowAnchor;
@@ -88,17 +103,33 @@ shell.registerApp({
         }
 		
 		scene.onPointerObservable.add((e)=>{
-            if (e.pickInfo.pickedMesh && e.pickInfo.pickedMesh.isDescendantOf(architecturalModel)) {
+            if (e.type != BABYLON.PointerEventTypes.POINTERDOWN && e.type != BABYLON.PointerEventTypes.POINTERUP) {
+                return;
+            }
+            if (e.pickInfo.pickedMesh == null) {
+                return;
+            }
+            if (e.pickInfo.pickedMesh == dollhousingSphere || e.pickInfo.pickedMesh.isDescendantOf(dollhousingSphere)) {
+                if(e.type == BABYLON.PointerEventTypes.POINTERDOWN){
+                    dollhousingInputDownTime = new Date();
+                }
+                else if (e.type == BABYLON.PointerEventTypes.POINTERUP) {
+                    var dollhousingInputDownTime = new Date();
+                    if (dollhousingInputDownTime.getTime() - dollhousingInputDownTime.getTime() < 300) {
+                        if (isDollhouseScale)
+                            setTrueScale();
+                        else
+                            setDollhouseScale();
+                    }
+                }
+            }
+            else if (e.pickInfo.pickedMesh.isDescendantOf(architecturalModel)) {
                 if(e.type == BABYLON.PointerEventTypes.POINTERDOWN){
                     archInputDownTime = new Date();
                 }
                 else if (e.type == BABYLON.PointerEventTypes.POINTERUP) {
                     var archInputUpTime = new Date();
-                    if (archInputUpTime.getTime() - archInputDownTime.getTime() < 200) {
-                        /*if (isDollhouseScale)
-                            setTrueScale();
-                        else
-                            setDollhouseScale();*/
+                    if (archInputUpTime.getTime() - archInputDownTime.getTime() < 300) {
                         
                         var currentColorIndex = 0;
                         if (archSubmeshColorIndex.hasOwnProperty(e.pickInfo.pickedMesh.id)) {
