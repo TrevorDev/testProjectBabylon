@@ -1,50 +1,82 @@
-import { Stage } from './src/stage'
+import {createCanvas} from './src/canvasTools'
+import * as Shaders from './src/shaders'
+import { Mesh } from './src/mesh'
+import * as twgl from "twgl.js"
 
 var main = async ()=>{
-    // Initialize full screen rendering
-    var stage = new Stage()
-    var scene = stage.scene
-    var canvas = stage.engine.getRenderingCanvas()
+    var canvas = createCanvas();
 
-    var env = scene.createDefaultEnvironment({})
-    env.setMainColor(BABYLON.Color3.FromHexString("#7f8c8d"))
-    env.skybox.scaling.scaleInPlace(10)
+    var gl = canvas.getContext("webgl");
+    var m4 = twgl.m4;
+    var programInfo = twgl.createProgramInfo(gl, [Shaders.DEFAULT_VERTEX, Shaders.DEFAULT_FRAGMENT]);
 
-    // Create basic world
-    var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene)
-    camera.setTarget(BABYLON.Vector3.Zero())
-    camera.attachControl(canvas, true)
-    var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene)
-    light.intensity = 0.7
-    var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 1, scene)
-    sphere.position.set(0,3.5,0)
+    var mesh = new Mesh();
+    mesh.buffers = {
+      position: [1, 1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 1, -1, -1, 1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1],
+      normal:   [1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1],
+      texcoord: [1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1],
+      indices:  [0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21, 22, 20, 22, 23],
+    };
+    var bufferInfo = twgl.createBufferInfoFromArrays(gl, mesh.buffers);
 
-    // Load GLTF
-    var root = await stage.importMesh("https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Avocado/glTF/Avocado.gltf")
-    root.position.y = 2
-    root.scaling.scaleInPlace(10)
-    scene.addMesh(root, true)
+    var tex = twgl.createTexture(gl, {
+      min: gl.NEAREST,
+      mag: gl.NEAREST,
+      src: [
+        255, 255, 255, 255,
+        192, 192, 192, 255,
+        192, 192, 192, 255,
+        255, 255, 255, 255,
+      ],
+    });
 
-    // Create GUI button
-    var plane = BABYLON.MeshBuilder.CreatePlane("plane", {width: 1, height: 1}, this.scene)
-    plane.position.y= 1
-    var guiTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(plane)
-    guiTexture
-    var guiPanel = new BABYLON.GUI.StackPanel()  
-    guiPanel.top = "0px"
-    guiTexture.addControl(guiPanel)
-    var button = BABYLON.GUI.Button.CreateSimpleButton("", "Click 🤣")
-    button.fontSize = 300
-    button.color = "white"
-    button.background = "#4AB3F4"
-    button.cornerRadius = 200
-    button.thickness = 20
-    button.onPointerClickObservable.add(()=>{
-        console.log("hit")
-    })
-    guiPanel.addControl(button)
-    
-    // Setup vr
-    scene.createDefaultVRExperience({floorMeshes: [env.ground]})
+    var uniforms:any = {
+      u_lightWorldPos: [1, 8, -10],
+      u_lightColor: [1, 0.8, 0.8, 1],
+      u_ambient: [0, 0, 0, 1],
+      u_specular: [1, 1, 1, 1],
+      u_shininess: 50,
+      u_specularFactor: 1,
+      u_diffuse: tex,
+    };
+
+    function render(time) {
+      time *= 0.001;
+      twgl.resizeCanvasToDisplaySize(gl.canvas);
+      gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
+      gl.enable(gl.DEPTH_TEST);
+      gl.enable(gl.CULL_FACE);
+      gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
+      var fov = 30 * Math.PI / 180;
+      var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
+      var zNear = 0.5;
+      var zFar = 1000;
+      var projection = m4.perspective(fov, aspect, zNear, zFar);
+      var eye = [1, 4, -10];
+      var target = [0, 0, 0];
+      var up = [0, 1, 0];
+
+      var camera = m4.lookAt(eye, target, up);
+      var view = m4.inverse(camera);
+      var viewProjection = m4.multiply(projection, view);
+      var world = m4.rotationY(time);
+
+      uniforms.u_viewInverse = camera;
+      uniforms.u_world = world;
+      uniforms.u_worldInverseTranspose = m4.transpose(m4.inverse(world));
+      uniforms.u_worldViewProjection = m4.multiply(viewProjection, world);
+
+      gl.useProgram(programInfo.program);
+      twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
+      twgl.setUniforms(programInfo, uniforms);
+      gl.drawElements(gl.TRIANGLES, bufferInfo.numElements, gl.UNSIGNED_SHORT, 0);
+
+      requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+
+  
 }
 main()
