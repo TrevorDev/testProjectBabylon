@@ -8,10 +8,11 @@
     "babylonjs-gui": "^3.3.0-alpha.11",
     "babylonjs-loaders": "^3.3.0-alpha.11",
     "babylonjs-materials": "^3.3.0-alpha.11",
-    "twgl.js": "^4.4.0",
+    "twgl.js": "^4.4.0"
+  },
+  "devDependencies": {
     "typescript": "^2.9.2"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
