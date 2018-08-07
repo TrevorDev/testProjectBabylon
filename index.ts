@@ -55,7 +55,7 @@ class MagicWindowManger {
       }).then((frameOfRef:any)=>{
           
           var rendLoop = (time:any, frame:any)=>{
-              this._xrSession.requestAnimationFrame(rendLoop)
+              
               var renderInfo = {time: time, frame: frame};
               if(!renderInfo.frame){
                   return;
@@ -73,7 +73,9 @@ class MagicWindowManger {
                   })
               }
               
-              
+              setTimeout(() => {
+                this._xrSession.requestAnimationFrame(rendLoop)
+              }, 60);
           }
           this._xrSession.requestAnimationFrame(rendLoop)
       });
