@@ -1,240 +1,146 @@
-import * as BABYLON from 'babylonjs'
 
-// Get rid of margin
-document.documentElement.style["overflow"]="hidden"
-document.documentElement.style.overflow ="hidden"
-document.documentElement.style.width ="100%"
-document.documentElement.style.height ="100%"
-document.documentElement.style.margin ="0"
-document.documentElement.style.padding ="0"
-document.body.style.overflow ="hidden"
-document.body.style.width ="100%"
-document.body.style.height ="100%"
-document.body.style.margin ="0"
-document.body.style.padding ="0"
+import Controller from "./libs/controller"
+import Stage from "./libs/stage";
+import Player from "./libs/player"
+import bmath from "./libs/math"
 
-// Create canvas html element on webpage
-var canvas = document.createElement('canvas')
-canvas.style.width="100%"
-canvas.style.height="100%"
+var stage = new Stage();
+var scene = stage.scene
 
-//canvas = document.getElementById("renderCanvas")
-document.body.appendChild(canvas)
-
-// Initialize Babylon scene and engine
-var engine = new BABYLON.Engine(canvas, true, { stencil: true, disableWebGL2Support: false, preserveDrawingBuffer: true })
-engine.enableOfflineSupport = false
-var scene = new BABYLON.Scene(engine)
-engine.runRenderLoop(()=>{
-    scene.render()
-})
-window.addEventListener("resize", ()=> {
-    engine.resize()
-})
-
+// Create camera and light
 var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene)
+camera.rotationQuaternion = new BABYLON.Quaternion()
 camera.setTarget(BABYLON.Vector3.Zero())
-camera.attachControl(canvas, true)
+// camera.attachControl(canvas, true)
 var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene)
 light.intensity = 0.7
 
-class Player {
-    spd = new BABYLON.Vector3()
-    body:BABYLON.Mesh
-    constructor(scene:BABYLON.Scene){
-        this.body = new BABYLON.Mesh("", scene)
-        var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene)
-        sphere.position.y=1
-        this.body.addChild(sphere);
-        this.body.position.y = 2
-    }
-}
+// Create player
+var controller = new Controller({
+    up: "w",
+    down: "s",
+    left: "a",
+    right: "d",
+    jump: " ",
+    rotX: "mouseX",
+    rotY: "mouseY",
+    click: "mouseLeft"
+}, {});
+var player = new Player(scene, controller)
 
-var forEachFace = (mesh:BABYLON.Mesh, fn:(v:Array<BABYLON.Vector3>, n:BABYLON.Vector3)=>void)=>{
-    var ind = mesh.getIndices()
-    var vertData = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind)
-    mesh.computeWorldMatrix()
-    var normals = mesh.getFacetLocalNormals();
-    var faceCount = ind.length/3
-    var verts = []
-    verts.push(new BABYLON.Vector3())
-    verts.push(new BABYLON.Vector3())
-    verts.push(new BABYLON.Vector3())
-    var normal = new BABYLON.Vector3()
-    for(var i =0;i<faceCount;i++){
-        for(var point = 0;point<3;point++){
-            var v = verts[point]
-            v.x = vertData[(ind[(i*3)+point]*3)+0]
-            v.y = vertData[(ind[(i*3)+point]*3)+1]
-            v.z = vertData[(ind[(i*3)+point]*3)+2]
-            BABYLON.Vector3.TransformCoordinatesToRef(v, mesh.computeWorldMatrix(), v);
-        }
-        BABYLON.Vector3.TransformCoordinatesToRef(normals[i], mesh.computeWorldMatrix().getRotationMatrix(), normal);
-        fn(verts, normal)
-    }
-}
+// setup environment
+var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene)
+sphere.position.x = 8
 
-
-
-var rayIntersectsTriangle = (ray:BABYLON.Ray, tri:Array<BABYLON.Vector3>, normal?:BABYLON.Vector3) => {
-
-    var diff = new BABYLON.Vector3();
-    var edge1 = new BABYLON.Vector3();
-    var edge2 = new BABYLON.Vector3();
-
-    tri[1].subtractToRef(tri[0], edge1)
-    tri[2].subtractToRef(tri[0], edge2)
-    //if(!normal){
-        normal = new BABYLON.Vector3();
-        
-        BABYLON.Vector3.CrossToRef(edge1, edge2, normal)
-        
-    //}
-    
-    var DdN = BABYLON.Vector3.Dot(ray.direction, normal)
-    
-    
-    var sign;
-
-    if ( DdN > 0 ) {
-
-        //if ( backfaceCulling ) return null;
-        sign = 1;
-
-    } else if ( DdN < 0 ) {
-
-        sign = - 1;
-        DdN = - DdN;
-
-    } else {
-
-        return null;
-
-    }
-    
-    ray.origin.subtractToRef(tri[0], diff)
-    BABYLON.Vector3.CrossToRef(diff, edge2, edge2)
-    var DdQxE2 = sign * BABYLON.Vector3.Dot(ray.direction, edge2 );
-    //console.log(DdQxE2)
-    // b1 < 0, no intersection
-    if ( DdQxE2 < 0 ) {
-        
-        return null;
-    }
-
-    BABYLON.Vector3.CrossToRef(edge1, diff, edge1)
-    var DdE1xQ = sign * BABYLON.Vector3.Dot(ray.direction,  edge1);
-    
-    // b2 < 0, no intersection
-    if ( DdE1xQ < 0 ) {
-
-        return null;
-
-    }
-
-    // b1+b2 > 1, no intersection
-    if ( DdQxE2 + DdE1xQ > DdN ) {
-
-        return null;
-
-    }
-
-    // Line intersects triangle, check if ray does.
-    var QdN = - sign * BABYLON.Vector3.Dot(diff, normal);
-
-    // t < 0, no intersection
-    if ( QdN < 0 ) {
-        
-        return null;
-
-    }
-
-    var rayDist = QdN / DdN;
-    if(rayDist < ray.length && rayDist > 0){
-         // Ray intersects triangle.
-        return rayDist
-    }else{
-        return null
-    }
-   
-
-}
-
-var player = new Player(scene)
-
+// Create walls
 var colliders = new Array<BABYLON.Mesh>()
 for(var i=0;i<3;i++){
-    var ground = BABYLON.MeshBuilder.CreatePlane("", {size:6,sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene)
-    ground.rotation.x = Math.PI/2
-    ground.material = new BABYLON.StandardMaterial("", scene)
-    ground.material.wireframe=true
+    // var ground = BABYLON.MeshBuilder.CreatePlane("", {size:6,sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene)
+    // ground.rotation.x = Math.PI/2
+    var ground = BABYLON.MeshBuilder.CreateGround("", {width:6, height:6}, scene)
     ground.position.z+=6*i
-    ground.position.y+=i
+    ground.position.y+=i*0.2
     colliders.push(ground)
+    if(i==2){
+        ground.rotation.z = Math.PI
+        ground.position.z = 0
+        ground.position.y+=5
+    }
 }
-
-
-// forEachFace(ground, (verts, normal)=>{
-//     console.log("face")
-//     verts.forEach((v)=>{
-//         console.log(v)
-//     })
-//     console.log(normal)
-// })
-
 
 player.body.position.x=2
 var physicsSteps = 4;
+var camYOffset = 0;
 scene.onBeforeRenderObservable.add(()=>{
+    // Delta time
     var delta = scene.getEngine().getDeltaTime()/1000
     if(delta > 0.4){
         return;
     }
+
+    // Handle input
+    var accSpd = 10;
+    var directionDown = false
+    if(player.controller.isDown("up")){
+        directionDown = true
+        player.spd.addInPlace(player.body.forward.scale(delta*accSpd))
+    }
+    if(player.controller.isDown("down")){
+        directionDown = true
+        player.spd.subtractInPlace(player.body.forward.scale(delta*accSpd))
+    }
+    if(player.controller.isDown("left")){
+        directionDown = true
+        player.spd.subtractInPlace(player.body.right.scale(delta*accSpd))
+    }
+    if(player.controller.isDown("right")){
+        directionDown = true
+        player.spd.addInPlace(player.body.right.scale(delta*accSpd))
+    }
+    if(player.controller.isDown("jump")){
+        player.spd.y = 5;
+    }
+    player.body.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationAxis(player.body.up, player.controller.getValue("rotX")/-1000))
+    camYOffset += player.controller.getValue("rotY")/-1000
+    camYOffset = Math.max(Math.min(camYOffset, (Math.PI/2)-0.001), (-Math.PI/2)+0.001)
+
+    // Gravity
     player.spd.y += -9.8*delta
+
+    // Move player
     player.body.position.addInPlace(player.spd.scale(delta))
 
+    // Collision + resolution
     colliders.forEach((collider)=>{
-        forEachFace(collider, (verts, normal)=>{
-            //console.log(normal)
-            var ray = new BABYLON.Ray(player.body.position, BABYLON.Vector3.Up(), 1)
-            var dist = rayIntersectsTriangle(ray, verts, normal);
-            if(dist){
-                player.body.position.addInPlace(ray.direction.scaleInPlace(dist))
-                
-                var component = normal.scale(BABYLON.Vector3.Dot(player.spd, normal))
-                player.spd.subtractInPlace(component)
-                // player.body.position.subtractInPlace(player.spd.scale(delta)) // remove this
-                // player.spd.scaleInPlace(-1)
-                // console.log("hit")
+        bmath.forEachFace(collider, (verts, normal)=>{
+            var angleBetweenPlayerUpAndNormal = Math.acos(BABYLON.Vector3.Dot(player.body.up, normal));
+            if(angleBetweenPlayerUpAndNormal < Math.PI/3){
+                // floor
+                var ray = new BABYLON.Ray(player.body.position, player.body.up, 1)
+                var dist = bmath.rayIntersectsTriangle(ray, verts); // todo use normals 
+                if(dist){
+                    player.body.position.addInPlace(ray.direction.scaleInPlace(dist))
+                    
+                    var amt = BABYLON.Vector3.Dot(player.spd, normal)
+                    if(amt>0){
+                        var component = normal.scale(amt)
+                        player.spd.subtractInPlace(component)
+                    }
+                    
+                    if(!directionDown){
+                        player.spd.subtractInPlace(player.spd.scale(0.1*delta*100))
+                    }
+                }
+            }else if(angleBetweenPlayerUpAndNormal < Math.PI - (Math.PI/3)){
+                // wall
+            }else{
+                // ceiling
+                var ray = new BABYLON.Ray(player.body.position.add(player.body.up.scale(1.3)), player.body.up.scale(-1), 1.3)
+                var dist = bmath.rayIntersectsTriangle(ray, verts); // todo use normals 
+                if(dist){
+                    player.body.position.addInPlace(ray.direction.scaleInPlace(dist))
+                    
+                    var amt = BABYLON.Vector3.Dot(player.spd, normal)
+                    //console.log(amt)
+                    if(amt<0){
+                        var component = normal.scale(amt)
+                        player.spd.subtractInPlace(component)
+                    }
+                    
+                    if(!directionDown){
+                        player.spd.subtractInPlace(player.spd.scale(0.1*delta*100))
+                    }
+                }
             }
+
+            
         })
     })
+
+    // Place camera in first person of player
+    camera.position.copyFrom(player.body.position.add(player.body.up))
+    camera.setTarget(camera.position.add(player.body.forward))
+
+    //player.body.getWorldMatrix()
+    camera.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.Right(), camYOffset))
 })
-
-
-document.onkeydown=(e)=>{
-    if(e.key == "w"){
-        player.spd.z += 1;
-    }
-    if(e.key == "a"){
-        player.spd.x -= 1;
-    }
-    if(e.key == "s"){
-        player.spd.z -= 1;
-    }
-    if(e.key == "d"){
-        player.spd.x += 1;
-    }
-    if(e.key == "c"){
-        player.spd.y += 10;
-    }
-    if(e.key == "r"){
-        colliders[0].rotation.x+=0.1
-    }
-    if(e.key == "t"){
-        colliders[0].rotation.x-=0.1
-    }
-    if(e.key == "y"){
-        colliders[0].position.y+=0.1
-    }
-}
