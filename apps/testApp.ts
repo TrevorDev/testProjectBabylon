@@ -8,7 +8,7 @@ import bmath from "./libs/math"
 var main = async ()=>{
     var server = new NiftyGameServer('http://localhost:3001')
 
-    var room = await server.joinRoom({roomdId: "test"});
+    var room = await server.joinRoom({roomId: "test"});
 
     var stage = new Stage();
     var scene = stage.scene
