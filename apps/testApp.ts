@@ -8,8 +8,16 @@ import bmath from "./libs/math"
 var main = async ()=>{
     var server = new NiftyGameServer('http://localhost:3001')
 
-    var room = await server.joinRoom({roomId: "test"});
+    var room:any = await server.joinRoom({roomId: "test"});
+    for(var key in room.gameObjects){
+        room.gameObjects[key]
+    }
 
+    var trackedObj = {uniqueId: "", position: {x:0,y:0,z:0}}
+    var obj = await server.createTrackedObject(trackedObj)
+    console.log(obj)
+
+    
     var stage = new Stage();
     var scene = stage.scene
     

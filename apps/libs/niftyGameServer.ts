@@ -4,6 +4,9 @@ class NiftyGameServer {
     socket:SocketIOClient.Socket;
     constructor(serverURL:string){
         this.socket = io(serverURL)
+        this.socket.on("updateTrackedObjects", (objects:any)=>{
+            //console.log(objects)
+        })
     }
     joinRoom(request:NGSTypes.JoinRoomRequest){
         return new Promise((res, rej)=>{

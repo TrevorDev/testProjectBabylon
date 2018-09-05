@@ -12,7 +12,7 @@ export interface JoinRoomRequest {
 }
 
 export interface JoinedRoomResponse{
-    gameObjects: Map<string,TrackedObject>
+    gameObjects: {[id:string]:TrackedObject}
     customInfo?:any
 }
 
