@@ -17,9 +17,9 @@ class NiftyGameServer {
         })
     }
     createTrackedObject(object:NGSTypes.TrackedObject){
-        return new Promise((res, rej)=>{
+        return new Promise<{id:string}>((res, rej)=>{
             this.socket.emit("createTrackedObject", object)
-            this.socket.on("createTrackedObjectResponse", (data:any)=>{
+            this.socket.on("createTrackedObjectResponse", (data:{id:string})=>{
                 res(data);
             })
         })

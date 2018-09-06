@@ -1,12 +1,10 @@
-import TrackedObject from "../trackedObject"
-import { Mesh } from "babylonjs";
-class PlayerBody extends TrackedObject{
-    mesh:Mesh
-    constructor(scene:BABYLON.Scene){
+import BabylonTrackedObject from "./babylonTrackedObject"
+class PlayerBody extends BabylonTrackedObject{
+    static ObjectType = "PlayerBody"
+    constructor(){
         super()
-        this.mesh = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene)
-    }
-    get position(){
-        return this.mesh.position
+        this.mesh = BABYLON.Mesh.CreateSphere("sphere1", 16, 1, BABYLON.Engine.LastCreatedScene)
     }
 }
+
+export default PlayerBody

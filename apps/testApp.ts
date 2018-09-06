@@ -4,22 +4,36 @@ import Stage from "./libs/stage";
 import Player from "./libs/player"
 import NiftyGameServer from "./libs/niftyGameServer"
 import bmath from "./libs/math"
+import BabylonTrackedObject from "./libs/trackedObjects/babylonTrackedObject";
+import PlayerBody from "./libs/trackedObjects/playerBody";
+import TrackedObjectFactory from "./libs/trackedObjects/trackedObjectFactory";
+import { TrackedObject } from "./libs/niftyGameServerTypes";
 
 var main = async ()=>{
-    var server = new NiftyGameServer('http://localhost:3001')
-
-    var room:any = await server.joinRoom({roomId: "test"});
-    for(var key in room.gameObjects){
-        room.gameObjects[key]
-    }
-
-    var trackedObj = {uniqueId: "", position: {x:0,y:0,z:0}}
-    var obj = await server.createTrackedObject(trackedObj)
-    console.log(obj)
-
-    
     var stage = new Stage();
     var scene = stage.scene
+
+    var trackedObjectFactory = new TrackedObjectFactory([PlayerBody])
+    // Connected data
+    var trackedObjects:{[id:string]:TrackedObject} = {}
+    
+    // Connect
+    var server = new NiftyGameServer('http://localhost:3001')
+
+    // Join room
+    var joinResult:any = await server.joinRoom({roomId: "test"});
+    for(var key in joinResult.gameObjects){
+        trackedObjects[key] = trackedObjectFactory.createObject(joinResult.gameObjects[key]);
+    }
+
+    // Create player
+    var trackedObj = new PlayerBody()
+    await trackedObj.addToServer(server);
+    console.log(trackedObj.id)
+    trackedObj.position.set(0, Math.random()*5, 0)
+    trackedObj.updatePoseOnServer(server)
+
+
     
     // Create camera and light
     var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene)

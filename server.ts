@@ -40,16 +40,16 @@ io.on("connection", (socket:CustomSocket)=>{
     })
     socket.on("createTrackedObject", (req:NGSTypes.TrackedObject)=>{
         if(cs.room){
-            var resp:NGSTypes.CreatedTrackedObjectResponse = {uniqueId: String(nextObjId++)}
-            req.uniqueId = resp.uniqueId
-            cs.room.gameObjects[resp.uniqueId] = req
+            var resp:NGSTypes.CreatedTrackedObjectResponse = {id: String(nextObjId++)}
+            req.id = resp.id
+            cs.room.gameObjects[resp.id] = req
             socket.emit("createTrackedObjectResponse", resp)
 
-            cs.room.emitToAll("newTrackedObject", cs.room.gameObjects[resp.uniqueId])
+            cs.room.emitToAll("newTrackedObject", cs.room.gameObjects[resp.id])
         }
     })
     socket.on("updateTrackedObject", (req:NGSTypes.TrackedObject)=>{
-        var obj = cs.room.gameObjects[req.uniqueId]
+        var obj = cs.room.gameObjects[req.id]
         if(obj){
             if(req.position){
                 obj.position = req.position

@@ -31,7 +31,9 @@ class Stage {
         this.engine.enableOfflineSupport = false
         this.scene = new BABYLON.Scene(this.engine)
         this.engine.runRenderLoop(()=>{
-            this.scene.render()
+            if(this.scene.activeCamera){
+                this.scene.render()
+            }
         })
         window.addEventListener("resize", ()=> {
             this.engine.resize()
