@@ -1,7 +1,7 @@
 import * as NGSTypes from "../../libs/niftyGameServerTypes"
 import ClientSocket from "./clientSocket"
 class Room {
-    gameObjects:{[id:string]:NGSTypes.TrackedObject} = {}
+    trackedObjects:NGSTypes.TrackedObjects = {}
     sockets:{[id:string]:ClientSocket} = {}
 
     constructor(public id:string){
@@ -12,7 +12,18 @@ class Room {
         this.sockets[socket.id] = socket
         socket.room = this
     }
+
+    removeTrackedObject(key:string){
+        this.emitToAll("removeTrackedObject", key)
+        delete this.trackedObjects[key]
+    }
+
     removeSocket(socket:ClientSocket){
+        for(var key in this.sockets[socket.id].trackedObjects){
+            if(socket.room.trackedObjects[key]){
+                socket.room.removeTrackedObject(key)
+            }
+        }
         delete this.sockets[socket.id]
         socket.room = null
     }

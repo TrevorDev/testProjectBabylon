@@ -18,6 +18,9 @@ class BabylonTrackedObject extends NGSTypes.TrackedObject{
     set rotation(rot){
         this.mesh.rotationQuaternion.copyFrom(rot)
     }
+    dispose(){
+        this.mesh.dispose()
+    }
 }
 
 export default BabylonTrackedObject

@@ -5,6 +5,7 @@ import CustomSocket from "./customIoSocket"
 class ClientSocket {
     socket:CustomSocket
     room?:Room
+    trackedObjects:NGSTypes.TrackedObjects = {}
     static CreateFromIoSocket(socket:CustomSocket){
         if(!socket.customObject){
             socket.customObject = new ClientSocket()

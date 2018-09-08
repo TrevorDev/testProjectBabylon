@@ -4,6 +4,7 @@ class PlayerBody extends BabylonTrackedObject{
     constructor(){
         super()
         this.mesh = BABYLON.Mesh.CreateSphere("sphere1", 16, 1, BABYLON.Engine.LastCreatedScene)
+        this.mesh.rotationQuaternion = new BABYLON.Quaternion()
     }
 }
 

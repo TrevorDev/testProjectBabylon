@@ -35,21 +35,27 @@ io.on("connection", (socket:CustomSocket)=>{
             rooms[req.roomId] = room
         }
         room.addSocket(cs)
-        var resp:NGSTypes.JoinedRoomResponse = {gameObjects: cs.room.gameObjects}
+        var resp:NGSTypes.JoinedRoomResponse = {trackedObjects: cs.room.trackedObjects}
         socket.emit("joinRoomResponse", resp)
     })
     socket.on("createTrackedObject", (req:NGSTypes.TrackedObject)=>{
         if(cs.room){
             var resp:NGSTypes.CreatedTrackedObjectResponse = {id: String(nextObjId++)}
             req.id = resp.id
-            cs.room.gameObjects[resp.id] = req
+            cs.room.trackedObjects[resp.id] = req
+            cs.trackedObjects[resp.id] = cs.room.trackedObjects[resp.id]
             socket.emit("createTrackedObjectResponse", resp)
 
-            cs.room.emitToAll("newTrackedObject", cs.room.gameObjects[resp.id])
+            cs.room.emitToAll("createTrackedObject", cs.room.trackedObjects[resp.id])
+
+            console.log("Tracked Object Count: "+Object.keys(cs.room.trackedObjects).length)
         }
     })
     socket.on("updateTrackedObject", (req:NGSTypes.TrackedObject)=>{
-        var obj = cs.room.gameObjects[req.id]
+        if(!cs.room){
+            return;
+        }
+        var obj = cs.room.trackedObjects[req.id]
         if(obj){
             if(req.position){
                 obj.position = req.position
@@ -70,7 +76,7 @@ io.on("connection", (socket:CustomSocket)=>{
 var tickLoop = ()=>{
     for(var roomKey in rooms){
         for(var socketKey in rooms[roomKey].sockets){
-            rooms[roomKey].sockets[socketKey].socket.emit("updateTrackedObjects", rooms[roomKey].gameObjects)
+            rooms[roomKey].sockets[socketKey].socket.emit("updateTrackedObjects", rooms[roomKey].trackedObjects)
         }
     }
     setTimeout(tickLoop, tickRate)

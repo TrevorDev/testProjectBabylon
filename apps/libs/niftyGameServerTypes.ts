@@ -74,6 +74,9 @@ export class TrackedObject{
         }
         return ret
     }
+    dispose(){
+        
+    }
 }
 
 export type TrackedObjects = {[id:string]:TrackedObject};
@@ -82,7 +85,7 @@ export interface JoinRoomRequest {
 }
 
 export interface JoinedRoomResponse{
-    gameObjects: {[id:string]:TrackedObject}
+    trackedObjects: TrackedObjects
     customInfo?:any
 }
 

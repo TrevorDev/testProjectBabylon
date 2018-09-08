@@ -14,26 +14,23 @@ var main = async ()=>{
     var scene = stage.scene
 
     var trackedObjectFactory = new TrackedObjectFactory([PlayerBody])
-    // Connected data
-    var trackedObjects:{[id:string]:TrackedObject} = {}
-    
+
     // Connect
-    var server = new NiftyGameServer('http://localhost:3001')
+    var server = new NiftyGameServer('http://localhost:3001', trackedObjectFactory)
 
     // Join room
     var joinResult:any = await server.joinRoom({roomId: "test"});
-    for(var key in joinResult.gameObjects){
-        console.log(joinResult.gameObjects[key])
-        trackedObjects[key] = trackedObjectFactory.createObject(joinResult.gameObjects[key]);
-    }
 
     // Create player
     var trackedObj = new PlayerBody()
     await trackedObj.addToServer(server);
-    console.log(trackedObj.id)
-    trackedObj.position.set(0, Math.random()*5, 0)
-    trackedObj.updatePoseOnServer(server)
-
+    
+    var update = ()=>{
+        trackedObj.position.x+=0.01
+        trackedObj.updatePoseOnServer(server)
+        setTimeout(update, 100);
+    }
+    update()
 
     
     // Create camera and light
