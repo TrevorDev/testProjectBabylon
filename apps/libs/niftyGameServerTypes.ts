@@ -1,4 +1,5 @@
 import NiftyGameServer from "./niftyGameServer";
+import { className } from "babylonjs";
 
 export class TrackedObject{
     static ObjectType = "None"
@@ -8,6 +9,9 @@ export class TrackedObject{
     rotation?: {x:number,y:number,z:number,w:number}
     state?: string
     customInfo?:any
+    constructor(){
+        this.objectType = (<typeof TrackedObject>this.constructor).ObjectType
+    }
     async addToServer(server:NiftyGameServer){
         var obj = await server.createTrackedObject(this.toRaw())
         this.id = obj.id
@@ -72,6 +76,7 @@ export class TrackedObject{
     }
 }
 
+export type TrackedObjects = {[id:string]:TrackedObject};
 export interface JoinRoomRequest {
     roomId: string
 }

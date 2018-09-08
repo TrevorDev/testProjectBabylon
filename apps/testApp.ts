@@ -23,6 +23,7 @@ var main = async ()=>{
     // Join room
     var joinResult:any = await server.joinRoom({roomId: "test"});
     for(var key in joinResult.gameObjects){
+        console.log(joinResult.gameObjects[key])
         trackedObjects[key] = trackedObjectFactory.createObject(joinResult.gameObjects[key]);
     }
 
@@ -57,8 +58,8 @@ var main = async ()=>{
     var player = new Player(scene, controller)
     
     // setup environment
-    var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene)
-    sphere.position.x = 8
+    // var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene)
+    // sphere.position.x = 8
     
     // Create walls
     var colliders = new Array<BABYLON.Mesh>()

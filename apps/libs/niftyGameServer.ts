@@ -2,10 +2,15 @@ import * as io from 'socket.io-client'
 import * as NGSTypes from "./niftyGameServerTypes"
 class NiftyGameServer {
     socket:SocketIOClient.Socket;
+    trackedObjects:NGSTypes.TrackedObjects= {}
     constructor(serverURL:string){
         this.socket = io(serverURL)
-        this.socket.on("updateTrackedObjects", (objects:any)=>{
-            //console.log(objects)
+        this.socket.on("updateTrackedObjects", (objects:NGSTypes.TrackedObjects)=>{
+            for(var key in objects){
+                if(this.trackedObjects[key]){
+                    this.trackedObjects[key].copyFrom(objects[key])
+                }
+            }
         })
     }
     joinRoom(request:NGSTypes.JoinRoomRequest){
