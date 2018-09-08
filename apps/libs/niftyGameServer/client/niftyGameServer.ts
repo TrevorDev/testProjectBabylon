@@ -1,16 +1,15 @@
 import * as io from 'socket.io-client'
-import * as NGSTypes from "./niftyGameServerTypes"
-import TrackedObjectFactory from "./trackedObjects/trackedObjectFactory"
+import * as NGSTypes from "../shared/niftyGameServerTypes"
+import TrackedObjectFactory from "./trackedObjectFactory"
 class NiftyGameServer {
     socket:SocketIOClient.Socket;
     // Local objects owned by the client that are tracked by the server
     localObjects:NGSTypes.TrackedObjects= {}
     // All objects state tracked by the server
     trackedObjects:NGSTypes.TrackedObjects= {}
-    private addTrackedObject(object:NGSTypes.TrackedObject){
-        this.trackedObjects[object.id] = this.factory.createObject(object)
-    }
-    constructor(serverURL:string, private factory: TrackedObjectFactory){
+    factory:TrackedObjectFactory
+    constructor(serverURL:string, types:Array<{new():NGSTypes.TrackedObject, ObjectType:string}>){
+        this.factory = new TrackedObjectFactory(types)
         this.socket = io(serverURL)
         this.socket.on("updateTrackedObjects", (objects:NGSTypes.TrackedObjects)=>{
             for(var key in objects){
@@ -24,8 +23,13 @@ class NiftyGameServer {
             delete this.trackedObjects[key]
         })
         this.socket.on("createTrackedObject", (object:NGSTypes.TrackedObject)=>{
-            this.addTrackedObject(object)
+            if(!this.localObjects[object.id]){
+                this.addTrackedObject(object)
+            }
         })
+    }
+    private addTrackedObject(object:NGSTypes.TrackedObject){
+        this.trackedObjects[object.id] = this.factory.createObject(object)
     }
     joinRoom(request:NGSTypes.JoinRoomRequest){
         return new Promise((res, rej)=>{
@@ -38,10 +42,12 @@ class NiftyGameServer {
             })
         })
     }
+    // Creates a tracked object owned by this client
     createTrackedObject(object:NGSTypes.TrackedObject){
         return new Promise<{id:string}>((res, rej)=>{
             this.socket.emit("createTrackedObject", object)
             this.socket.on("createTrackedObjectResponse", (data:{id:string})=>{
+                this.localObjects[data.id] = object
                 res(data);
             })
         })

@@ -1,4 +1,4 @@
-import * as NGSTypes from "../../libs/niftyGameServerTypes"
+import * as NGSTypes from "../shared/niftyGameServerTypes"
 import ClientSocket from "./clientSocket"
 class Room {
     trackedObjects:NGSTypes.TrackedObjects = {}

@@ -1,10 +1,10 @@
 import * as express from "express"
 import * as http from "http"
 import * as Server from 'socket.io';
-import * as NGSTypes from "./apps/libs/niftyGameServerTypes"
-import Room from "./apps/libs/niftyGameServerSide/room"
-import CustomSocket from "./apps/libs/niftyGameServerSide/customIoSocket"
-import ClientSocket from "./apps/libs/niftyGameServerSide/clientSocket"
+import * as NGSTypes from "./apps/libs/niftyGameServer/shared/niftyGameServerTypes"
+import Room from "./apps/libs/niftyGameServer/server/room"
+import CustomSocket from "./apps/libs/niftyGameServer/server/customIoSocket"
+import ClientSocket from "./apps/libs/niftyGameServer/server/clientSocket"
 
 var ports = {webserver: 3000, gameserver: 3001}
 

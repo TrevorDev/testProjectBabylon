@@ -2,36 +2,20 @@
 import Controller from "./libs/controller"
 import Stage from "./libs/stage";
 import Player from "./libs/player"
-import NiftyGameServer from "./libs/niftyGameServer"
+import NiftyGameServer from "./libs/niftyGameServer/client/niftyGameServer"
 import bmath from "./libs/math"
 import BabylonTrackedObject from "./libs/trackedObjects/babylonTrackedObject";
 import PlayerBody from "./libs/trackedObjects/playerBody";
-import TrackedObjectFactory from "./libs/trackedObjects/trackedObjectFactory";
-import { TrackedObject } from "./libs/niftyGameServerTypes";
+import TrackedObjectFactory from "./libs/niftyGameServer/client/trackedObjectFactory";
+import { TrackedObject } from "./libs/niftyGameServer/shared/niftyGameServerTypes";
 
 var main = async ()=>{
-    var stage = new Stage();
+    var stage = new Stage()
     var scene = stage.scene
 
-    var trackedObjectFactory = new TrackedObjectFactory([PlayerBody])
-
-    // Connect
-    var server = new NiftyGameServer('http://localhost:3001', trackedObjectFactory)
-
-    // Join room
-    var joinResult:any = await server.joinRoom({roomId: "test"});
-
-    // Create player
-    var trackedObj = new PlayerBody()
-    await trackedObj.addToServer(server);
-    
-    var update = ()=>{
-        trackedObj.position.x+=0.01
-        trackedObj.updatePoseOnServer(server)
-        setTimeout(update, 100);
-    }
-    update()
-
+    // Connect to server and join room
+    var server = new NiftyGameServer('http://localhost:3001', [PlayerBody])
+    await server.joinRoom({roomId: "test"})
     
     // Create camera and light
     var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene)
@@ -53,10 +37,12 @@ var main = async ()=>{
         click: "mouseLeft"
     }, {});
     var player = new Player(scene, controller)
-    
-    // setup environment
-    // var sphere = BABYLON.Mesh.CreateSphere("sphere1", 16, 2, scene)
-    // sphere.position.x = 8
+    await player.trackedObject.addToServer(server);
+    var update = ()=>{
+        player.trackedObject.updatePoseOnServer(server)
+        setTimeout(update, 100);
+    }
+    update()
     
     // Create walls
     var colliders = new Array<BABYLON.Mesh>()

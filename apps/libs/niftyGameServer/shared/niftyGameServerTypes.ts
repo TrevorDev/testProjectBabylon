@@ -1,4 +1,4 @@
-import NiftyGameServer from "./niftyGameServer";
+import NiftyGameServer from "../client/niftyGameServer";
 import { className } from "babylonjs";
 
 export class TrackedObject{

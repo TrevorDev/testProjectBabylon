@@ -1,4 +1,4 @@
-import * as NGSTypes from "../niftyGameServerTypes"
+import * as NGSTypes from "../shared/niftyGameServerTypes"
 class TrackedObjectFactory {
     constructor(public types:Array<{new():NGSTypes.TrackedObject, ObjectType:string}>){
         

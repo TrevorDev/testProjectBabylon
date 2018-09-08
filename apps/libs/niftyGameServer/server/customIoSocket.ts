@@ -1,4 +1,4 @@
-import * as NGSTypes from "../../libs/niftyGameServerTypes"
+import * as NGSTypes from "../shared/niftyGameServerTypes"
 import * as Server from 'socket.io';
 import Room from "./room"
 import ClientSocket from "./clientSocket"

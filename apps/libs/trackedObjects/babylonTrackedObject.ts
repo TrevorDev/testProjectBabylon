@@ -1,5 +1,5 @@
 
-import * as NGSTypes from "../niftyGameServerTypes"
+import * as NGSTypes from "../niftyGameServer/shared/niftyGameServerTypes"
 import { Mesh } from "babylonjs";
 class BabylonTrackedObject extends NGSTypes.TrackedObject{
     mesh:Mesh
