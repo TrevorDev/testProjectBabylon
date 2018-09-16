@@ -18,7 +18,8 @@ class Controller {
 
         var setterFunc = (bool: any) => {
             return (e: any) => {
-                var hit = convertToKey(e.keyCode)
+                // Chrome vs Firefox keycodes
+                var hit = e.keyCode ? convertToKey(e.keyCode) : String(e.key).toLowerCase()
                 for (var key in this.input) {
                     if (key == hit) {
                         this.input[key].pressed = bool;

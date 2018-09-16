@@ -5,11 +5,19 @@ import * as NGSTypes from "./apps/libs/niftyGameServer/shared/niftyGameServerTyp
 import Room from "./apps/libs/niftyGameServer/server/room"
 import CustomSocket from "./apps/libs/niftyGameServer/server/customIoSocket"
 import ClientSocket from "./apps/libs/niftyGameServer/server/clientSocket"
+import * as cors from 'cors'
+
 
 var ports = {webserver: 3000, gameserver: 3001}
 
+
+
 // Webserver
 var app = express()
+if(process.env.NODE_ENV == "development"){
+    console.log("started in development mode")
+    app.use(cors())
+}
 app.set('view engine', 'pug')
 app.use("/public", express.static("public"))
 app.get('/', function (req, res) {

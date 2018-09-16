@@ -13,7 +13,7 @@ export class TrackedObject{
         this.objectType = (<typeof TrackedObject>this.constructor).ObjectType
     }
     async addToServer(server:NiftyGameServer){
-        var obj = await server.createTrackedObject(this.toRaw())
+        var obj = await server.createTrackedObject(this)
         this.id = obj.id
     }
     async updatePoseOnServer(server:NiftyGameServer){
@@ -52,7 +52,7 @@ export class TrackedObject{
             this.customInfo = data.customInfo
         }
     }
-    private toRaw(){
+    toRaw(){
         var ret = new TrackedObject()
         if(this.id){
             ret.id = this.id

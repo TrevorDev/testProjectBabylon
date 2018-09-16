@@ -17,6 +17,9 @@ class NiftyGameServer {
                     this.trackedObjects[key].copyFrom(objects[key])
                 }
             }
+            for(var key in this.localObjects){
+                this.localObjects[key].updatePoseOnServer(this)
+            }
         })
         this.socket.on("removeTrackedObject", (key:string)=>{
             this.trackedObjects[key].dispose()
@@ -45,7 +48,7 @@ class NiftyGameServer {
     // Creates a tracked object owned by this client
     createTrackedObject(object:NGSTypes.TrackedObject){
         return new Promise<{id:string}>((res, rej)=>{
-            this.socket.emit("createTrackedObject", object)
+            this.socket.emit("createTrackedObject", object.toRaw())
             this.socket.on("createTrackedObjectResponse", (data:{id:string})=>{
                 this.localObjects[data.id] = object
                 res(data);

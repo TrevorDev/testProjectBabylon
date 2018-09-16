@@ -4,10 +4,7 @@ import Stage from "./libs/stage";
 import Player from "./libs/player"
 import NiftyGameServer from "./libs/niftyGameServer/client/niftyGameServer"
 import bmath from "./libs/math"
-import BabylonTrackedObject from "./libs/trackedObjects/babylonTrackedObject";
 import PlayerBody from "./libs/trackedObjects/playerBody";
-import TrackedObjectFactory from "./libs/niftyGameServer/client/trackedObjectFactory";
-import { TrackedObject } from "./libs/niftyGameServer/shared/niftyGameServerTypes";
 
 var main = async ()=>{
     var stage = new Stage()
@@ -21,7 +18,6 @@ var main = async ()=>{
     var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene)
     camera.rotationQuaternion = new BABYLON.Quaternion()
     camera.setTarget(BABYLON.Vector3.Zero())
-    // camera.attachControl(canvas, true)
     var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene)
     light.intensity = 0.7
     
@@ -38,11 +34,6 @@ var main = async ()=>{
     }, {});
     var player = new Player(scene, controller)
     await player.trackedObject.addToServer(server);
-    var update = ()=>{
-        player.trackedObject.updatePoseOnServer(server)
-        setTimeout(update, 100);
-    }
-    update()
     
     // Create walls
     var colliders = new Array<BABYLON.Mesh>()
@@ -144,8 +135,6 @@ var main = async ()=>{
                         }
                     }
                 }
-    
-                
             })
         })
     
