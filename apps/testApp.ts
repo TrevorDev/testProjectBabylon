@@ -17,10 +17,13 @@ var main = async ()=>{
     // Create camera and light
     var camera = new BABYLON.FreeCamera("camera1", new BABYLON.Vector3(0, 5, -10), scene)
     camera.rotationQuaternion = new BABYLON.Quaternion()
+    camera.minZ = 0;
     camera.setTarget(BABYLON.Vector3.Zero())
-    var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene)
-    light.intensity = 0.7
-    
+    // var light = new BABYLON.HemisphericLight("light1", new BABYLON.Vector3(0, 1, 0), scene)
+    // light.intensity = 0.7
+
+    var pointLight = new BABYLON.PointLight("light1", new BABYLON.Vector3(0, 30, 0), scene)
+    pointLight.intensity = 1000
     // Create player
     var controller = new Controller({
         up: "w",
@@ -35,21 +38,34 @@ var main = async ()=>{
     var player = new Player(scene, controller)
     await player.trackedObject.addToServer(server);
     
+
+    var level = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/testLevel.glb")
+    console.log(level.meshes.length)
+    scene.addMesh(level.meshes[0],true)
+    level.meshes[0].scaling.scaleInPlace(10)
+
     // Create walls
     var colliders = new Array<BABYLON.Mesh>()
-    for(var i=0;i<3;i++){
-        // var ground = BABYLON.MeshBuilder.CreatePlane("", {size:6,sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene)
-        // ground.rotation.x = Math.PI/2
-        var ground = BABYLON.MeshBuilder.CreateGround("", {width:6, height:6}, scene)
-        ground.position.z+=6*i
-        ground.position.y+=i*0.2
-        colliders.push(ground)
-        if(i==2){
-            ground.rotation.z = Math.PI
-            ground.position.z = 0
-            ground.position.y+=5
+    level.meshes.forEach((m,i)=>{
+        if(i==0){
+            return
         }
-    }
+        //m.material = new BABYLON.StandardMaterial("", scene)
+        colliders.push(<BABYLON.Mesh>m)
+    })
+    // for(var i=0;i<3;i++){
+    //     // var ground = BABYLON.MeshBuilder.CreatePlane("", {size:6,sideOrientation: BABYLON.Mesh.DOUBLESIDE}, scene)
+    //     // ground.rotation.x = Math.PI/2
+    //     var ground = BABYLON.MeshBuilder.CreateGround("", {width:6, height:6}, scene)
+    //     ground.position.z+=6*i
+    //     ground.position.y+=i*0.2
+    //     colliders.push(ground)
+    //     if(i==2){
+    //         ground.rotation.z = Math.PI
+    //         ground.position.z = 0
+    //         ground.position.y+=5
+    //     }
+    // }
     
     player.body.position.x=2
     var physicsSteps = 4;
@@ -144,6 +160,10 @@ var main = async ()=>{
     
         //player.body.getWorldMatrix()
         camera.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationAxis(BABYLON.Vector3.Right(), camYOffset))
+        
+
+        // pointLight.position = player.body.position.clone()
+        // pointLight.position.y+=2
     })
 }
 main()

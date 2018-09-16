@@ -1,4 +1,5 @@
 import * as BABYLON from 'babylonjs'
+import 'babylonjs-loaders';
 
 class Stage {
     canvas:HTMLCanvasElement
