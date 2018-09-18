@@ -14,7 +14,7 @@ class NiftyGameServer {
         this.socket.on("updateTrackedObjects", (objects:NGSTypes.TrackedObjects)=>{
             for(var key in objects){
                 if(!this.localObjects[key] && this.trackedObjects[key]){
-                    this.trackedObjects[key].copyFrom(objects[key])
+                    this.trackedObjects[key].updateFromServerData(objects[key])
                 }
             }
             for(var key in this.localObjects){
@@ -57,6 +57,15 @@ class NiftyGameServer {
     }
     updateTrackedObject(object:any){
         this.socket.emit("updateTrackedObject", object)
+    }
+    /**
+     * Interpolates between trackedObject's pose and nextPose values, usually called before rendering
+     * @param deltaTime in milliseconds
+     */
+    applyDeltaTime(deltaTime:number){
+        for(var key in this.trackedObjects){
+            this.trackedObjects[key].applyDeltaTime(deltaTime)
+        }
     }
 }
 export default NiftyGameServer

@@ -72,7 +72,9 @@ var main = async ()=>{
     var camYOffset = 0;
     scene.onBeforeRenderObservable.add(()=>{
         // Delta time
-        var delta = scene.getEngine().getDeltaTime()/1000
+        var delta = scene.getEngine().getDeltaTime()
+        server.applyDeltaTime(delta)
+        delta = delta/1000
         if(delta > 0.4){
             return;
         }
