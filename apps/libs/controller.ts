@@ -38,7 +38,7 @@ class Controller {
             var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
             for (var key in this.input) {
                 //TODO fix the issue where savedKey var name needs to be different
-                if (key == "mouseX") {
+                if (key == "mouseX" && document.pointerLockElement) {
                     var savedKey = key
                     this.input[savedKey].value = -movementX;
                     //TODO use static typing for customTImeout
@@ -49,7 +49,7 @@ class Controller {
                         this.input[savedKey].value = 0
                     }, 10);
                 }
-                if (key == "mouseY") {
+                if (key == "mouseY" && document.pointerLockElement) {
                     var savedKey2 = key
                     this.input[savedKey2].value = -movementY;
                     //TODO use static typing for customTImeout
@@ -62,7 +62,7 @@ class Controller {
                 }
             }
         }, false);
-        var canvas: any = document.querySelector('canvas');
+        var canvas: HTMLCanvasElement = document.querySelector('canvas');
         canvas.onclick = function() {
             canvas.requestPointerLock = canvas.requestPointerLock ||
                 canvas.mozRequestPointerLock ||
