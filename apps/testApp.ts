@@ -5,6 +5,7 @@ import Player from "./libs/player"
 import NiftyGameServer from "./libs/niftyGameServer/client/niftyGameServer"
 import bmath from "./libs/math"
 import PlayerBody from "./libs/trackedObjects/playerBody";
+import { Nullable } from "babylonjs";
 
 var main = async ()=>{    
     var stage = new Stage()
@@ -42,12 +43,12 @@ var main = async ()=>{
     }, {});
     var player = new Player(scene, controller)
     await player.trackedObject.addToServer(server);
+    player.body.position.y = 2
     
     // Load level
     var level = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/testLevel.glb")
     scene.addMesh(level.meshes[0],true)
     level.meshes[0].scaling.scaleInPlace(10)
-
     // Create walls from level
     var colliders = new Array<BABYLON.Mesh>()
     level.meshes.forEach((m,i)=>{
@@ -56,6 +57,11 @@ var main = async ()=>{
         }
         colliders.push(<BABYLON.Mesh>m)
     })
+
+    // Test single ground level
+    // var colliders = new Array<BABYLON.Mesh>()
+    // var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 1, scene);
+    // colliders.push(ground)
     
     player.body.position.x=2
     var physicsSteps = 4;
@@ -71,81 +77,79 @@ var main = async ()=>{
     
         // Handle input
         var accSpd = 10;
-        var directionDown = false
+
+        // Compute input direction
+        var inputDirection = new BABYLON.Vector3()
         if(player.controller.isDown("up")){
-            directionDown = true
-            player.spd.addInPlace(player.body.forward.scale(delta*accSpd))
+            inputDirection.addInPlace(BABYLON.Vector3.Forward())
         }
         if(player.controller.isDown("down")){
-            directionDown = true
-            player.spd.subtractInPlace(player.body.forward.scale(delta*accSpd))
+            inputDirection.addInPlace(BABYLON.Vector3.Forward().scaleInPlace(-1))
         }
         if(player.controller.isDown("left")){
-            directionDown = true
-            player.spd.subtractInPlace(player.body.right.scale(delta*accSpd))
+            inputDirection.addInPlace(BABYLON.Vector3.Right().scaleInPlace(-1))
         }
         if(player.controller.isDown("right")){
-            directionDown = true
-            player.spd.addInPlace(player.body.right.scale(delta*accSpd))
+            inputDirection.addInPlace(BABYLON.Vector3.Right())
         }
+        inputDirection.normalize()
+
+        // Jumping logic
         if(player.controller.isDown("jump")){
-            player.spd.y = 5;
+            player.spd.y = 5
         }
+
+        // Update player rotation based on mouse move
         player.body.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationAxis(player.body.up, player.controller.getValue("rotX")/-1000))
-        //console.log(player.controller.getValue("rotY"))
         camYOffset += player.controller.getValue("rotY")/-1000
         camYOffset = Math.max(Math.min(camYOffset, (Math.PI/2)-0.001), (-Math.PI/2)+0.001)
+
+        // Update player speed based on input direction
+        var rotatedInputDirection = new BABYLON.Vector3() 
+        bmath.rotateVectorByQuaternionToRef(inputDirection, player.body.rotationQuaternion, rotatedInputDirection)
+        player.spd.addInPlace(rotatedInputDirection.scale(delta*accSpd))
     
         // Gravity
         player.spd.y += -9.8*delta
     
         // Move player
-        player.body.position.addInPlace(player.spd.scale(delta))
-    
-        // Collision + resolution
-        colliders.forEach((collider)=>{
-            bmath.forEachFace(collider, (verts, normal)=>{
-                var angleBetweenPlayerUpAndNormal = Math.acos(BABYLON.Vector3.Dot(player.body.up, normal));
-                if(angleBetweenPlayerUpAndNormal < Math.PI/3){
-                    // floor
-                    var ray = new BABYLON.Ray(player.body.position, player.body.up, 1)
-                    var dist = bmath.rayIntersectsTriangle(ray, verts); // todo use normals 
-                    if(dist){
-                        player.body.position.addInPlace(ray.direction.scaleInPlace(dist))
-                        
-                        var amt = BABYLON.Vector3.Dot(player.spd, normal)
-                        if(amt>0){
-                            var component = normal.scale(amt)
-                            player.spd.subtractInPlace(component)
-                        }
-                        
-                        if(!directionDown){
-                            player.spd.subtractInPlace(player.spd.scale(0.1*delta*100))
-                        }
+        var direction = player.spd.scale(delta)
+        var count = 0
+        do{
+            count++;
+            var closestHit = {
+                distRatio:  <Nullable<number>>null,
+                normal: <Nullable<BABYLON.Vector3>>new BABYLON.Vector3()
+            }
+            
+            // Collision + resolution
+            colliders.forEach((collider)=>{
+                bmath.forEachFace(collider, (verts, normal)=>{
+                    // Ray based collision
+                    var ray = new BABYLON.Ray(player.body.position, direction)
+                    var dist = bmath.rayIntersectsTriangle(ray, verts, normal)
+                    if(dist && (!closestHit.distRatio || dist < closestHit.distRatio)){
+                        closestHit.distRatio = dist
+                        closestHit.normal.copyFrom(normal)
                     }
-                }else if(angleBetweenPlayerUpAndNormal < Math.PI - (Math.PI/3)){
-                    // wall
-                }else{
-                    // ceiling
-                    var ray = new BABYLON.Ray(player.body.position.add(player.body.up.scale(1.3)), player.body.up.scale(-1), 1.3)
-                    var dist = bmath.rayIntersectsTriangle(ray, verts); // todo use normals 
-                    if(dist){
-                        player.body.position.addInPlace(ray.direction.scaleInPlace(dist))
-                        
-                        var amt = BABYLON.Vector3.Dot(player.spd, normal)
-                        //console.log(amt)
-                        if(amt<0){
-                            var component = normal.scale(amt)
-                            player.spd.subtractInPlace(component)
-                        }
-                        
-                        if(!directionDown){
-                            player.spd.subtractInPlace(player.spd.scale(0.1*delta*100))
-                        }
-                    }
-                }
+                })
             })
-        })
+
+            // If it hit an object adjust direction/speed to be projected onto ground
+            if(closestHit.distRatio){
+                var deltaToHitPoint = direction.scale(closestHit.distRatio).add(direction.normalizeToNew().scale(-0.001))
+                player.body.position.addInPlace(deltaToHitPoint)
+                
+                var prjected = new BABYLON.Vector3()
+                bmath.projectVectorOnPlaneToRef(direction.subtract(deltaToHitPoint), closestHit.normal, prjected)
+                direction.copyFrom(prjected)
+                
+                bmath.projectVectorOnPlaneToRef(player.spd, closestHit.normal, player.spd)
+            }else{
+                player.body.position.addInPlace(direction)
+            }
+        //Recurse up to 2 times
+        }while(closestHit.distRatio != null && count < 2)
     
         // Update camera position
         // 1st person
@@ -155,7 +159,7 @@ var main = async ()=>{
         
         // 3rd person
         player.body.computeWorldMatrix()
-        camera.position.copyFrom(player.body.position.add(player.body.up.scale(2)))
+        camera.position.copyFrom(player.body.position.add(player.body.up.scale(camYOffset*5)))
         camera.position.addInPlace(player.body.forward.scale(-5))
         camera.setTarget(player.body.position)
     })

@@ -1,4 +1,9 @@
+import { Vector3 } from "babylonjs";
+
 export default {
+    /**
+     * Currently has a hack to calculate the correct normals for -z scale
+     */
     forEachFace:(mesh:BABYLON.Mesh, fn:(v:Array<BABYLON.Vector3>, n:BABYLON.Vector3)=>void)=>{
         var ind = mesh.getIndices()
         var vertData = mesh.getVerticesData(BABYLON.VertexBuffer.PositionKind)
@@ -18,73 +23,65 @@ export default {
                 v.z = vertData[(ind[(i*3)+point]*3)+2]
                 BABYLON.Vector3.TransformCoordinatesToRef(v, mesh.computeWorldMatrix(), v);
             }
-            BABYLON.Vector3.TransformCoordinatesToRef(normals[i], mesh.computeWorldMatrix().getRotationMatrix(), normal);
+            normal.copyFrom(normals[i])
+            // handle -z scale
+            if(mesh.parent && (<any>mesh.parent).scaling.z < 0){
+                normal.x *= -1
+                normal.z *= -1
+            }
+            BABYLON.Vector3.TransformCoordinatesToRef(normal, mesh.computeWorldMatrix().getRotationMatrix(), normal);
+            
             fn(verts, normal)
         }
     },
-    rayIntersectsTriangle:(ray:BABYLON.Ray, tri:Array<BABYLON.Vector3>)=>{ //, normal?:BABYLON.Vector3) => {
+    /**
+     * Checks if ray hits a triangle
+     * @returns number between 0-1 for ratio of ray distance away the hit occured (eg. for ray of length 20, if this returned 0.5 the collision was 10 away)
+     */
+    rayIntersectsTriangle:(ray:BABYLON.Ray, tri:Array<BABYLON.Vector3>, normal?:BABYLON.Vector3):BABYLON.Nullable<number>=>{
+        // See https://github.com/TrevorDev/outLine/blob/master/public/custom/moreSpace/collision.js
+        //when line collides with plane:
+        //from + x*line = face.a + y*planeX + z*planeY
+        //x*line + y*-planeX + z*-planeY = face.a - from
+        //x y z = right
+        
+        if(normal){
+            var dot = BABYLON.Vector3.Dot(normal.normalize(), ray.direction.normalizeToNew())
+            if(dot > 0){
+                return null;
+            }
+        }    
 
-        var diff = new BABYLON.Vector3();
-        var edge1 = new BABYLON.Vector3();
-        var edge2 = new BABYLON.Vector3();
-    
-        tri[1].subtractToRef(tri[0], edge2)
-        tri[2].subtractToRef(tri[0], edge1)
+        var direction = ray.direction;
+        var originToPlaneMainPoint = tri[0].subtract(ray.origin)
+        var planeX = tri[0].subtract(tri[1]);
+        var planeY = tri[0].subtract(tri[2]);
+
+        // 3 equations 3 unknowns solve
+        var det = direction.x*((planeX.y*planeY.z)-(planeX.z*planeY.y)) - planeX.x*((direction.y*planeY.z)-(direction.z*planeY.y)) + planeY.x*((direction.y*planeX.z)-(direction.z*planeX.y));
+        var detX = originToPlaneMainPoint.x*((planeX.y*planeY.z)-(planeX.z*planeY.y)) - planeX.x*((originToPlaneMainPoint.y*planeY.z)-(originToPlaneMainPoint.z*planeY.y)) + planeY.x*((originToPlaneMainPoint.y*planeX.z)-(originToPlaneMainPoint.z*planeX.y));
+        var detY = direction.x*((originToPlaneMainPoint.y*planeY.z)-(originToPlaneMainPoint.z*planeY.y)) - originToPlaneMainPoint.x*((direction.y*planeY.z)-(direction.z*planeY.y)) + planeY.x*((direction.y*originToPlaneMainPoint.z)-(direction.z*originToPlaneMainPoint.y));
+        var detZ = direction.x*((planeX.y*originToPlaneMainPoint.z)-(planeX.z*originToPlaneMainPoint.y)) - planeX.x*((direction.y*originToPlaneMainPoint.z)-(direction.z*originToPlaneMainPoint.y)) + originToPlaneMainPoint.x*((direction.y*planeX.z)-(direction.z*planeX.y));
         
-        // TODO use real normal (currently the scaling/direction is not correct for some reason)
-        //if(!normal){
-        var normal = new BABYLON.Vector3();
+        if(det!=0){
+            var x = detX/det;
+            var y = detY/det;
+            var z = detZ/det;
+
+            // If inifinite plane needs support
+            // if(infiniteLength || (x>=0&&x<=1&&y>=0&&y<=1&&z>=0&&z<=1&&(y+z)<=1)){
+            if((x>=0&&x<=1&&y>=0&&y<=1&&z>=0&&z<=1&&(y+z)<=1)){ 
+                return x;
+            }
+        }
+        return null;
         
-        BABYLON.Vector3.CrossToRef(edge1, edge2, normal)
-            
-        //}
-        
-        var DdN = BABYLON.Vector3.Dot(ray.direction, normal)
-        
-        var sign;
-    
-        if ( DdN > 0 ) {
-            //if ( backfaceCulling ) return null;
-            sign = 1;
-        } else if ( DdN < 0 ) {
-            sign = - 1;
-            DdN = - DdN;
-        } else {
-            return null;
-        }
-        ray.origin.subtractToRef(tri[0], diff)
-        BABYLON.Vector3.CrossToRef(diff, edge2, edge2)
-        var DdQxE2 = sign * BABYLON.Vector3.Dot(ray.direction, edge2 );
-        // b1 < 0, no intersection
-        if ( DdQxE2 < 0 ) {   
-            return null;
-        }
-        BABYLON.Vector3.CrossToRef(edge1, diff, edge1)
-        var DdE1xQ = sign * BABYLON.Vector3.Dot(ray.direction,  edge1);
-        // b2 < 0, no intersection
-        if ( DdE1xQ < 0 ) {
-            return null;
-        }
-        // b1+b2 > 1, no intersection
-        if ( DdQxE2 + DdE1xQ > DdN ) {
-            return null;
-        }
-        // Line intersects triangle, check if ray does.
-        var QdN = - sign * BABYLON.Vector3.Dot(diff, normal);
-        // t < 0, no intersection
-        if ( QdN < 0 ) {
-            
-            return null;
-    
-        }
-        var rayDist = QdN / DdN;
-        if(rayDist < ray.length && rayDist > 0){
-             // Ray intersects triangle.
-            return rayDist
-        }else{
-            return null
-        }
-       
-    
+    },
+    projectVectorOnPlaneToRef:(vec:BABYLON.Vector3, planeNormal:BABYLON.Vector3, vecOut:BABYLON.Vector3)=>{
+        vec.subtractToRef(planeNormal.scale(Vector3.Dot(planeNormal, vec)), vecOut)
+    },
+    rotateVectorByQuaternionToRef:(vec:BABYLON.Vector3, quaternion:BABYLON.Quaternion, vecOut:BABYLON.Vector3)=>{
+        quaternion.toRotationMatrix(BABYLON.Tmp.Matrix[0])
+        BABYLON.Vector3.TransformCoordinatesToRef(vec, BABYLON.Tmp.Matrix[0], vecOut)
     }
 }
