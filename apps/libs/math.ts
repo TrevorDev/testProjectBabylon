@@ -1,5 +1,7 @@
 import { Vector3 } from "babylonjs";
 
+var verts = [new BABYLON.Vector3(),new BABYLON.Vector3(),new BABYLON.Vector3()]
+var normal = new BABYLON.Vector3()
 export default {
     /**
      * Currently has a hack to calculate the correct normals for -z scale
@@ -10,11 +12,6 @@ export default {
         mesh.computeWorldMatrix()
         var normals = mesh.getFacetLocalNormals();
         var faceCount = ind.length/3
-        var verts = []
-        verts.push(new BABYLON.Vector3())
-        verts.push(new BABYLON.Vector3())
-        verts.push(new BABYLON.Vector3())
-        var normal = new BABYLON.Vector3()
         for(var i =0;i<faceCount;i++){
             for(var point = 0;point<3;point++){
                 var v = verts[point]
@@ -29,7 +26,8 @@ export default {
                 normal.x *= -1
                 normal.z *= -1
             }
-            BABYLON.Vector3.TransformCoordinatesToRef(normal, mesh.computeWorldMatrix().getRotationMatrix(), normal);
+            mesh.computeWorldMatrix().getRotationMatrixToRef(BABYLON.Tmp.Matrix[0])
+            BABYLON.Vector3.TransformCoordinatesToRef(normal, BABYLON.Tmp.Matrix[0], normal)
             
             fn(verts, normal)
         }
@@ -46,16 +44,21 @@ export default {
         //x y z = right
         
         if(normal){
-            var dot = BABYLON.Vector3.Dot(normal.normalize(), ray.direction.normalizeToNew())
+            ray.direction.normalizeToRef(BABYLON.Tmp.Vector3[0])
+            var dot = BABYLON.Vector3.Dot(normal.normalize(), BABYLON.Tmp.Vector3[0])
             if(dot > 0){
                 return null;
             }
         }    
 
         var direction = ray.direction;
-        var originToPlaneMainPoint = tri[0].subtract(ray.origin)
-        var planeX = tri[0].subtract(tri[1]);
-        var planeY = tri[0].subtract(tri[2]);
+        var originToPlaneMainPoint = BABYLON.Tmp.Vector3[0]
+        var planeX = BABYLON.Tmp.Vector3[1]
+        var planeY = BABYLON.Tmp.Vector3[2]
+
+        tri[0].subtractToRef(ray.origin, originToPlaneMainPoint)
+        tri[0].subtractToRef(tri[1], planeX)
+        tri[0].subtractToRef(tri[2], planeY)
 
         // 3 equations 3 unknowns solve
         var det = direction.x*((planeX.y*planeY.z)-(planeX.z*planeY.y)) - planeX.x*((direction.y*planeY.z)-(direction.z*planeY.y)) + planeY.x*((direction.y*planeX.z)-(direction.z*planeX.y));
@@ -78,10 +81,18 @@ export default {
         
     },
     projectVectorOnPlaneToRef:(vec:BABYLON.Vector3, planeNormal:BABYLON.Vector3, vecOut:BABYLON.Vector3)=>{
-        vec.subtractToRef(planeNormal.scale(Vector3.Dot(planeNormal, vec)), vecOut)
+        planeNormal.scaleToRef(Vector3.Dot(planeNormal, vec), BABYLON.Tmp.Vector3[0])
+        vec.subtractToRef(BABYLON.Tmp.Vector3[0], vecOut)
     },
     rotateVectorByQuaternionToRef:(vec:BABYLON.Vector3, quaternion:BABYLON.Quaternion, vecOut:BABYLON.Vector3)=>{
         quaternion.toRotationMatrix(BABYLON.Tmp.Matrix[0])
         BABYLON.Vector3.TransformCoordinatesToRef(vec, BABYLON.Tmp.Matrix[0], vecOut)
+    },
+    directionConstants: {
+        FORWARD: BABYLON.Vector3.Forward(),
+        BACKWARD: BABYLON.Vector3.Forward().scale(-1),
+        LEFT: BABYLON.Vector3.Right().scale(-1),
+        RIGHT: BABYLON.Vector3.Right()
     }
+    
 }

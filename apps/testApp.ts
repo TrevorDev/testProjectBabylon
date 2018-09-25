@@ -5,7 +5,7 @@ import Player from "./libs/player"
 import NiftyGameServer from "./libs/niftyGameServer/client/niftyGameServer"
 import bmath from "./libs/math"
 import PlayerBody from "./libs/trackedObjects/playerBody";
-import { Nullable } from "babylonjs";
+import { Nullable, Vector3 } from "babylonjs";
 
 var main = async ()=>{    
     var stage = new Stage()
@@ -37,18 +37,21 @@ var main = async ()=>{
         left: "a",
         right: "d",
         jump: " ",
+        reset: "r",
         rotX: "mouseX",
         rotY: "mouseY",
         click: "mouseLeft"
     }, {});
     var player = new Player(scene, controller)
     await player.trackedObject.addToServer(server);
-    player.body.position.y = 2
     
     // Load level
-    var level = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/testLevel.glb")
+    var level = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/level2.glb")
     scene.addMesh(level.meshes[0],true)
-    level.meshes[0].scaling.scaleInPlace(10)
+    level.meshes[0].scaling.scaleInPlace(30)
+    level.meshes[0].position.y -= 40
+    level.meshes[0].position.x -= 50
+    level.meshes[0].position.z = 30
     // Create walls from level
     var colliders = new Array<BABYLON.Mesh>()
     level.meshes.forEach((m,i)=>{
@@ -81,22 +84,30 @@ var main = async ()=>{
         // Compute input direction
         var inputDirection = new BABYLON.Vector3()
         if(player.controller.isDown("up")){
-            inputDirection.addInPlace(BABYLON.Vector3.Forward())
+            inputDirection.addInPlace(bmath.directionConstants.FORWARD)
         }
         if(player.controller.isDown("down")){
-            inputDirection.addInPlace(BABYLON.Vector3.Forward().scaleInPlace(-1))
+            inputDirection.addInPlace(bmath.directionConstants.BACKWARD)
         }
         if(player.controller.isDown("left")){
-            inputDirection.addInPlace(BABYLON.Vector3.Right().scaleInPlace(-1))
+            inputDirection.addInPlace(bmath.directionConstants.LEFT)
         }
         if(player.controller.isDown("right")){
-            inputDirection.addInPlace(BABYLON.Vector3.Right())
+            inputDirection.addInPlace(bmath.directionConstants.RIGHT)
         }
+        if(player.controller.isDown("reset")){
+            player.body.position.set(0,0,0)
+            player.spd.set(0,0,0)
+        }
+
         inputDirection.normalize()
 
         // Jumping logic
-        if(player.controller.isDown("jump")){
-            player.spd.y = 5
+        if(player.controller.isDown("jump") && player.canJump){
+            if(player.spd.y < 5){
+                player.spd.y = 5
+            }
+            player.canJump = false
         }
 
         // Update player rotation based on mouse move
@@ -137,6 +148,7 @@ var main = async ()=>{
 
             // If it hit an object adjust direction/speed to be projected onto ground
             if(closestHit.distRatio){
+                player.canJump = true
                 var deltaToHitPoint = direction.scale(closestHit.distRatio).add(direction.normalizeToNew().scale(-0.001))
                 player.body.position.addInPlace(deltaToHitPoint)
                 
