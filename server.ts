@@ -8,7 +8,7 @@ import ClientSocket from "./apps/libs/niftyGameServer/server/clientSocket"
 import * as cors from 'cors'
 
 
-var ports = {webserver: 3000, gameserver: 3001}
+var ports = {webserver: 4000, gameserver: 4001}
 
 
 

@@ -12,7 +12,7 @@ var main = async ()=>{
     var scene = stage.scene
 
     // Connect to server and join room
-    var server = new NiftyGameServer('http://localhost:3001', [PlayerBody])
+    var server = new NiftyGameServer(':4001', [PlayerBody])
     await server.joinRoom({roomId: "test"})
     
     // Create camera
