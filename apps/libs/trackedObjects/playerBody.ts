@@ -14,15 +14,15 @@ class PlayerBody extends BabylonTrackedObject{
         tex.vScale = -1
 
         // With lighting
-        mat.ambientTexture = tex
-        mat.specularPower = Number.MAX_VALUE
-        m.material = mat
-
-        // Without lighting
-        // mat.emissiveTexture = tex
+        // mat.ambientTexture = tex
         // mat.specularPower = Number.MAX_VALUE
         // m.material = mat
-        // mat.disableLighting = true
+
+        // Without lighting
+        mat.emissiveTexture = tex
+        mat.specularPower = Number.MAX_VALUE
+        m.material = mat
+        mat.disableLighting = true
 
         this.mesh.addChild(m)
         m.position.y+=0.5

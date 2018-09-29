@@ -6,6 +6,7 @@ import NiftyGameServer from "./libs/niftyGameServer/client/niftyGameServer"
 import bmath from "./libs/math"
 import PlayerBody from "./libs/trackedObjects/playerBody";
 import { Nullable, Vector3 } from "babylonjs";
+import { NiftyWorldController } from "./libs/niftyWolrdController";
 
 var main = async ()=>{    
     var stage = new Stage()
@@ -31,17 +32,7 @@ var main = async ()=>{
     ambLight.groundColor = new BABYLON.Color3(0.5, 0.5, 0.5)
     
     // Create player
-    var controller = new Controller({
-        up: "w",
-        down: "s",
-        left: "a",
-        right: "d",
-        jump: " ",
-        reset: "r",
-        rotX: "mouseX",
-        rotY: "mouseY",
-        click: "mouseLeft"
-    }, {});
+    var controller = new NiftyWorldController(NiftyWorldController.MODES.TOUCHSCREEN)
     var player = new Player(scene, controller)
     await player.trackedObject.addToServer(server);
     
@@ -64,11 +55,12 @@ var main = async ()=>{
     // Test single ground level
     // var colliders = new Array<BABYLON.Mesh>()
     // var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 1, scene);
+    // ground.position.y -=1
     // colliders.push(ground)
     
     player.body.position.x=2
     var physicsSteps = 4;
-    var camYOffset = 0;
+    var camYOffset = 1;
     scene.onBeforeRenderObservable.add(()=>{
         // Delta time
         var delta = scene.getEngine().getDeltaTime()
@@ -83,36 +75,29 @@ var main = async ()=>{
 
         // Compute input direction
         var inputDirection = new BABYLON.Vector3()
-        if(player.controller.isDown("up")){
-            inputDirection.addInPlace(bmath.directionConstants.FORWARD)
-        }
-        if(player.controller.isDown("down")){
-            inputDirection.addInPlace(bmath.directionConstants.BACKWARD)
-        }
-        if(player.controller.isDown("left")){
-            inputDirection.addInPlace(bmath.directionConstants.LEFT)
-        }
-        if(player.controller.isDown("right")){
-            inputDirection.addInPlace(bmath.directionConstants.RIGHT)
-        }
-        if(player.controller.isDown("reset")){
+        inputDirection.copyFrom(player.controller.leftJoystick)
+        if(player.controller.restart){
             player.body.position.set(0,0,0)
             player.spd.set(0,0,0)
+            player.controller.restart = false
         }
 
-        inputDirection.normalize()
-
         // Jumping logic
-        if(player.controller.isDown("jump") && player.canJump){
+        if(player.controller.jump && player.canJump){
             if(player.spd.y < 5){
                 player.spd.y = 5
             }
             player.canJump = false
+            player.controller.jump = false
         }
 
         // Update player rotation based on mouse move
-        player.body.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationAxis(player.body.up, player.controller.getValue("rotX")/-1000))
-        camYOffset += player.controller.getValue("rotY")/-1000
+        var rotX = player.controller.rightJoystick.x
+        var rotY = player.controller.rightJoystick.y
+        player.controller.rightJoystick.set(0,0,0)
+
+        player.body.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationAxis(player.body.up, rotX))
+        camYOffset += rotY
         camYOffset = Math.max(Math.min(camYOffset, (Math.PI/2)-0.001), (-Math.PI/2)+0.001)
 
         // Update player speed based on input direction
