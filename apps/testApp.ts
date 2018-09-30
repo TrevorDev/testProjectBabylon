@@ -88,6 +88,9 @@ var main = async ()=>{
         // Compute input direction
         var inputDirection = new BABYLON.Vector3()
         inputDirection.copyFrom(player.controller.leftJoystick)
+        if(inputDirection.z > 0){
+            player.body.rotationQuaternion.copyFrom(player.cameraRotation)
+        }
         if(player.controller.restart){
             player.body.position.set(0,0,0)
             player.spd.set(0,0,0)
@@ -108,13 +111,13 @@ var main = async ()=>{
         var rotY = player.controller.rightJoystick.y
         player.controller.rightJoystick.set(0,0,0)
 
-        player.body.rotationQuaternion.multiplyInPlace(BABYLON.Quaternion.RotationAxis(player.body.up, rotX))
+        player.cameraRotation.multiplyInPlace(BABYLON.Quaternion.RotationAxis(player.body.up, rotX))
         camYOffset += rotY
         camYOffset = Math.max(Math.min(camYOffset, (Math.PI/2)-0.001), (-Math.PI/2)+0.001)
 
         // Update player speed based on input direction
         var rotatedInputDirection = new BABYLON.Vector3() 
-        bmath.rotateVectorByQuaternionToRef(inputDirection, player.body.rotationQuaternion, rotatedInputDirection)
+        bmath.rotateVectorByQuaternionToRef(inputDirection, player.cameraRotation, rotatedInputDirection)
         player.spd.addInPlace(rotatedInputDirection.scale(delta*accSpd))
     
         // Gravity
@@ -167,7 +170,9 @@ var main = async ()=>{
         // 3rd person
         player.body.computeWorldMatrix()
         camera.position.copyFrom(player.body.position.add(player.body.up.scale(camYOffset*5)))
-        camera.position.addInPlace(player.body.forward.scale(-5))
+        var forward = BABYLON.Vector3.Forward()
+        bmath.rotateVectorByQuaternionToRef(forward, player.cameraRotation, forward)
+        camera.position.addInPlace(forward.scale(-5))
         camera.setTarget(player.body.position)
     })
 }

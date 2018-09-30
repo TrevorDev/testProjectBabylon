@@ -6,6 +6,7 @@ class Player {
     spd = new BABYLON.Vector3()
     trackedObject:PlayerBody
     body:Mesh
+    cameraRotation = new BABYLON.Quaternion()
     canJump = true
     constructor(scene:BABYLON.Scene, public controller:NiftyWorldController){
         this.trackedObject = new PlayerBody();
