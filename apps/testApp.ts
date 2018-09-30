@@ -37,12 +37,20 @@ var main = async ()=>{
     await player.trackedObject.addToServer(server);
     
     // Load level
-    var level = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/level2.glb")
+    // var level = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/level2.glb")
+    // scene.addMesh(level.meshes[0],true)
+    // level.meshes[0].scaling.scaleInPlace(30)
+    // level.meshes[0].position.y -= 40
+    // level.meshes[0].position.x -= 50
+    // level.meshes[0].position.z = 30
+
+    var level = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/level3.glb")
     scene.addMesh(level.meshes[0],true)
     level.meshes[0].scaling.scaleInPlace(30)
-    level.meshes[0].position.y -= 40
-    level.meshes[0].position.x -= 50
-    level.meshes[0].position.z = 30
+    level.meshes[0].position.y = -60
+    level.meshes[0].position.x = 15
+    level.meshes[0].position.z = 5
+
     // Create walls from level
     var colliders = new Array<BABYLON.Mesh>()
     level.meshes.forEach((m,i)=>{
@@ -160,6 +168,10 @@ var main = async ()=>{
             }
         //Recurse up to 2 times
         }while(closestHit.distRatio != null && count < 2)
+        
+        // if(count > 1){
+        //     player.spd.scaleInPlace(0.9)
+        // }
     
         // Update camera position
         // 1st person
@@ -169,10 +181,10 @@ var main = async ()=>{
         
         // 3rd person
         player.body.computeWorldMatrix()
-        camera.position.copyFrom(player.body.position.add(player.body.up.scale(camYOffset*5)))
+        camera.position.copyFrom(player.body.position.add(player.body.up.scale(camYOffset*10)))
         var forward = BABYLON.Vector3.Forward()
         bmath.rotateVectorByQuaternionToRef(forward, player.cameraRotation, forward)
-        camera.position.addInPlace(forward.scale(-5))
+        camera.position.addInPlace(forward.scale(-10))
         camera.setTarget(player.body.position)
     })
 }
