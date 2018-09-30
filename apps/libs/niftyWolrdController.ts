@@ -58,7 +58,7 @@ export class NiftyWorldController {
             document.addEventListener('mousemove', (event: any) => {
                 var movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
                 var movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-                this.rightJoystick.y = movementY/-1000
+                this.rightJoystick.y = movementY/1000
                 this.rightJoystick.x = movementX/1000
             }, false);
         //}else{

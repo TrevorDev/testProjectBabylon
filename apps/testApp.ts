@@ -50,17 +50,29 @@ var main = async ()=>{
             return
         }
         colliders.push(<BABYLON.Mesh>m)
-    })
+    })    
 
     // Test single ground level
     // var colliders = new Array<BABYLON.Mesh>()
     // var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 1, scene);
     // ground.position.y -=1
     // colliders.push(ground)
+
+    // Convert geometry from gpu to cpu a single time
+    // This will break if objects move
+    // TODO instead of multiplying all verts by world matrix, just multiply ray by inverse of matrix
+    var triangles:Array<{verts:Array<Vector3>, normal:Vector3}> = []
+    setTimeout(() => {
+        colliders.forEach((collider)=>{
+            bmath.forEachFace(collider, (verts, normal)=>{
+                triangles.push({verts: verts.map((v)=>{return v.clone()}),normal: normal.clone()})
+            })
+        })
+    }, 1000);
+    
     
     player.body.position.x=2
-    var physicsSteps = 4;
-    var camYOffset = 1;
+    var camYOffset = 1
     scene.onBeforeRenderObservable.add(()=>{
         // Delta time
         var delta = scene.getEngine().getDeltaTime()
@@ -118,17 +130,15 @@ var main = async ()=>{
                 normal: <Nullable<BABYLON.Vector3>>new BABYLON.Vector3()
             }
             
+            var ray = new BABYLON.Ray(player.body.position, direction)
             // Collision + resolution
-            colliders.forEach((collider)=>{
-                bmath.forEachFace(collider, (verts, normal)=>{
-                    // Ray based collision
-                    var ray = new BABYLON.Ray(player.body.position, direction)
-                    var dist = bmath.rayIntersectsTriangle(ray, verts, normal)
-                    if(dist && (!closestHit.distRatio || dist < closestHit.distRatio)){
-                        closestHit.distRatio = dist
-                        closestHit.normal.copyFrom(normal)
-                    }
-                })
+            triangles.forEach((tri:any)=>{
+                 // Ray based collision\
+                 var dist = bmath.rayIntersectsTriangle(ray, tri.verts, tri.normal)
+                 if(dist && (!closestHit.distRatio || dist < closestHit.distRatio)){
+                     closestHit.distRatio = dist
+                     closestHit.normal.copyFrom(tri.normal)
+                 }
             })
 
             // If it hit an object adjust direction/speed to be projected onto ground
