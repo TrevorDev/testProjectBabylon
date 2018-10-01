@@ -106,7 +106,7 @@ var main = async ()=>{
         if(inputDirection.z > 0){
             player.body.rotationQuaternion.copyFrom(player.cameraRotation)
         }
-        if(player.controller.restart){
+        if(player.controller.restart || player.body.position.y < -128){
             player.body.position.set(0,0,0)
             player.spd.set(0,0,0)
             player.controller.restart = false
@@ -114,8 +114,6 @@ var main = async ()=>{
 
         // Jumping logic
         if(player.controller.jump && player.canJump){
-            console.log(player.body.position)
-            console.log(player)
             if(player.spd.y < 5){
                 player.spd.y = 5
             }
