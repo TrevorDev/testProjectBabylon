@@ -47,9 +47,9 @@ var main = async ()=>{
     var level = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/level4.glb")
     scene.addMesh(level.meshes[0],true)
     level.meshes[0].scaling.scaleInPlace(30)
-    level.meshes[0].position.y = -60
-    level.meshes[0].position.x = 15
-    level.meshes[0].position.z = 5
+    level.meshes[0].position.y = 0
+    level.meshes[0].position.x = 20
+    level.meshes[0].position.z = 26
 
     // Create walls from level
     var colliders = new Array<BABYLON.Mesh>()
@@ -114,6 +114,8 @@ var main = async ()=>{
 
         // Jumping logic
         if(player.controller.jump && player.canJump){
+            console.log(player.body.position)
+            console.log(player)
             if(player.spd.y < 5){
                 player.spd.y = 5
             }
@@ -192,7 +194,25 @@ var main = async ()=>{
         var forward = BABYLON.Vector3.Forward()
         bmath.rotateVectorByQuaternionToRef(forward, player.cameraRotation, forward)
         camera.position.addInPlace(forward.scale(-10))
-        camera.setTarget(player.body.position)
+        camera.setTarget(player.bodyCenterPostion())
+
+        // camera ray test, TODO smoothen snapping
+        var closestHit = {
+            distRatio:  <Nullable<number>>null,
+            normal: <Nullable<BABYLON.Vector3>>new BABYLON.Vector3()
+        }
+        var ray = new BABYLON.Ray(player.bodyCenterPostion(), camera.position.subtract(player.bodyCenterPostion()))
+        triangles.forEach((tri:any)=>{
+            // Ray based collision\
+            var dist = bmath.rayIntersectsTriangle(ray, tri.verts, tri.normal)
+            if(dist && (!closestHit.distRatio || dist < closestHit.distRatio)){
+                closestHit.distRatio = dist
+                closestHit.normal.copyFrom(tri.normal)
+            }
+       })
+       if(closestHit.distRatio){
+           camera.position.copyFrom( player.bodyCenterPostion().add(ray.direction.scale(closestHit.distRatio-0.1)))
+       }
     })
 }
 main()
