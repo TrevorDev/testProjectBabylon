@@ -44,7 +44,7 @@ var main = async ()=>{
     // level.meshes[0].position.x -= 50
     // level.meshes[0].position.z = 30
 
-    var level = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/level3.glb")
+    var level = await BABYLON.SceneLoader.LoadAssetContainerAsync("public/level4.glb")
     scene.addMesh(level.meshes[0],true)
     level.meshes[0].scaling.scaleInPlace(30)
     level.meshes[0].position.y = -60
@@ -57,9 +57,16 @@ var main = async ()=>{
         if(i==0){
             return
         }
-        colliders.push(<BABYLON.Mesh>m)
+        // Add inner meshes it has children
+        if(m.getChildMeshes().length > 0){
+            m.getChildMeshes().forEach((m2)=>{
+                colliders.push(<BABYLON.Mesh>m2)
+            })
+        }else{
+            colliders.push(<BABYLON.Mesh>m)
+        }
     })    
-
+    
     // Test single ground level
     // var colliders = new Array<BABYLON.Mesh>()
     // var ground = BABYLON.Mesh.CreateGround("ground1", 6, 6, 1, scene);

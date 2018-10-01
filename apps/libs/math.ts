@@ -4,7 +4,7 @@ var verts = [new BABYLON.Vector3(),new BABYLON.Vector3(),new BABYLON.Vector3()]
 var normal = new BABYLON.Vector3()
 export default {
     /**
-     * Currently has a hack to calculate the correct normals for -z scale
+     * Currently has a hack to calculate the correct normals for -z scale for gltf loader quirk
      */
     forEachFace:(mesh:BABYLON.Mesh, fn:(v:Array<BABYLON.Vector3>, n:BABYLON.Vector3)=>void)=>{
         var ind = mesh.getIndices()
@@ -22,7 +22,8 @@ export default {
             }
             normal.copyFrom(normals[i])
             // handle -z scale
-            if(mesh.parent && (<any>mesh.parent).scaling.z < 0){
+            // TODO recurse this
+            if(mesh.parent && (<any>mesh.parent).scaling.z < 0 || (mesh.parent && mesh.parent.parent && (<any>mesh.parent.parent).scaling.z < 0)){
                 normal.x *= -1
                 normal.z *= -1
             }
