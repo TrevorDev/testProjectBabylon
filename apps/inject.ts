@@ -2,9 +2,9 @@ var videoEl = document.getElementsByTagName("video")[0]
 
 var canvas = document.createElement('canvas')
 canvas.style.width="300px"
-canvas.style.height="136px"
+canvas.style.height="152px"
 canvas.width=300
-canvas.height=136
+canvas.height=148
 canvas.style.position="absolute"
 canvas.style.zIndex = 200;
 canvas.style.top = "0px"
