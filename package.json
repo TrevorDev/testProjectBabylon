@@ -19,7 +19,7 @@
   "homepage": "https://github.com/TrevorDev/testProjectBabylon#readme",
   "dependencies": {
     "@types/express": "^4.16.0",
-    "babylonjs": "^3.3.0-beta.1",
+    "babylonjs": "^4.0.0-alpha.6",
     "express": "^4.16.3",
     "glob": "^7.1.2",
     "pug": "^2.0.3",
