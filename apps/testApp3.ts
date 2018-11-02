@@ -95,8 +95,8 @@ var main = async ()=>{
 
 
     var videoCanvas = document.createElement('canvas')
-    videoCanvas.style.width="300px"
-    videoCanvas.style.height="136px"
+    videoCanvas.width=1280
+    videoCanvas.height=720
     document.body.appendChild(videoCanvas)
     
    
