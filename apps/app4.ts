@@ -63,6 +63,13 @@ class StreamVideo {
     }
 }
 
+class Bullet {
+    spd = new BABYLON.Vector3();
+    constructor(public mesh:BABYLON.Mesh){
+        mesh.isPickable = false;
+    }
+}
+
 var main = async () => {
 
     // INITIALIZE BABYLON ----------------------------------------------------------------------------------------------------------------------------------
@@ -152,6 +159,7 @@ var main = async () => {
 
     for(let i = 0;i<3;i++){
         let sphere = BABYLON.Mesh.CreateIcoSphere("sphere", {radius:0.2, flat:true, subdivisions: 1}, scene);
+        sphere.name = "clickSphere"
         sphere.position.y = 1;
         sphere.position.x += i-1
         sphere.material = new BABYLON.StandardMaterial("sphere material",scene)
@@ -184,7 +192,7 @@ var main = async () => {
                         (sphere.material as any).diffuseColor.copyFrom(BABYLON.Color3.FromHexString("#f39c12"));
                     }
                 }else{
-                    (sphere.material as any).diffuseColor.copyFrom(BABYLON.Color3.FromHexString("#bdc3c7"))
+                    (sphere.material as any).diffuseColor.copyFrom(BABYLON.Color3.FromHexString("#FFFFFF"))
                 }
                 
             }
@@ -192,10 +200,35 @@ var main = async () => {
     }
 
     var environment = scene.createDefaultEnvironment({ enableGroundShadow: true, groundYBias: 1 });
+    environment.skybox.isPickable = false;
     environment.setMainColor(BABYLON.Color3.FromHexString("#b27165"))
     scene.createDefaultVRExperience({floorMeshes:[]});
 
-    
+    var bulletPool:Array<Bullet> = []
+    var bulletPoolIndex = 0;
+    for(var i = 0;i<10;i++){
+        var bullet = new Bullet(BABYLON.Mesh.CreateSphere("", 10, 0.3, scene));
+        bullet.mesh.position.y = -100000000;
+        bullet.mesh.material = new BABYLON.StandardMaterial("", scene);
+        (bullet.mesh.material as BABYLON.StandardMaterial).diffuseTexture = new BABYLON.Texture("/public/like2.png", scene)
+        bulletPool.push(bullet)
+    }
+
+    scene.onPointerObservable.add((e)=>{
+        if(e.type == BABYLON.PointerEventTypes.POINTERDOWN && (!e.pickInfo.pickedMesh || e.pickInfo.pickedMesh.name != "clickSphere")){
+            bulletPool[bulletPoolIndex].mesh.position = e.pickInfo.ray.origin;
+            bulletPool[bulletPoolIndex].spd = e.pickInfo.ray.direction.scale(10);
+            bulletPoolIndex = ++bulletPoolIndex % bulletPool.length;
+        }
+    });
+    var grav = new BABYLON.Vector3(0,-9.8, 0)
+    scene.onBeforeRenderObservable.add(()=>{
+        var deltaTime = engine.getDeltaTime()/1000
+        bulletPool.forEach((b)=>{
+            b.spd.addInPlace(grav.scale(deltaTime))
+            b.mesh.position.addInPlace(b.spd.scale(deltaTime))
+        })
+    })
     
 }
 main();
