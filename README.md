@@ -5,7 +5,8 @@ clone this repo
 Install [NodeJS](https://nodejs.org/en/)
 cd into the repo and run:
  ```
- npm install
+npm install
+npm install webpack-cli -g
 npm install webpack -g
 npm install concurrently -g
 npm install nodemon -g
